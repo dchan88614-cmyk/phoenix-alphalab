@@ -9,35 +9,44 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Auto Research Loop v0.1 - Fix Coverage Before Judging.
-- Removed premature early stop before 50 evaluated candidates.
-- Set the auto research loop default candidate cap to 100.
-- Reordered candidate generation so the first 20 candidates are diversified across:
-  - `smoke_score_threshold`
+- Executed the latest `TASKS.md`: Auto Research Loop v0.2 - Historical Trade Simulator + Selective Decisions.
+- Added `src/trading/trade_simulator.py`.
+- Simulated historical virtual trades using:
+  - EOD signal date.
+  - Next trading day entry.
+  - Next day open as entry price, with close fallback.
+  - ATR-based stop loss, with 8% fallback stop.
+  - Target 1 and Target 2 based on entry risk.
+  - 20-trading-day max holding period.
+  - Worst-case same-day stop/target ordering.
+- Changed auto research candidate evaluation to use realized trade outcomes instead of 20d forward-return labels.
+- Added active max BUY rate enforcement that reduces trades before simulation instead of only failing a gate afterward.
+- Added rank gap calculation and candidate filtering by rank gap.
+- Added candidate parameters for:
   - `max_buy_rate`
-  - `distance_to_52w_high_prev_min`
-  - `dollar_volume_min`
-  - `require_return_5d_positive`
-  - `require_return_20d_positive`
-- Added diagnostic-only 20-trading-day path columns:
-  - `stop_hit_rate_20d`
-  - `target_1_hit_rate_20d`
-  - `target_2_hit_rate_20d`
-- Added 300-calendar-day warmup download support while keeping `--start` as `research_start`.
-- Updated auto research summary reporting with total candidates, stop reason, BUY rate distribution, top candidates even if failed, common fail reasons, and worst-trade gate diagnostics.
-- Kept alpha factors unchanged.
-- Did not add news, SEC, short interest, options, LLM ranking, or external paid data.
-- Did not label any version live-tradable.
+  - `min_relative_volume_prev20`
+  - `min_smoke_score`
+  - `min_rank_gap`
+  - return filters
+  - distance to 52w high
+  - dollar volume
+- Added `data/reports/trade_simulation_trades.csv`.
+- Updated `auto_research_generations.csv` and `auto_research_summary.md` for realized trade metrics.
+- Kept alpha sources unchanged.
+- Did not add news, SEC, short interest, options, LLM ranking, paid data, or external APIs.
+- Did not label anything live-tradable.
 
 ## Files Changed
 
 - `src/main.py`
 - `src/research/auto_loop.py`
+- `src/trading/__init__.py`
+- `src/trading/trade_simulator.py`
 - `tests/test_auto_loop.py`
-- `data/reports/factor_report.csv`
-- `data/reports/factor_report.md`
+- `tests/test_trade_simulator.py`
 - `data/reports/auto_research_generations.csv`
 - `data/reports/auto_research_summary.md`
+- `data/reports/trade_simulation_trades.csv`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
@@ -55,52 +64,24 @@ Local virtual environment:
 
 ## Output
 
-Latest auto research loop run:
+Latest v0.2 run:
 
 - Data start requested: 2023-03-07
 - Research start: 2024-01-01
 - Research end: 2026-06-30
-- Warmup limitation: earliest available data in the run was 2023-04-03.
+- Warmup limitation: earliest available data was 2023-04-03.
 - Total candidates available: 100
 - Total candidates evaluated: 50
 - Candidates passed gate: 0
 - Candidates failed gate: 50
 - Stop reason: `10_consecutive_candidates_failed_to_improve_best_score`
-- BUY rate distribution: min 90.07%, median 93.87%, max 99.50%
-
-Top candidate even if failed:
-
-- Candidate ID: 12
-- Status: `RESEARCH_ONLY_NOT_TRADABLE`
-- Overall 20d avg excess: 5.77%
-- Avg excess excluding best BUY: 5.57%
-- Worst 20d return: -63.53%
-- BUY count: 550
-- BUY rate: 91.06%
-- Fail reasons: `worst_20d_return_lte_minus_60pct`, `overall_buy_rate_above_candidate_max`
-
-Worst gate analysis:
-
-- Candidates failed only because of `worst_20d_return_lte_minus_60pct`: 12
-- Top candidates include cases where the -60% worst-trade gate is the only failure.
-- Best 20d avg excess after excluding best BUY: 5.57%
-
-Stop/target diagnostic summary across evaluated candidates:
-
-- Mean stop hit rate: 61.91%
-- Mean target 1 hit rate: 63.20%
-- Mean target 2 hit rate: 48.34%
-- These diagnostics are not used in BUY / NO_TRADE decisions.
-
-Phoenix remains not tradable:
-
-- No candidate passed the research gate.
-- BUY rates remain too broad.
-- Worst 20d return remains below the -60% risk gate.
-- All outputs remain offline historical research only.
+- Trade rows written: 11,981
+- Active BUY rate distribution: min 6.95%, median 29.47%, max 91.72%
+- Realized return distribution by candidate: min 1.26%, median 1.92%, max 3.58%
 
 Generated files:
 
+- `data/reports/trade_simulation_trades.csv`
 - `data/reports/auto_research_generations.csv`
 - `data/reports/auto_research_summary.md`
 - `data/reports/factor_report.csv`
@@ -111,7 +92,7 @@ Generated files:
 
 ```bash
 .venv/bin/python -m pytest -q
-# 34 passed, 1 warning in 0.73s
+# 34 passed, 1 warning in 0.84s
 ```
 
 End-to-end command completed successfully:
@@ -120,25 +101,78 @@ End-to-end command completed successfully:
 .venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --auto-research-loop
 ```
 
+## Trade Simulation Summary
+
+Best candidate even if failed:
+
+- Candidate ID: 35
+- Status: `RESEARCH_ONLY_NOT_TRADABLE`
+- Final BUY days: 87
+- Final BUY rate: 14.40%
+- Average realized return: 3.58%
+- Average realized excess return: 3.12%
+- Realized win rate: 51.72%
+- Worst realized return: -14.65%
+- Best realized return: 37.76%
+- Stop hit rate: 47.13%
+- Target 1 hit rate: 39.08%
+- Target 2 hit rate: 2.30%
+- Time exit rate: 11.49%
+- Fail reason: `realized_win_rate_lt_52pct`
+
+Whether any candidate became `RESEARCH_QUALIFIED_NOT_LIVE`:
+
+- No. 0 of 50 evaluated candidates passed all v0.2 gates.
+
+Worst realized trade:
+
+- 2024-03-28 MSTR signal.
+- Entry: 2024-04-01 at 164.5010.
+- Exit: 2024-04-16 at stop loss 131.6810.
+- Realized return: -19.95%.
+- Realized excess return: -16.08%.
+
+Best realized trade:
+
+- 2024-10-24 MSTR signal.
+- Entry: 2024-10-25 at 236.3900.
+- Exit: 2024-11-11 at Target 2, 341.2914.
+- Realized return: 44.38%.
+- Realized excess return: 41.41%.
+
+Stop/target/time-exit breakdown across all simulated trades:
+
+- STOP: 55.19%
+- TARGET_1: 34.86%
+- TARGET_2: 1.97%
+- TIME_EXIT: 7.99%
+
+Interpretation:
+
+- Stop/target simulation reduced realized tail risk versus the prior -63.53% 20d forward-return tail observation.
+- Active max BUY rate enforcement materially reduced selectivity for stricter candidates.
+- The best candidate still missed the 52% realized win-rate gate, so Phoenix remains research-only and not tradable.
+
 ## Problems
 
-- No candidate passed the gate.
-- Candidate BUY rates remain high even after diversified ordering.
-- The same worst 20d return of -63.53% still blocks otherwise positive candidates.
-- Warmup improved the setup, but yfinance only returned data starting 2023-04-03 for this run instead of the requested 2023-03-07.
-- yfinance metadata filtering still rejects some watchlist names and may have false exclusions such as `U` via keyword matching.
+- No candidate passed the v0.2 research-qualified gate.
+- The best candidate missed the win-rate gate by a small margin: 51.72% vs required 52%.
+- MSTR dominates both worst and best realized trade examples, so concentration risk still needs review.
+- Some candidate sets still have high BUY rates when `max_buy_rate` is loose.
+- yfinance metadata filtering still rejects some intended watchlist names and may falsely exclude names such as `U`.
 - The run emitted existing pandas `pct_change` future warnings and the macOS LibreSSL warning; neither blocked execution.
 
 ## Questions For GPT
 
-- Should the next iteration focus on reducing BUY rate before changing any research gate?
-- Should the -60% worst-trade gate remain hard, or should stop/target diagnostics be promoted into a separate future simulation layer first?
-- Should metadata filtering be improved before the next research-loop run so the intended universe is less distorted?
+- Should the next task inspect concentration by ticker before changing any gate?
+- Should stop/target parameters remain fixed for another run, or should only exit diagnostics be expanded first?
+- Should the next candidate search explicitly penalize MSTR concentration without using future returns?
+- Should metadata filtering be fixed before judging the universe again?
 
 ## Next Suggested Tasks
 
 - Do not add new alpha sources yet.
-- Tighten candidate rules to reduce BUY rate without using forward returns.
-- Investigate whether stop/target logic should become a separate simulation after diagnostics are reviewed.
-- Improve watchlist metadata filtering precision.
+- Add concentration diagnostics by ticker and by sector/theme.
+- Report candidate performance excluding the most selected ticker and excluding MSTR.
+- Review why realized win rate remains below 52% despite positive average realized excess.
 - Keep Phoenix labeled research-only and not live-tradable.

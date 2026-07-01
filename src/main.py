@@ -198,7 +198,7 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote multi-window smoke test Markdown report: %s", multi_md_path)
 
     if args.auto_research_loop:
-        auto_results, auto_summary = run_auto_research_loop(
+        auto_results, auto_summary, trade_results = run_auto_research_loop(
             dataset,
             benchmark_ticker=benchmark,
             horizons=horizons,
@@ -209,9 +209,12 @@ def run(args: argparse.Namespace) -> None:
         )
         auto_csv_path = reports_dir / "auto_research_generations.csv"
         auto_md_path = reports_dir / "auto_research_summary.md"
+        trade_csv_path = reports_dir / "trade_simulation_trades.csv"
         write_csv(auto_results, auto_csv_path)
+        write_csv(trade_results, trade_csv_path)
         write_auto_research_summary(auto_results, auto_summary, auto_md_path)
         logger.info("Wrote auto research generations CSV: %s", auto_csv_path)
+        logger.info("Wrote trade simulation trades CSV: %s", trade_csv_path)
         logger.info("Wrote auto research summary Markdown report: %s", auto_md_path)
 
 
