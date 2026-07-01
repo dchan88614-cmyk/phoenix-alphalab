@@ -9,6 +9,14 @@ import pandas as pd
 
 from src.backtest.multi_window_smoke_test import DEFAULT_MULTI_WINDOW_SMOKE_WINDOWS, validate_non_overlapping_windows
 from src.backtest.smoke_test import build_smoke_test
+from src.research.concentration import (
+    VARIANT_EQUAL_TICKER,
+    VARIANT_EX_MOST_SELECTED,
+    VARIANT_EX_MSTR,
+    build_robustness_report,
+    concentration_summary,
+    robustness_gate_fail_reasons,
+)
 from src.trading.trade_simulator import STOP, TARGET_1, TARGET_2, TIME_EXIT, simulate_trades
 
 
@@ -27,6 +35,7 @@ class CandidateRule:
     require_return_20d_positive: bool
     distance_to_52w_high_prev_min: float
     dollar_volume_min: float
+    max_trades_per_ticker_per_year: int | None = None
 
 
 MAX_BUY_RATES = [1.0, 0.70, 0.50, 0.30, 0.15]
@@ -37,6 +46,7 @@ RETURN_5D_REQUIREMENTS = [True, False]
 RETURN_20D_REQUIREMENTS = [True, False]
 DISTANCE_TO_HIGH_MINIMUMS = [-0.35, -0.25, -0.15]
 DOLLAR_VOLUME_MINIMUMS = [10_000_000, 20_000_000, 50_000_000]
+MAX_TRADES_PER_TICKER_PER_YEAR = [None, 20, 10, 5]
 
 
 def generate_candidate_rules(limit: int = 100) -> list[CandidateRule]:
@@ -50,6 +60,7 @@ def generate_candidate_rules(limit: int = 100) -> list[CandidateRule]:
             RETURN_20D_REQUIREMENTS,
             DISTANCE_TO_HIGH_MINIMUMS,
             DOLLAR_VOLUME_MINIMUMS,
+            MAX_TRADES_PER_TICKER_PER_YEAR,
         )
     )
     early_diverse: list[tuple] = []
@@ -64,6 +75,7 @@ def generate_candidate_rules(limit: int = 100) -> list[CandidateRule]:
                 RETURN_20D_REQUIREMENTS[(index // 6) % len(RETURN_20D_REQUIREMENTS)],
                 DISTANCE_TO_HIGH_MINIMUMS[index % len(DISTANCE_TO_HIGH_MINIMUMS)],
                 DOLLAR_VOLUME_MINIMUMS[(index // 7) % len(DOLLAR_VOLUME_MINIMUMS)],
+                MAX_TRADES_PER_TICKER_PER_YEAR[(index // 8) % len(MAX_TRADES_PER_TICKER_PER_YEAR)],
             )
         )
 
@@ -168,7 +180,25 @@ def build_candidate_decisions(smoke_results: pd.DataFrame, candidate: CandidateR
         .index
     )
     rank_one["is_buy"] = rank_one.index.isin(kept_index)
+    if candidate.max_trades_per_ticker_per_year is not None:
+        rank_one = _apply_active_per_ticker_year_cap(rank_one, candidate.max_trades_per_ticker_per_year)
     return rank_one
+
+
+def _apply_active_per_ticker_year_cap(decisions: pd.DataFrame, max_trades: int) -> pd.DataFrame:
+    frame = decisions.copy()
+    buys = frame.loc[frame["is_buy"]].copy()
+    if buys.empty:
+        return frame
+    buys["signal_year"] = pd.to_datetime(buys["date"]).dt.year
+    kept = (
+        buys.sort_values(["decision_strength", "date", "ticker"], ascending=[False, True, True])
+        .groupby(["ticker", "signal_year"], group_keys=False)
+        .head(max_trades)
+        .index
+    )
+    frame["is_buy"] = frame.index.isin(kept)
+    return frame
 
 
 def _decision_strength(row: pd.Series) -> float:
@@ -263,12 +293,40 @@ def evaluate_candidate(
             "window_summary": windows,
         }
     )
+    _attach_robustness_metrics(result, trades_all)
     fail_reasons = _gate_fail_reasons(result)
+    fail_reasons.extend(robustness_gate_fail_reasons(result))
     result["fail_reasons"] = ", ".join(fail_reasons)
     result["status"] = RESEARCH_QUALIFIED_NOT_LIVE if not fail_reasons else RESEARCH_ONLY_NOT_TRADABLE
     result["risk_adjusted_score"] = score_candidate(result)
     result["score"] = result["risk_adjusted_score"] if result["status"] == RESEARCH_QUALIFIED_NOT_LIVE else pd.NA
     return result, trades_all
+
+
+def _attach_robustness_metrics(result: dict, trades: pd.DataFrame) -> None:
+    concentration = concentration_summary(trades)
+    result["top1_ticker_trade_share"] = concentration.get("top1_trade_share", pd.NA)
+    result["top3_ticker_trade_share"] = concentration.get("top3_trade_share", pd.NA)
+    result["top1_excess_share"] = concentration.get("top1_excess_share", pd.NA)
+    result["top3_excess_share"] = concentration.get("top3_excess_share", pd.NA)
+    result["most_selected_ticker"] = concentration.get("most_selected_ticker", "")
+
+    robustness = build_robustness_report(trades)
+    for variant, prefix in [
+        (VARIANT_EX_MSTR, "excluding_mstr"),
+        (VARIANT_EX_MOST_SELECTED, "excluding_most_selected"),
+        (VARIANT_EQUAL_TICKER, "equal_ticker_weighted"),
+    ]:
+        row = robustness.loc[robustness["variant"].eq(variant)]
+        if row.empty:
+            result[f"{prefix}_avg_realized_excess_return"] = pd.NA
+            result[f"{prefix}_realized_win_rate"] = pd.NA
+            result[f"{prefix}_remaining_trade_count"] = 0
+            continue
+        item = row.iloc[0]
+        result[f"{prefix}_avg_realized_excess_return"] = item["avg_realized_excess_return"]
+        result[f"{prefix}_realized_win_rate"] = item["realized_win_rate"]
+        result[f"{prefix}_remaining_trade_count"] = item["remaining_trade_count"]
 
 
 def _window_metrics(
@@ -329,6 +387,20 @@ def _empty_trade_metrics() -> dict:
         "avg_holding_days": pd.NA,
         "best_trade": "",
         "worst_trade": "",
+        "top1_ticker_trade_share": pd.NA,
+        "top3_ticker_trade_share": pd.NA,
+        "top1_excess_share": pd.NA,
+        "top3_excess_share": pd.NA,
+        "most_selected_ticker": "",
+        "excluding_mstr_avg_realized_excess_return": pd.NA,
+        "excluding_mstr_realized_win_rate": pd.NA,
+        "excluding_mstr_remaining_trade_count": 0,
+        "excluding_most_selected_avg_realized_excess_return": pd.NA,
+        "excluding_most_selected_realized_win_rate": pd.NA,
+        "excluding_most_selected_remaining_trade_count": 0,
+        "equal_ticker_weighted_avg_realized_excess_return": pd.NA,
+        "equal_ticker_weighted_realized_win_rate": pd.NA,
+        "equal_ticker_weighted_remaining_trade_count": 0,
     }
 
 
@@ -460,6 +532,11 @@ def write_auto_research_summary(results: pd.DataFrame, summary: dict, output_pat
         "target_1_hit_rate",
         "target_2_hit_rate",
         "time_exit_rate",
+        "top1_ticker_trade_share",
+        "top3_ticker_trade_share",
+        "excluding_mstr_avg_realized_excess_return",
+        "excluding_most_selected_avg_realized_excess_return",
+        "equal_ticker_weighted_avg_realized_excess_return",
     ]
     display_cols = [
         "candidate_id",
@@ -473,6 +550,7 @@ def write_auto_research_summary(results: pd.DataFrame, summary: dict, output_pat
         "require_return_20d_positive",
         "distance_to_52w_high_prev_min",
         "dollar_volume_min",
+        "max_trades_per_ticker_per_year",
         "signal_days",
         "eligible_buy_days",
         "final_buy_days",
@@ -484,6 +562,11 @@ def write_auto_research_summary(results: pd.DataFrame, summary: dict, output_pat
         "target_1_hit_rate",
         "target_2_hit_rate",
         "time_exit_rate",
+        "top1_ticker_trade_share",
+        "top3_ticker_trade_share",
+        "excluding_mstr_avg_realized_excess_return",
+        "excluding_most_selected_avg_realized_excess_return",
+        "equal_ticker_weighted_avg_realized_excess_return",
         "fail_reasons",
     ]
     top_by_excess = _format_display_frame(top_by_excess, percent_columns)
@@ -491,7 +574,7 @@ def write_auto_research_summary(results: pd.DataFrame, summary: dict, output_pat
     common_fail_reasons = _common_fail_reasons(results)
 
     lines = [
-        "# Phoenix AlphaLab Auto Research Loop v0.2",
+        "# Phoenix AlphaLab Auto Research Loop v0.3",
         "",
         "## Research Mode",
         "",
@@ -514,6 +597,9 @@ def write_auto_research_summary(results: pd.DataFrame, summary: dict, output_pat
         f"- Stop reason: {summary.get('stop_reason') or summary.get('early_stop_reason') or 'None'}",
         f"- BUY rate distribution after active enforcement: {_distribution(results, 'final_buy_rate')}",
         f"- Realized return distribution: {_distribution(results, 'avg_realized_return')}",
+        f"- Robustness excluding MSTR: {_distribution(results, 'excluding_mstr_avg_realized_excess_return')}",
+        f"- Robustness excluding most selected ticker: {_distribution(results, 'excluding_most_selected_avg_realized_excess_return')}",
+        f"- Equal-ticker-weighted excess distribution: {_distribution(results, 'equal_ticker_weighted_avg_realized_excess_return')}",
         f"- Stop/target/time-exit breakdown: {_exit_breakdown(results)}",
         "",
         (
@@ -575,6 +661,11 @@ def _candidate_lines(title: str, row: pd.Series) -> list[str]:
         f"- Target 1 hit rate: {_format_percent(row['target_1_hit_rate'])}",
         f"- Target 2 hit rate: {_format_percent(row['target_2_hit_rate'])}",
         f"- Time exit rate: {_format_percent(row['time_exit_rate'])}",
+        f"- Top 1 ticker trade share: {_format_percent(row.get('top1_ticker_trade_share'))}",
+        f"- Top 3 ticker trade share: {_format_percent(row.get('top3_ticker_trade_share'))}",
+        f"- Excluding MSTR avg realized excess: {_format_percent(row.get('excluding_mstr_avg_realized_excess_return'))}",
+        f"- Excluding most selected avg realized excess: {_format_percent(row.get('excluding_most_selected_avg_realized_excess_return'))}",
+        f"- Equal-ticker-weighted avg realized excess: {_format_percent(row.get('equal_ticker_weighted_avg_realized_excess_return'))}",
         f"- Fail reasons: {row.get('fail_reasons', '')}",
         "",
     ]

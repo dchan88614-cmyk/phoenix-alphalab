@@ -9,44 +9,48 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Auto Research Loop v0.2 - Historical Trade Simulator + Selective Decisions.
-- Added `src/trading/trade_simulator.py`.
-- Simulated historical virtual trades using:
-  - EOD signal date.
-  - Next trading day entry.
-  - Next day open as entry price, with close fallback.
-  - ATR-based stop loss, with 8% fallback stop.
-  - Target 1 and Target 2 based on entry risk.
-  - 20-trading-day max holding period.
-  - Worst-case same-day stop/target ordering.
-- Changed auto research candidate evaluation to use realized trade outcomes instead of 20d forward-return labels.
-- Added active max BUY rate enforcement that reduces trades before simulation instead of only failing a gate afterward.
-- Added rank gap calculation and candidate filtering by rank gap.
-- Added candidate parameters for:
-  - `max_buy_rate`
-  - `min_relative_volume_prev20`
-  - `min_smoke_score`
-  - `min_rank_gap`
-  - return filters
-  - distance to 52w high
-  - dollar volume
-- Added `data/reports/trade_simulation_trades.csv`.
-- Updated `auto_research_generations.csv` and `auto_research_summary.md` for realized trade metrics.
+- Executed the latest `TASKS.md`: Auto Research Loop v0.3 - Concentration Risk + Robustness Before Gate Tuning.
+- Added `src/research/concentration.py`.
+- Added ticker-level concentration diagnostics.
+- Added robustness variants:
+  - base trades
+  - excluding MSTR
+  - excluding most selected ticker
+  - excluding top 3 selected tickers
+  - per-ticker cap 10 full period
+  - per-ticker cap 5 per year
+  - equal-ticker-weighted summary
+- Added active candidate parameter `max_trades_per_ticker_per_year`.
+- Applied active per-ticker/year caps after candidate filters and active max BUY rate enforcement, using only signal-date-safe `decision_strength`.
+- Added market regime diagnostics for SPY 50dma and 200dma using signal-date/prior OHLCV data.
+- Updated v0.3 gate with robustness requirements.
+- Added reports:
+  - `data/reports/concentration_report.csv`
+  - `data/reports/concentration_report.md`
+  - `data/reports/robustness_report.csv`
+  - `data/reports/regime_diagnostics.csv`
+  - `data/reports/regime_diagnostics.md`
+- Updated `auto_research_generations.csv`, `auto_research_summary.md`, and `trade_simulation_trades.csv`.
 - Kept alpha sources unchanged.
 - Did not add news, SEC, short interest, options, LLM ranking, paid data, or external APIs.
+- Did not start paper trading or live trade generation.
 - Did not label anything live-tradable.
 
 ## Files Changed
 
 - `src/main.py`
 - `src/research/auto_loop.py`
-- `src/trading/__init__.py`
+- `src/research/concentration.py`
 - `src/trading/trade_simulator.py`
-- `tests/test_auto_loop.py`
-- `tests/test_trade_simulator.py`
+- `tests/test_concentration.py`
 - `data/reports/auto_research_generations.csv`
 - `data/reports/auto_research_summary.md`
 - `data/reports/trade_simulation_trades.csv`
+- `data/reports/concentration_report.csv`
+- `data/reports/concentration_report.md`
+- `data/reports/robustness_report.csv`
+- `data/reports/regime_diagnostics.csv`
+- `data/reports/regime_diagnostics.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
@@ -64,7 +68,7 @@ Local virtual environment:
 
 ## Output
 
-Latest v0.2 run:
+Latest v0.3 run:
 
 - Data start requested: 2023-03-07
 - Research start: 2024-01-01
@@ -72,18 +76,23 @@ Latest v0.2 run:
 - Warmup limitation: earliest available data was 2023-04-03.
 - Total candidates available: 100
 - Total candidates evaluated: 50
-- Candidates passed gate: 0
-- Candidates failed gate: 50
+- Candidates passed v0.3 gate: 0
+- Candidates failed v0.3 gate: 50
 - Stop reason: `10_consecutive_candidates_failed_to_improve_best_score`
-- Trade rows written: 11,981
-- Active BUY rate distribution: min 6.95%, median 29.47%, max 91.72%
-- Realized return distribution by candidate: min 1.26%, median 1.92%, max 3.58%
+- Trade rows written: 11,877
+- Active BUY rate distribution: min 6.95%, median 29.47%, max 90.23%
+- Realized return distribution by candidate: min 1.24%, median 1.88%, max 3.58%
 
 Generated files:
 
 - `data/reports/trade_simulation_trades.csv`
 - `data/reports/auto_research_generations.csv`
 - `data/reports/auto_research_summary.md`
+- `data/reports/concentration_report.csv`
+- `data/reports/concentration_report.md`
+- `data/reports/robustness_report.csv`
+- `data/reports/regime_diagnostics.csv`
+- `data/reports/regime_diagnostics.md`
 - `data/reports/factor_report.csv`
 - `data/reports/factor_report.md`
 - `data/processed/factor_dataset.csv`
@@ -92,7 +101,7 @@ Generated files:
 
 ```bash
 .venv/bin/python -m pytest -q
-# 34 passed, 1 warning in 0.84s
+# 43 passed, 1 warning in 1.64s
 ```
 
 End-to-end command completed successfully:
@@ -113,16 +122,15 @@ Best candidate even if failed:
 - Average realized excess return: 3.12%
 - Realized win rate: 51.72%
 - Worst realized return: -14.65%
-- Best realized return: 37.76%
 - Stop hit rate: 47.13%
 - Target 1 hit rate: 39.08%
 - Target 2 hit rate: 2.30%
 - Time exit rate: 11.49%
-- Fail reason: `realized_win_rate_lt_52pct`
+- Base fail reason: `realized_win_rate_lt_52pct`
 
 Whether any candidate became `RESEARCH_QUALIFIED_NOT_LIVE`:
 
-- No. 0 of 50 evaluated candidates passed all v0.2 gates.
+- No. 0 of 50 evaluated candidates passed all v0.3 gates.
 
 Worst realized trade:
 
@@ -140,39 +148,88 @@ Best realized trade:
 - Realized return: 44.38%.
 - Realized excess return: 41.41%.
 
-Stop/target/time-exit breakdown across all simulated trades:
+## Concentration Summary
 
-- STOP: 55.19%
-- TARGET_1: 34.86%
-- TARGET_2: 1.97%
-- TIME_EXIT: 7.99%
+Best candidate concentration:
+
+- Most selected ticker: DELL
+- DELL trade count: 7
+- Top 1 ticker trade share: 8.05%
+- Top 3 ticker trade share: 18.39%
+- MSTR trade count: 3
+- MSTR average realized excess: -10.98%
+- Best candidate is not primarily carried by MSTR.
+
+Overall concentration across all candidate trades:
+
+- Most selected ticker: MU
+- Overall top 1 ticker trade share: 6.11%
+- Overall top 3 ticker trade share: 15.57%
+- Top 1 realized excess contribution share: 23.30%
+- Top 3 realized excess contribution share: 59.57%
+
+Top positive contributors included INTC, SMCI, DELL, HOOD, COIN, and APP depending on candidate.
+Top negative contributors included OKLO, MSTR, AVGO, and MU depending on candidate.
+
+## Robustness Summary
+
+Best candidate robustness:
+
+- Base average realized excess: 3.12%
+- Excluding MSTR average realized excess: 3.63%
+- Excluding MSTR realized win rate: 53.57%
+- Excluding most selected ticker average realized excess: 2.61%
+- Excluding top 3 selected tickers average realized excess: 2.39%
+- Per-ticker cap 10 full period average realized excess: 3.12%
+- Per-ticker cap 5 per year average realized excess: 3.12%
+- Equal-ticker-weighted average realized excess: 1.14%
 
 Interpretation:
 
-- Stop/target simulation reduced realized tail risk versus the prior -63.53% 20d forward-return tail observation.
-- Active max BUY rate enforcement materially reduced selectivity for stricter candidates.
-- The best candidate still missed the 52% realized win-rate gate, so Phoenix remains research-only and not tradable.
+- Candidate 35 remains positive after excluding MSTR.
+- Candidate 35 remains positive after excluding its most selected ticker.
+- Candidate 35 remains positive after excluding its top 3 selected tickers.
+- Per-ticker caps do not materially change candidate 35 because it is already diversified.
+- Equal-ticker-weighted performance remains positive for candidate 35, but 27 of 50 candidates fail the equal-weighted robustness requirement.
+- The remaining problem for candidate 35 is not MSTR concentration; it is the base realized win rate at 51.72%, just below 52%.
+
+## Regime Diagnostics Summary
+
+Regime tags use only signal-date or prior data. No regime gate was added.
+
+- SPY above 50dma: 9,728 trades, avg realized excess 1.59%, win rate 44.44%, stop hit 54.62%.
+- SPY below 50dma: 2,149 trades, avg realized excess 0.57%, win rate 40.02%, stop hit 58.12%.
+- SPY above 200dma: 10,918 trades, avg realized excess 1.38%, win rate 42.97%, stop hit 55.82%.
+- SPY below 200dma: 959 trades, avg realized excess 1.66%, win rate 51.20%, stop hit 48.80%.
+- QQQ regime diagnostics were not available because QQQ was not downloaded in this run.
+
+Interpretation:
+
+- SPY 50dma regime shows weaker performance below the 50dma, but not catastrophic enough to add a gate in this task.
+- SPY 200dma below regime has higher win rate in this sample, so a simple bullish-only regime gate is not supported by this run.
 
 ## Problems
 
-- No candidate passed the v0.2 research-qualified gate.
-- The best candidate missed the win-rate gate by a small margin: 51.72% vs required 52%.
-- MSTR dominates both worst and best realized trade examples, so concentration risk still needs review.
-- Some candidate sets still have high BUY rates when `max_buy_rate` is loose.
+- No candidate passed the v0.3 research-qualified gate.
+- All 50 candidates still failed `realized_win_rate_lt_52pct`.
+- 27 candidates failed `equal_ticker_weighted_excess_not_positive`.
+- 13 candidates still exceeded the 50% final BUY rate gate.
+- 4 candidates had fewer than 6 windows with positive realized excess.
+- QQQ regime diagnostics were unavailable because the run did not include QQQ data.
 - yfinance metadata filtering still rejects some intended watchlist names and may falsely exclude names such as `U`.
 - The run emitted existing pandas `pct_change` future warnings and the macOS LibreSSL warning; neither blocked execution.
 
 ## Questions For GPT
 
-- Should the next task inspect concentration by ticker before changing any gate?
-- Should stop/target parameters remain fixed for another run, or should only exit diagnostics be expanded first?
-- Should the next candidate search explicitly penalize MSTR concentration without using future returns?
-- Should metadata filtering be fixed before judging the universe again?
+- Since candidate 35 survives MSTR and top-ticker exclusion, should the next task focus on exit design rather than concentration controls?
+- Should QQQ be explicitly added as a benchmark/regime-only download so QQQ regime diagnostics are always available?
+- Should the next iteration examine stop placement and target sequencing to improve win rate without loosening the 52% gate?
+- Should metadata filtering be fixed before expanding the candidate search?
 
 ## Next Suggested Tasks
 
 - Do not add new alpha sources yet.
-- Add concentration diagnostics by ticker and by sector/theme.
-- Report candidate performance excluding the most selected ticker and excluding MSTR.
-- Review why realized win rate remains below 52% despite positive average realized excess.
+- Add QQQ as a regime-only data dependency without using it as an alpha factor.
+- Analyze losing trades for candidate 35 by exit reason and holding-day path.
+- Compare alternative exit designs while keeping entry signals unchanged.
 - Keep Phoenix labeled research-only and not live-tradable.

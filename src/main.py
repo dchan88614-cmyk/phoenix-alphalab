@@ -24,6 +24,13 @@ from src.factors.technical import add_all_factors
 from src.reports.csv_export import write_csv
 from src.reports.markdown_report import write_markdown_report
 from src.research.auto_loop import run_auto_research_loop, write_auto_research_summary
+from src.research.concentration import (
+    build_concentration_report,
+    build_regime_diagnostics,
+    build_robustness_report,
+    write_concentration_markdown,
+    write_regime_markdown,
+)
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -210,11 +217,29 @@ def run(args: argparse.Namespace) -> None:
         auto_csv_path = reports_dir / "auto_research_generations.csv"
         auto_md_path = reports_dir / "auto_research_summary.md"
         trade_csv_path = reports_dir / "trade_simulation_trades.csv"
+        concentration_csv_path = reports_dir / "concentration_report.csv"
+        concentration_md_path = reports_dir / "concentration_report.md"
+        robustness_csv_path = reports_dir / "robustness_report.csv"
+        regime_csv_path = reports_dir / "regime_diagnostics.csv"
+        regime_md_path = reports_dir / "regime_diagnostics.md"
+        concentration_report, concentration_summary = build_concentration_report(trade_results)
+        robustness_report = build_robustness_report(trade_results)
+        regime_report = build_regime_diagnostics(trade_results, dataset)
         write_csv(auto_results, auto_csv_path)
         write_csv(trade_results, trade_csv_path)
+        write_csv(concentration_report, concentration_csv_path)
+        write_csv(robustness_report, robustness_csv_path)
+        write_csv(regime_report, regime_csv_path)
         write_auto_research_summary(auto_results, auto_summary, auto_md_path)
+        write_concentration_markdown(concentration_report, concentration_summary, concentration_md_path)
+        write_regime_markdown(regime_report, regime_md_path)
         logger.info("Wrote auto research generations CSV: %s", auto_csv_path)
         logger.info("Wrote trade simulation trades CSV: %s", trade_csv_path)
+        logger.info("Wrote concentration report CSV: %s", concentration_csv_path)
+        logger.info("Wrote concentration report Markdown: %s", concentration_md_path)
+        logger.info("Wrote robustness report CSV: %s", robustness_csv_path)
+        logger.info("Wrote regime diagnostics CSV: %s", regime_csv_path)
+        logger.info("Wrote regime diagnostics Markdown: %s", regime_md_path)
         logger.info("Wrote auto research summary Markdown report: %s", auto_md_path)
 
 

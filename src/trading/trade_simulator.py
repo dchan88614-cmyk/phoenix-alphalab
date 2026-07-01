@@ -32,6 +32,7 @@ def simulate_trades(
         "benchmark_return_same_period",
         "realized_excess_return",
         "candidate_id",
+        "decision_strength",
         "window_start",
         "window_end",
     ]
@@ -124,6 +125,7 @@ def simulate_trades(
                     float(realized_return - benchmark_return) if not pd.isna(benchmark_return) else pd.NA
                 ),
                 "candidate_id": signal.get("candidate_id", pd.NA),
+                "decision_strength": signal.get("decision_strength", pd.NA),
                 "window_start": signal.get("window_start", ""),
                 "window_end": signal.get("window_end", ""),
             }
