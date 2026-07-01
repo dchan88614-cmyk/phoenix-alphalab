@@ -1,7 +1,8 @@
 PHOENIX NANO DAILY SCAN
 Action: NO_TRADE_MANUAL_REVIEW
+Status: RESEARCH_ONLY_NOT_TRADABLE
 
-Research only. Not live trading. Not financial advice.
+This is not active paper trading or live trading. It is only a research-derived manual verification candidate.
 
 Ticker: 
 Latest data date: 2026-06-30
@@ -21,8 +22,10 @@ Reason: NO_CANDIDATE_PASSED_RULES
 - Factor timing: EOD
 - Uses only latest-date-safe factors; forward returns and realized trade outcomes are not ranking inputs.
 - Account: $100, whole shares only.
-- Candidate rule: Candidate 34 Nano with max_entry_price $50.
+- Candidate rule: Candidate 34 Nano with max_entry_price $50.00.
 - Stale data: False
+- Data source: yfinance
+- Scan timestamp UTC: 2026-07-01T18:58:16.757149+00:00
 
 ## Top 5 Scanned Candidates
 

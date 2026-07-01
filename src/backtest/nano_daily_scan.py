@@ -1,39 +1,140 @@
 from __future__ import annotations
 
-from dataclasses import replace
+from dataclasses import asdict
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
 
 from src.account.account_simulator import AccountSettings, calculate_affordability
 from src.backtest.smoke_test import SMOKE_RANK_FACTORS
-from src.research.auto_loop import CandidateRule, generate_candidate_rules, row_passes_candidate
+from src.research.auto_loop import CandidateRule, row_passes_candidate
 
 
 MANUAL_REVIEW_CANDIDATE = "MANUAL_REVIEW_CANDIDATE"
 NO_TRADE_MANUAL_REVIEW = "NO_TRADE_MANUAL_REVIEW"
 STALE_DATA = "STALE_DATA"
+MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES = "MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES"
+MANUAL_VERIFY_ONLY_NOT_TRADE_SIGNAL = "MANUAL_VERIFY_ONLY_NOT_TRADE_SIGNAL"
+RESEARCH_ONLY_NOT_TRADABLE = "RESEARCH_ONLY_NOT_TRADABLE"
 
 
-def candidate_34_nano_rule() -> CandidateRule:
-    """Return the current Nano Candidate 34 rule with the $50 Nano entry cap."""
-    candidates = generate_candidate_rules(100)
-    candidate = next((item for item in candidates if item.candidate_id == 34), None)
-    if candidate is None:
-        return CandidateRule(
-            candidate_id=34,
-            max_buy_rate=0.30,
-            min_relative_volume_prev20=1.5,
-            min_smoke_score=0.85,
-            min_rank_gap=0.0,
-            require_return_5d_positive=True,
-            require_return_20d_positive=False,
-            distance_to_52w_high_prev_min=-0.35,
-            dollar_volume_min=20_000_000,
-            max_trades_per_ticker_per_year=None,
-            max_entry_price=50.0,
+def extract_candidate_34_rule(
+    auto_research_path: str | Path = "data/reports/auto_research_generations.csv",
+    candidate_id: int = 34,
+) -> tuple[CandidateRule, pd.Series]:
+    """Extract the single qualified Candidate 34 row from prior Nano research output."""
+    frame = pd.read_csv(auto_research_path)
+    matches = frame.loc[
+        frame["candidate_id"].eq(candidate_id)
+        & frame["nano_status"].eq("NANO_RESEARCH_QUALIFIED_NOT_LIVE")
+    ].copy()
+    if len(matches) != 1:
+        raise ValueError(MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES)
+
+    row = matches.iloc[0]
+    max_entry_price = row.get("nano_max_entry_price", pd.NA)
+    if pd.isna(max_entry_price):
+        max_entry_price = row.get("max_entry_price_nano", pd.NA)
+    if pd.isna(max_entry_price):
+        max_entry_price = row.get("max_entry_price", pd.NA)
+    if pd.isna(max_entry_price):
+        raise ValueError(MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES)
+
+    rule = CandidateRule(
+        candidate_id=int(row["candidate_id"]),
+        max_buy_rate=float(row["max_buy_rate"]),
+        min_relative_volume_prev20=float(row["min_relative_volume_prev20"]),
+        min_smoke_score=float(row["min_smoke_score"]),
+        min_rank_gap=float(row["min_rank_gap"]),
+        require_return_5d_positive=_as_bool(row["require_return_5d_positive"]),
+        require_return_20d_positive=_as_bool(row["require_return_20d_positive"]),
+        distance_to_52w_high_prev_min=float(row["distance_to_52w_high_prev_min"]),
+        dollar_volume_min=float(row["dollar_volume_min"]),
+        max_trades_per_ticker_per_year=(
+            None if pd.isna(row["max_trades_per_ticker_per_year"]) else int(row["max_trades_per_ticker_per_year"])
+        ),
+        max_entry_price=float(max_entry_price),
+    )
+    return rule, row
+
+
+def write_candidate_34_frozen_rules(
+    output_path: str | Path,
+    rule: CandidateRule | None,
+    account_settings: AccountSettings,
+    source_path: str | Path = "data/reports/auto_research_generations.csv",
+    source_row: pd.Series | None = None,
+    error: str = "",
+) -> None:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "# Phoenix Nano Candidate 34 Frozen Rules",
+        "",
+        "Research only. Candidate 34 is not approved for paper trading or live trading.",
+        "",
+        f"- Source: `{source_path}`",
+        f"- Frozen timestamp UTC: {datetime.now(timezone.utc).isoformat()}",
+        "",
+    ]
+    if rule is None:
+        lines.extend(["## Extraction Failed", "", f"- Reason: {error or MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES}", ""])
+    else:
+        rule_rows = [{"parameter": key, "value": value} for key, value in asdict(rule).items()]
+        account_rows = [
+            {"parameter": "starting_capital", "value": account_settings.starting_capital},
+            {"parameter": "fractional_shares", "value": account_settings.fractional_shares},
+            {"parameter": "max_position_fraction", "value": account_settings.max_position_fraction},
+            {"parameter": "min_cash_reserve", "value": account_settings.min_cash_reserve},
+            {"parameter": "commission_per_trade", "value": account_settings.commission_per_trade},
+            {"parameter": "slippage_bps", "value": account_settings.slippage_bps},
+        ]
+        lines.extend(
+            [
+                "## Candidate Rule",
+                "",
+                pd.DataFrame(rule_rows).to_markdown(index=False),
+                "",
+                "## Account Settings",
+                "",
+                pd.DataFrame(account_rows).to_markdown(index=False),
+                "",
+                "## Simulator Logic",
+                "",
+                "- Entry reference for daily scan: latest completed EOD close.",
+                "- Stop loss: close - 1.5 * ATR, or 8% below close when ATR is unavailable.",
+                "- Target 1: entry + 2R.",
+                "- Target 2: entry + 4R.",
+                "- Expected holding period: up to 20 trading days.",
+                "- Affordability: $100 whole-share account after slippage.",
+                "- Forward returns and realized trade outcomes are not daily scan inputs.",
+                "",
+            ]
         )
-    return replace(candidate, max_entry_price=50.0)
+        if source_row is not None:
+            summary_columns = [
+                "candidate_id",
+                "nano_status",
+                "executed_trade_count",
+                "ending_equity",
+                "max_drawdown",
+                "profit_factor",
+                "win_rate",
+                "worst_account_trade_loss",
+            ]
+            existing = [column for column in summary_columns if column in source_row.index]
+            lines.extend(
+                [
+                    "## Historical Nano Summary",
+                    "",
+                    pd.DataFrame(
+                        [{"metric": column, "value": source_row[column]} for column in existing]
+                    ).to_markdown(index=False),
+                    "",
+                ]
+            )
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def build_nano_daily_scan(
@@ -43,11 +144,28 @@ def build_nano_daily_scan(
     requested_end: str | None = None,
     stale_after_calendar_days: int = 7,
     rule: CandidateRule | None = None,
+    data_source: str = "unknown",
+    scan_timestamp_utc: str | None = None,
 ) -> tuple[pd.DataFrame, dict]:
     required = ["date", "ticker", "close", "atr", *SMOKE_RANK_FACTORS]
     missing = [column for column in required if column not in data.columns]
     if missing:
         raise ValueError(f"Nano daily scan missing required columns: {', '.join(missing)}")
+
+    if rule is None:
+        try:
+            rule, _ = extract_candidate_34_rule()
+        except Exception:
+            return _no_trade_result(
+                latest_data_date="",
+                reason=MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES,
+                account_settings=account_settings,
+                top_candidates=pd.DataFrame(),
+                stale=True,
+                rule=None,
+                data_source=data_source,
+                scan_timestamp_utc=scan_timestamp_utc,
+            )
 
     frame = data.copy()
     frame["date"] = pd.to_datetime(frame["date"])
@@ -60,15 +178,17 @@ def build_nano_daily_scan(
             account_settings=account_settings,
             top_candidates=pd.DataFrame(),
             stale=True,
+            rule=rule,
+            data_source=data_source,
+            scan_timestamp_utc=scan_timestamp_utc,
         )
 
     latest_date = research["date"].max()
     latest = research.loc[research["date"].eq(latest_date)].copy()
     latest_data_date = latest_date.strftime("%Y-%m-%d")
     stale = _is_stale(latest_date, requested_end, stale_after_calendar_days)
-    candidate_rule = rule or candidate_34_nano_rule()
 
-    scanned = _score_latest_candidates(latest, candidate_rule, account_settings)
+    scanned = _score_latest_candidates(latest, rule, account_settings)
     if stale:
         return _no_trade_result(
             latest_data_date=latest_data_date,
@@ -76,6 +196,9 @@ def build_nano_daily_scan(
             account_settings=account_settings,
             top_candidates=scanned,
             stale=True,
+            rule=rule,
+            data_source=data_source,
+            scan_timestamp_utc=scan_timestamp_utc,
         )
 
     passed = scanned.loc[scanned["all_rule_checks_passed"]].copy()
@@ -86,11 +209,22 @@ def build_nano_daily_scan(
             account_settings=account_settings,
             top_candidates=scanned,
             stale=False,
+            rule=rule,
+            data_source=data_source,
+            scan_timestamp_utc=scan_timestamp_utc,
         )
 
     best = passed.sort_values(["decision_strength", "smoke_score", "ticker"], ascending=[False, False, True]).iloc[0]
-    result = _result_from_candidate(best, latest_data_date, account_settings, candidate_rule, scanned, stale=False)
-    return result
+    return _result_from_candidate(
+        best,
+        latest_data_date,
+        account_settings,
+        rule,
+        scanned,
+        stale=False,
+        data_source=data_source,
+        scan_timestamp_utc=scan_timestamp_utc,
+    )
 
 
 def write_nano_daily_scan_reports(
@@ -171,11 +305,14 @@ def _result_from_candidate(
     rule: CandidateRule,
     scanned: pd.DataFrame,
     stale: bool,
+    data_source: str,
+    scan_timestamp_utc: str | None,
 ) -> tuple[pd.DataFrame, dict]:
     result = pd.DataFrame(
         [
             {
                 "action": MANUAL_REVIEW_CANDIDATE,
+                "status": MANUAL_VERIFY_ONLY_NOT_TRADE_SIGNAL,
                 "ticker": candidate["ticker"],
                 "latest_data_date": latest_data_date,
                 "reference_price": candidate["reference_price"],
@@ -193,7 +330,7 @@ def _result_from_candidate(
             }
         ]
     )
-    return result, _metadata(rule, account_settings, scanned, latest_data_date, stale)
+    return result, _metadata(rule, account_settings, scanned, latest_data_date, stale, data_source, scan_timestamp_utc)
 
 
 def _no_trade_result(
@@ -202,12 +339,15 @@ def _no_trade_result(
     account_settings: AccountSettings,
     top_candidates: pd.DataFrame,
     stale: bool,
+    rule: CandidateRule | None,
+    data_source: str,
+    scan_timestamp_utc: str | None,
 ) -> tuple[pd.DataFrame, dict]:
-    rule = candidate_34_nano_rule()
     result = pd.DataFrame(
         [
             {
                 "action": NO_TRADE_MANUAL_REVIEW,
+                "status": RESEARCH_ONLY_NOT_TRADABLE,
                 "ticker": "",
                 "latest_data_date": latest_data_date,
                 "reference_price": pd.NA,
@@ -225,15 +365,17 @@ def _no_trade_result(
             }
         ]
     )
-    return result, _metadata(rule, account_settings, top_candidates, latest_data_date, stale)
+    return result, _metadata(rule, account_settings, top_candidates, latest_data_date, stale, data_source, scan_timestamp_utc)
 
 
 def _metadata(
-    rule: CandidateRule,
+    rule: CandidateRule | None,
     account_settings: AccountSettings,
     scanned: pd.DataFrame,
     latest_data_date: str,
     stale: bool,
+    data_source: str,
+    scan_timestamp_utc: str | None,
 ) -> dict:
     return {
         "rule": rule,
@@ -241,6 +383,8 @@ def _metadata(
         "top_candidates": scanned.head(5).copy() if not scanned.empty else pd.DataFrame(),
         "latest_data_date": latest_data_date,
         "is_stale": stale,
+        "data_source": data_source,
+        "scan_timestamp_utc": scan_timestamp_utc or datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -260,26 +404,15 @@ def _decision_strength(row: pd.Series) -> float:
     return float((smoke_score + rank_gap + rel_volume_score) / 3.0)
 
 
-def _clip(value: float, minimum: float, maximum: float) -> float:
-    return max(minimum, min(maximum, value))
-
-
-def _is_stale(latest_data_date: pd.Timestamp, requested_end: str | None, stale_after_calendar_days: int) -> bool:
-    if not requested_end:
-        return False
-    end = pd.Timestamp(requested_end).normalize()
-    latest = pd.Timestamp(latest_data_date).normalize()
-    return (end - latest).days > stale_after_calendar_days
-
-
 def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
     row = scan.iloc[0]
     action = row["action"]
     lines = [
         "PHOENIX NANO DAILY SCAN",
         f"Action: {action}",
+        f"Status: {row['status']}",
         "",
-        "Research only. Not live trading. Not financial advice.",
+        "This is not active paper trading or live trading. It is only a research-derived manual verification candidate.",
         "",
         f"Ticker: {row['ticker']}",
         f"Latest data date: {row['latest_data_date']}",
@@ -299,12 +432,27 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
         "- Factor timing: EOD",
         "- Uses only latest-date-safe factors; forward returns and realized trade outcomes are not ranking inputs.",
         "- Account: $100, whole shares only.",
-        "- Candidate rule: Candidate 34 Nano with max_entry_price $50.",
+        f"- Candidate rule: Candidate 34 Nano with max_entry_price ${_rule_max_entry(metadata)}.",
         f"- Stale data: {metadata['is_stale']}",
-        "",
-        "## Top 5 Scanned Candidates",
+        f"- Data source: {metadata['data_source']}",
+        f"- Scan timestamp UTC: {metadata['scan_timestamp_utc']}",
         "",
     ]
+    if action == MANUAL_REVIEW_CANDIDATE:
+        lines.extend(
+            [
+                "## Manual Checks Still Required",
+                "",
+                "- Verify live quote manually before any action.",
+                "- Verify current volume / RVOL manually.",
+                "- Verify no fresh major negative news.",
+                "- Do not chase a large intraday spike.",
+                "",
+                f"Why selected by rules: {row['reason']}",
+                "",
+            ]
+        )
+    lines.extend(["## Top 5 Scanned Candidates", ""])
     top = metadata.get("top_candidates", pd.DataFrame())
     if top is None or top.empty:
         lines.append("No scanned candidates.")
@@ -328,7 +476,34 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _is_stale(latest_data_date: pd.Timestamp, requested_end: str | None, stale_after_calendar_days: int) -> bool:
+    if not requested_end:
+        return False
+    end = pd.Timestamp(requested_end).normalize()
+    latest = pd.Timestamp(latest_data_date).normalize()
+    return (end - latest).days > stale_after_calendar_days
+
+
+def _clip(value: float, minimum: float, maximum: float) -> float:
+    return max(minimum, min(maximum, value))
+
+
 def _format_money(value: object) -> str:
     if value is None or value is pd.NA or pd.isna(value):
         return ""
     return f"${float(value):.2f}"
+
+
+def _rule_max_entry(metadata: dict) -> str:
+    rule = metadata.get("rule")
+    if rule is None:
+        return ""
+    return f"{float(rule.max_entry_price):.2f}"
+
+
+def _as_bool(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() == "true"
+    return bool(value)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -17,7 +18,13 @@ from src.account.account_simulator import (
 from src.backtest.factor_test import DEFAULT_FACTORS, build_factor_report
 from src.backtest.forward_returns import add_forward_returns
 from src.backtest.multi_window_smoke_test import build_multi_window_smoke_test, write_multi_window_smoke_markdown
-from src.backtest.nano_daily_scan import build_nano_daily_scan, write_nano_daily_scan_reports
+from src.backtest.nano_daily_scan import (
+    MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES,
+    build_nano_daily_scan,
+    extract_candidate_34_rule,
+    write_candidate_34_frozen_rules,
+    write_nano_daily_scan_reports,
+)
 from src.backtest.smoke_test import build_smoke_test, summarize_smoke_test, write_smoke_test_markdown
 from src.data.filters import apply_price_liquidity_filters
 from src.data.prices import download_many_prices
@@ -162,6 +169,26 @@ def run(args: argparse.Namespace) -> None:
 
     if args.nano_daily_scan:
         account_settings = AccountSettings.from_config(settings)
+        candidate_rule = None
+        candidate_row = None
+        extraction_error = ""
+        candidate_rules_path = reports_dir / "nano_daily_candidate_34_frozen_rules.md"
+        try:
+            candidate_rule, candidate_row = extract_candidate_34_rule(
+                reports_dir / "auto_research_generations.csv",
+                candidate_id=int(args.candidate_id),
+            )
+        except Exception as exc:
+            extraction_error = MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES
+            logger.warning("Candidate 34 rule extraction failed: %s", exc)
+        write_candidate_34_frozen_rules(
+            candidate_rules_path,
+            candidate_rule,
+            account_settings,
+            source_path=reports_dir / "auto_research_generations.csv",
+            source_row=candidate_row,
+            error=extraction_error,
+        )
         scan_data = filtered.loc[
             filtered["date"].between(pd.Timestamp(research_start), pd.Timestamp(research_end))
         ].copy()
@@ -170,6 +197,9 @@ def run(args: argparse.Namespace) -> None:
             account_settings=account_settings,
             benchmark_ticker=benchmark,
             requested_end=research_end,
+            rule=candidate_rule,
+            data_source=str(settings["data"].get("provider", "unknown")),
+            scan_timestamp_utc=datetime.now(timezone.utc).isoformat(),
         )
         nano_daily_csv_path = reports_dir / "nano_daily_scan.csv"
         nano_daily_md_path = reports_dir / "nano_daily_scan.md"
@@ -179,6 +209,7 @@ def run(args: argparse.Namespace) -> None:
             nano_daily_csv_path,
             nano_daily_md_path,
         )
+        logger.info("Wrote Nano daily frozen Candidate 34 rules: %s", candidate_rules_path)
         logger.info("Wrote Nano daily scan CSV: %s", nano_daily_csv_path)
         logger.info("Wrote Nano daily scan Markdown report: %s", nano_daily_md_path)
 
@@ -317,6 +348,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run latest EOD Phoenix Nano daily scan for one manual-review candidate or NO_TRADE",
     )
+    parser.add_argument("--candidate-id", type=int, default=34, help="Candidate rule id for Nano daily scan. Defaults to 34.")
     return parser
 
 
