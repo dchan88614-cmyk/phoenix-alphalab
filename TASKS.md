@@ -2,50 +2,51 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Roadmap + Phase 1 Historical Replay Engine
+## Current Task: Phoenix Nano Phase 1A — Run 100 Historical Replay Rounds
 
-David clarified the actual product roadmap.
+David's clarified roadmap:
 
-Phoenix Nano must follow three stages:
+1. Phase 1: simulate old dates, select a stock or NO TRADE, reveal future outcome, repeat until accuracy improves.
+2. Phase 2: use current/latest market data for manual paper validation.
+3. Phase 3: real-money execution only after Phase 1 and Phase 2 gates are satisfied.
 
-1. **Phase 1: Historical replay training**
-   - Pick old historical dates.
-   - Pretend each date is “today.”
-   - Use only data available up to that date.
-   - Select one stock or NO TRADE.
-   - Then reveal the future and verify what happened.
-   - Repeat many times to improve accuracy and rule quality.
+This task is **Phase 1A only**.
 
-2. **Phase 2: Current-market paper validation**
-   - Run the same logic on current/latest market data.
-   - Output one manual-review candidate or NO TRADE.
-   - Track real future outcomes as they happen.
-   - Repeat until confidence improves.
+Run exactly the first controlled historical replay batch: **100 replay rounds**.
 
-3. **Phase 3: Real-money execution**
-   - Only after Phase 1 and Phase 2 gates are satisfied.
-   - Still use $100 whole-share constraints unless explicitly changed.
-
-The current task is Phase 1 only.
-
-Do not start Phase 2 paper validation.
-Do not start Phase 3 live trading.
-Do not loosen Candidate 34 or any thresholds yet.
+Do not start Phase 2.
+Do not start Phase 3.
+Do not loosen Candidate 34 thresholds yet.
 Keep all output research/manual-review only.
 
-## Phase 1 Goal
+## Goal
 
-Build a historical replay engine that repeatedly simulates old “today” dates.
+For 100 historical dates, pretend each date is “today.”
 
-For each replay date:
+For each round:
 
-- scan the watchlist using only data available on or before that date
-- enforce Phoenix Nano account constraints
-- output exactly one historical decision:
-  - HISTORICAL_BUY_CANDIDATE
-  - or HISTORICAL_NO_TRADE
-- then verify forward outcome after 1, 3, 5, 10, and 20 trading days
-- aggregate results into accuracy and account-level metrics
+1. Use only market data available on or before that historical replay date.
+2. Apply Phoenix Nano $100 whole-share constraints.
+3. Apply the frozen Candidate 34 / current Nano rule set.
+4. Output exactly one decision:
+   - `HISTORICAL_BUY_CANDIDATE`
+   - or `HISTORICAL_NO_TRADE`
+5. Then use future data only for verification.
+6. Report accuracy.
+
+## Replay Sample
+
+Use 100 replay dates from:
+
+- start: 2024-01-01
+- end: 2026-06-30
+
+Sampling rule:
+
+- Use completed trading days only.
+- Use enough spacing to cover different market periods.
+- Prefer evenly spaced dates across the full period rather than 100 consecutive dates.
+- Each replay date must have enough lookback data for factors and enough future data for at least 20 trading-day verification when possible.
 
 ## Account Rules
 
@@ -56,172 +57,116 @@ Use Phoenix Nano settings:
 - whole shares only
 - no margin
 - no shorting
-- max open positions: 1 for account simulation
-- default max entry price: Candidate 34 max entry price, expected $50
+- max open positions: 1 for account replay
+- max entry price: Candidate 34 max entry price, expected $50
 - slippage: current project setting, expected 10 bps
 
-Any ticker that cannot be bought with $100 whole-share account must be rejected before ranking.
+Reject unaffordable tickers before ranking.
 
-## Part 1: Historical Replay Dates
+## Accuracy Definition
 
-Create a replay date generator.
+Report multiple accuracy metrics, not just one number.
 
-Default replay period:
+For BUY decisions:
 
-- start: 2024-01-01
-- end: 2026-06-30
-- frequency: every completed trading day, or every 3rd trading day if runtime is too high
+- 1d accuracy = percentage of BUY picks with forward_return_1d > 0
+- 3d accuracy = percentage of BUY picks with forward_return_3d > 0
+- 5d accuracy = percentage of BUY picks with forward_return_5d > 0
+- 10d accuracy = percentage of BUY picks with forward_return_10d > 0
+- 20d accuracy = percentage of BUY picks with forward_return_20d > 0
+- trade-simulation accuracy = percentage of simulated exits with pnl_dollars > 0
 
-Each replay date must be a completed trading date with enough lookback data for factors.
+Also report:
 
-No future data may be used to choose the candidate.
+- BUY count
+- NO_TRADE count
+- BUY rate
+- average and median forward return by window
+- average win size
+- average loss size
+- profit factor
+- ending account value from $100 using one-position-at-a-time replay
+- max drawdown
+- worst trade account loss
+- best pick
+- worst pick
+- top selected tickers
 
-## Part 2: Replay Decision Engine
+## Implementation
 
 Create or update:
 
 `src/research/historical_replay.py`
 
-For each replay date:
+Add CLI support:
 
-1. Use OHLCV/factors available only up to replay date.
-2. Apply executable-first Nano filters.
-3. Apply Candidate 34 frozen rules if available.
-4. If one or more stocks pass, choose the highest deterministic decision_strength.
-5. If none pass, output HISTORICAL_NO_TRADE.
-6. Save top executable near-misses for diagnostics.
+```bash
+--phase1-historical-replay
+--replay-rounds 100
+```
 
-## Part 3: Forward Verification
+Command:
 
-After a historical decision is made, use future bars only for verification.
+```bash
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1-historical-replay --replay-rounds 100
+```
 
-For BUY candidates, compute:
+## Outputs
 
-- forward_return_1d
-- forward_return_3d
-- forward_return_5d
-- forward_return_10d
-- forward_return_20d
-- max_favorable_excursion_20d
-- max_adverse_excursion_20d
-- hit_plus_5pct
-- hit_plus_10pct
-- hit_minus_5pct
-- hit_minus_10pct
-- simulated_exit_reason using current stop/target/time-exit rules
-- simulated_pnl_dollars
-- simulated_account_equity_after_exit
-
-For NO_TRADE dates, optionally record whether the top near-miss later performed well.
-
-## Part 4: Outputs
-
-Create:
+Create or update:
 
 - `data/reports/phase1_historical_replay_decisions.csv`
 - `data/reports/phase1_historical_replay_summary.md`
 - `data/reports/phase1_historical_replay_near_misses.csv`
 
-Decision CSV required columns:
+The summary must start with:
 
-- replay_date
-- action
-- ticker
-- reference_price
-- shares_with_100
-- estimated_total_cost
-- estimated_cash_remaining
-- stop_loss
-- target_1
-- target_2
-- max_dollar_risk
-- decision_strength
-- smoke_score
-- failed_checks
-- forward_return_1d
-- forward_return_3d
-- forward_return_5d
-- forward_return_10d
-- forward_return_20d
-- max_favorable_excursion_20d
-- max_adverse_excursion_20d
-- simulated_exit_reason
-- simulated_pnl_dollars
-- data_complete_20d
-
-Summary markdown must include:
-
-- total replay dates
-- BUY candidate count
-- NO_TRADE count
-- buy rate
-- win rate by 1d / 3d / 5d / 10d / 20d
-- average return by window
-- median return by window
-- max drawdown in account replay
-- ending account value if one-position-at-a-time was followed
-- best historical pick
-- worst historical pick
-- most selected tickers
-- whether results are good enough for Phase 2 consideration
-
-## Phase 1 Advancement Gate
-
-Do not move to Phase 2 unless the historical replay meets all gates:
-
-1. At least 100 replay dates tested.
-2. At least 20 BUY candidates generated.
-3. 20d average return > 0.
-4. 20d median return > 0 or account ending value > $120.
-5. Worst simulated account trade loss better than -15%.
-6. Max account drawdown better than -35%.
-7. Ending account value > $120.
-8. Removing the single best trade still leaves ending account value > $105.
-9. No single ticker contributes more than 50% of total profit.
-
-If not all gates pass, mark:
-
-`PHASE_1_NOT_READY`
-
-If all gates pass, mark:
-
-`PHASE_1_REPLAY_QUALIFIED_FOR_GPT_REVIEW`
-
-Even if qualified, do not start Phase 2 automatically. GPT review required.
-
-## Part 5: CLI
-
-Add CLI flag:
-
-```bash
---phase1-historical-replay
+```text
+PHOENIX NANO PHASE 1A — 100 HISTORICAL REPLAY ROUNDS
 ```
 
-Example:
+The summary must include a clear section:
 
-```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1-historical-replay
+```text
+Accuracy
 ```
 
-## Part 6: Tests
+with all accuracy metrics listed above.
+
+## Phase 1A Status
+
+Mark the result as one of:
+
+- `PHASE_1A_FAILED`
+- `PHASE_1A_NEEDS_MORE_ITERATION`
+- `PHASE_1A_PROMISING_NOT_READY`
+
+Do not mark Phase 2 ready yet from only one 100-round batch.
+
+Suggested labels:
+
+- Failed if ending account value <= $100 or 20d accuracy <= 45%.
+- Needs more iteration if ending account value > $100 but max drawdown <= -35% or trade-simulation accuracy < 50%.
+- Promising not ready if ending account value > $120, max drawdown better than -35%, trade-simulation accuracy >= 50%, and at least 20 BUY decisions.
+
+## Tests
 
 Add tests for:
 
-1. Replay decision for a date does not use data after that replay date.
-2. Non-affordable stocks are rejected before ranking.
-3. Replay outputs exactly one decision per replay date.
+1. Exactly 100 replay rounds are generated when `--replay-rounds 100` is used.
+2. Replay decisions do not use data after replay_date.
+3. Non-affordable tickers are rejected before ranking.
 4. Forward returns are used only after the decision is recorded.
-5. Account simulation respects one open position at a time.
-6. Phase 1 gate fails when sample count is too small.
-7. Phase 1 gate passes only when all conditions are met.
-8. Reports are written.
-9. Full pytest suite passes.
+5. Accuracy metrics are computed correctly.
+6. Account replay respects one open position at a time.
+7. Reports are written.
+8. Full pytest suite passes.
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1-historical-replay
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1-historical-replay --replay-rounds 100
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -232,16 +177,20 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1 Historical Replay Summary
-- Total replay dates
+- Phase 1A 100-Round Summary
+- Total replay rounds
 - BUY count
 - NO_TRADE count
+- BUY rate
+- Accuracy: 1d / 3d / 5d / 10d / 20d
+- Trade-simulation accuracy
 - Account ending value
 - Max drawdown
+- Profit factor
 - Best pick
 - Worst pick
 - Top selected tickers
-- Phase 1 status: `PHASE_1_NOT_READY` or `PHASE_1_REPLAY_QUALIFIED_FOR_GPT_REVIEW`
+- Phase 1A status
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
