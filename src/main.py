@@ -17,6 +17,7 @@ from src.account.account_simulator import (
 from src.backtest.factor_test import DEFAULT_FACTORS, build_factor_report
 from src.backtest.forward_returns import add_forward_returns
 from src.backtest.multi_window_smoke_test import build_multi_window_smoke_test, write_multi_window_smoke_markdown
+from src.backtest.nano_daily_scan import build_nano_daily_scan, write_nano_daily_scan_reports
 from src.backtest.smoke_test import build_smoke_test, summarize_smoke_test, write_smoke_test_markdown
 from src.data.filters import apply_price_liquidity_filters
 from src.data.prices import download_many_prices
@@ -159,6 +160,28 @@ def run(args: argparse.Namespace) -> None:
     logger.info("Wrote CSV report: %s", csv_path)
     logger.info("Wrote Markdown report: %s", md_path)
 
+    if args.nano_daily_scan:
+        account_settings = AccountSettings.from_config(settings)
+        scan_data = filtered.loc[
+            filtered["date"].between(pd.Timestamp(research_start), pd.Timestamp(research_end))
+        ].copy()
+        nano_daily_scan, nano_daily_metadata = build_nano_daily_scan(
+            scan_data,
+            account_settings=account_settings,
+            benchmark_ticker=benchmark,
+            requested_end=research_end,
+        )
+        nano_daily_csv_path = reports_dir / "nano_daily_scan.csv"
+        nano_daily_md_path = reports_dir / "nano_daily_scan.md"
+        write_nano_daily_scan_reports(
+            nano_daily_scan,
+            nano_daily_metadata,
+            nano_daily_csv_path,
+            nano_daily_md_path,
+        )
+        logger.info("Wrote Nano daily scan CSV: %s", nano_daily_csv_path)
+        logger.info("Wrote Nano daily scan Markdown report: %s", nano_daily_md_path)
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -288,6 +311,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--nano-account-simulation",
         action="store_true",
         help="Run Phoenix Nano $100 whole-share account simulation after the auto research loop",
+    )
+    parser.add_argument(
+        "--nano-daily-scan",
+        action="store_true",
+        help="Run latest EOD Phoenix Nano daily scan for one manual-review candidate or NO_TRADE",
     )
     return parser
 

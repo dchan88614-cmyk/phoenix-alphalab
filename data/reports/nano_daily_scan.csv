@@ -1,0 +1,2 @@
+action,ticker,latest_data_date,reference_price,shares_with_100,estimated_total_cost,estimated_cash_remaining,stop_loss,target_1,target_2,max_dollar_risk,expected_holding_period,reason,all_rule_checks_passed,is_stale
+NO_TRADE_MANUAL_REVIEW,,2026-06-30,,0,0.0,100.0,,,,0.0,,NO_CANDIDATE_PASSED_RULES,False,False
