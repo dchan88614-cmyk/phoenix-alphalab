@@ -183,3 +183,5 @@ When done, update `REPORT_TO_GPT.md` with:
 
 After Generation 1 is complete, commit, push, and stop.
 Do not start Generation 2 until GPT reviews the result.
+
+<!-- GPT write access test: 2026-07-01 -->
