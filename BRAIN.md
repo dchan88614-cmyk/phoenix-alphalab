@@ -13,6 +13,8 @@ Phoenix AlphaLab is a local US common-stock research system for validating wheth
 
 The initial objective is research validation, not live trading. The system should help study high-elasticity opportunities that small accounts may be able to research, while keeping all results reproducible, exportable, and explainable.
 
+Research reports are internal engine diagnostics. The product goal is to improve daily BUY / NO TRADE decision quality, not to produce polished reports for their own sake.
+
 ## Hard Rules
 
 - US stocks only.
@@ -27,6 +29,7 @@ The initial objective is research validation, not live trading. The system shoul
 - No fake backtest results.
 - No unverifiable investment conclusions.
 - No investment conclusion may be made by Codex without GPT review.
+- Do not add complexity unless it improves BUY / NO TRADE decision quality.
 
 ## Research Constraints
 
@@ -38,6 +41,8 @@ The initial objective is research validation, not live trading. The system shoul
 - Forward returns are labels for validation only, never inputs to factors.
 - Reports must be reproducible from code and source data.
 - If a data source is incomplete or non-point-in-time, the limitation must be disclosed.
+- Generation-based improvement is preferred over random feature expansion.
+- Each generation should change only a small number of rules so GPT can judge what improved or broke.
 
 ## Codex Responsibilities
 

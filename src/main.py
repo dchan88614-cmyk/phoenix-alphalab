@@ -15,6 +15,11 @@ from src.backtest.smoke_test import build_smoke_test, summarize_smoke_test, writ
 from src.data.filters import apply_price_liquidity_filters
 from src.data.prices import download_many_prices
 from src.data.universe import build_universe
+from src.decision.decision_engine import (
+    build_decision_simulation,
+    summarize_decision_simulation,
+    write_decision_simulation_markdown,
+)
 from src.factors.technical import add_all_factors
 from src.reports.csv_export import write_csv
 from src.reports.markdown_report import write_markdown_report
@@ -127,7 +132,8 @@ def run(args: argparse.Namespace) -> None:
     logger.info("Wrote CSV report: %s", csv_path)
     logger.info("Wrote Markdown report: %s", md_path)
 
-    if args.smoke_test:
+    smoke_results = None
+    if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
             dataset,
             benchmark_ticker=benchmark,
@@ -135,6 +141,8 @@ def run(args: argparse.Namespace) -> None:
             smoke_days=int(args.smoke_days),
             top_n=5,
         )
+
+    if args.smoke_test:
         smoke_summary = summarize_smoke_test(smoke_results, horizons)
         smoke_csv_path = reports_dir / "smoke_test.csv"
         smoke_md_path = reports_dir / "smoke_test.md"
@@ -149,6 +157,16 @@ def run(args: argparse.Namespace) -> None:
         )
         logger.info("Wrote smoke test CSV: %s", smoke_csv_path)
         logger.info("Wrote smoke test Markdown report: %s", smoke_md_path)
+
+    if args.decision_simulation:
+        decision_results = build_decision_simulation(smoke_results, horizons)
+        decision_summary = summarize_decision_simulation(decision_results, smoke_results, horizons)
+        decision_csv_path = reports_dir / "decision_simulation.csv"
+        decision_md_path = reports_dir / "decision_simulation.md"
+        write_csv(decision_results, decision_csv_path)
+        write_decision_simulation_markdown(decision_results, decision_summary, decision_md_path, horizons)
+        logger.info("Wrote decision simulation CSV: %s", decision_csv_path)
+        logger.info("Wrote decision simulation Markdown report: %s", decision_md_path)
 
     if args.multi_window_smoke_test:
         multi_window_summary = build_multi_window_smoke_test(
@@ -177,6 +195,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--log-level", default="INFO", help="Logging level")
     parser.add_argument("--smoke-test", action="store_true", help="Run the simple recent-window Top 5 smoke test")
     parser.add_argument("--smoke-days", type=int, default=60, help="Number of recent eligible signal days for smoke test")
+    parser.add_argument("--decision-simulation", action="store_true", help="Run Generation 1 BUY / NO_TRADE decision simulation")
     parser.add_argument(
         "--multi-window-smoke-test",
         action="store_true",

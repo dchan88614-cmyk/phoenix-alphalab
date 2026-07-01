@@ -9,115 +9,134 @@
 
 ## Completed
 
-- Completed Phoenix AlphaLab Sprint 3.2: Multi-Window Smoke Test.
-- Added `src/backtest/multi_window_smoke_test.py`.
-- Added CLI support for `--multi-window-smoke-test`.
-- Reused the exact Sprint 3 smoke ranking rule without adding or changing factors.
-- Added default non-overlapping windows from 2024-01-02 through 2026-06-30.
-- Added per-window outputs:
-  - universe ticker count
-  - selected unique ticker count
-  - signal days
-  - 5d/10d/20d average return
-  - 5d/10d/20d average excess return vs SPY
-  - 5d/10d/20d win rate
-  - 20d days outperformed SPY
-  - best trade
-  - worst trade
-  - top 5 most selected tickers
-- Added cross-window summary outputs:
-  - count of windows with 20d average excess above 0
-  - count of windows where 20d days_outperformed_spy is above 50%
-  - best window
-  - worst window
-  - initial cross-window judgment
-- Added `insufficient_data` status for windows without enough eligible rows.
-- Added tests for independent window stats, non-overlapping windows, output files, and insufficient-data marking.
-- Re-ran the requested watchlist multi-window smoke test.
+- Completed Generation 1: Decision Engine Prototype.
+- Added the first explicit BUY / NO_TRADE decision-generation layer.
+- Added `src/decision/decision_engine.py`.
+- Added structured decision records with:
+  - date
+  - action
+  - ticker
+  - entry price/range
+  - stop loss
+  - target 1
+  - target 2
+  - expected holding period
+  - confidence
+  - reason
+  - smoke score
+  - rank
+- Used same-day close as the historical EOD proxy entry price.
+- Implemented baseline v0 BUY rule using only rank 1 smoke candidates and existing smoke fields.
+- Did not add news, SEC, short interest, options, LLM ranking, or new alpha factors.
+- Did not change the smoke ranking rule.
+- Added `--decision-simulation` CLI flag.
+- Added `data/reports/decision_simulation.csv`.
+- Added `data/reports/decision_simulation.md`.
+- Updated `README.md` and `BRAIN.md` to clarify that research reports are internal diagnostics and the product goal is daily BUY / NO_TRADE decision quality.
+- Added tests for BUY/NO_TRADE logic, stop/target calculations, forward-return non-leakage, and report file output.
 
 ## Files Changed
 
 - `README.md`
+- `BRAIN.md`
 - `REPORT_TO_GPT.md`
 - `src/main.py`
-- `src/backtest/multi_window_smoke_test.py`
-- `tests/test_multi_window_smoke_test.py`
-- `data/reports/multi_window_smoke_test.csv`
-- `data/reports/multi_window_smoke_test.md`
+- `src/backtest/smoke_test.py`
+- `src/decision/__init__.py`
+- `src/decision/decision_engine.py`
+- `tests/test_decision_engine.py`
+- `data/reports/smoke_test.csv`
+- `data/reports/decision_simulation.csv`
+- `data/reports/decision_simulation.md`
 
 ## How To Run
 
 ```bash
 pip install -r requirements.txt
-python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --multi-window-smoke-test
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --decision-simulation
 ```
 
 If using the local virtual environment:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --multi-window-smoke-test
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --decision-simulation
 ```
 
 Expected outputs:
 
 - `data/reports/factor_report.csv`
 - `data/reports/factor_report.md`
-- `data/reports/multi_window_smoke_test.csv`
-- `data/reports/multi_window_smoke_test.md`
+- `data/reports/smoke_test.csv`
+- `data/reports/smoke_test.md`
+- `data/reports/decision_simulation.csv`
+- `data/reports/decision_simulation.md`
 - `data/processed/factor_dataset.csv`
 
 ## Output
 
-Latest multi-window smoke test run:
+Latest Generation 1 decision simulation run:
 
-- Windows tested: 10
-- Windows with sufficient data: 10
-- Universe ticker count: 98
-- Windows with 20d average excess > 0: 6 / 10
-- Windows with 20d days_outperformed_spy above 50%: 7 / 10
-- Best window by 20d average excess: 2026-04-01 to 2026-06-30, 23.45%
-- Worst window by 20d average excess: 2025-01-02 to 2025-03-31, -5.93%
-- Cross-window judgment: initial cross-window strength exists, but it still needs stricter universe and data validation.
+- Universe ticker count after strict metadata filter: 98
+- Decision date range: 2026-03-05 to 2026-05-29
+- Total signal days: 60
+- BUY days: 59
+- NO_TRADE days: 1
+- BUY rate: 98.33%
+- Best BUY: 2026-04-07 INTC, 20d +104.40%
+- Worst BUY: 2026-03-05 AVGO, 20d -5.48%
+- Comparison: BUY filtering improved performance versus always buying smoke rank 1.
 
-Window-level 20d average excess:
+BUY decisions:
 
-- 2024-01-02 to 2024-03-29: -1.30%
-- 2024-04-01 to 2024-06-28: 0.82%
-- 2024-07-01 to 2024-09-30: -0.32%
-- 2024-10-01 to 2024-12-31: 9.35%
-- 2025-01-02 to 2025-03-31: -5.93%
-- 2025-04-01 to 2025-06-30: 6.19%
-- 2025-07-01 to 2025-09-30: 7.11%
-- 2025-10-01 to 2025-12-31: -1.55%
-- 2026-01-02 to 2026-03-31: 4.00%
-- 2026-04-01 to 2026-06-30: 23.45%
+- 5d average forward return: 8.44%
+- 5d average excess return vs SPY: 7.52%
+- 5d win rate: 71.19%
+- 10d average forward return: 13.25%
+- 10d average excess return vs SPY: 11.45%
+- 10d win rate: 76.27%
+- 20d average forward return: 32.10%
+- 20d average excess return vs SPY: 28.00%
+- 20d win rate: 91.53%
+
+Always buy smoke rank 1 comparison:
+
+- 5d average forward return: 8.19%
+- 5d average excess return vs SPY: 7.28%
+- 10d average forward return: 12.72%
+- 10d average excess return vs SPY: 10.92%
+- 20d average forward return: 31.31%
+- 20d average excess return vs SPY: 27.22%
 
 ## Test Results
 
 ```bash
 .venv/bin/python -m pytest -q
-# 17 passed, 1 warning in 0.70s
+# 22 passed, 1 warning in 0.72s
 ```
 
-End-to-end multi-window smoke test command completed successfully and wrote both multi-window reports.
+End-to-end decision simulation command completed successfully and wrote both decision reports.
 
-## Known Issues
+## Problems
 
-- The first window has only 1 eligible signal day because previous-window factors need warmup data from the 2024-01-01 start.
-- Current windows use the same downloaded dataset ending 2026-06-30; latest dates without complete forward labels are not eligible signal rows.
-- The watchlist remains manually curated and not point-in-time.
+- BUY rate is 98.33%, so Generation 1 filtering barely narrows the smoke rank 1 stream.
+- The reported improvement versus always buying smoke rank 1 is small relative to the already strong smoke result.
+- Decision simulation currently uses only the latest 60 eligible smoke days because it is built on the current smoke test flow.
+- The v0 stop/target levels are mechanical ATR/risk multiples and are not evaluated as intraperiod hit/miss outcomes.
+- Current watchlist and yfinance metadata are not point-in-time.
 - Strict yfinance metadata filtering still rejects some names and has false exclusions such as `U` via keyword matching.
-- The run emitted pandas `pct_change` future warnings and the existing macOS LibreSSL warning; neither blocked this run.
+- The run emitted pandas `pct_change` future warnings and the existing macOS LibreSSL warning; neither blocked the run.
 
 ## Questions For GPT
 
-- Should the first window be rerun with earlier warmup data, such as starting downloads from 2023-01-01, before judging 2024 Q1?
-- Is 6 / 10 positive 20d excess windows enough to continue, or should the stop/go threshold be stricter?
-- Should the next step be fixing universe/filter precision before any more result interpretation?
+- Is Generation 1 useful enough if it emits BUY on 59 of 60 signal days?
+- Should Generation 2 focus on reducing BUY frequency, or first evaluate whether mechanical stop/target levels were hit before forward close labels?
+- Should the decision simulation be extended to multi-window before tuning any BUY rule thresholds?
+- Should rank 1 only remain the decision candidate, or should NO_TRADE be allowed when rank 1 fails while lower ranks pass?
 
 ## Next Suggested Tasks
 
-- Add a warmup-start option so window tests can score early windows without losing signal days.
-- Fix instrument-type filtering precision without changing alpha factors.
-- Add rejected ticker count/reasons to multi-window reports.
-- Keep the ranking rule frozen until cross-window and warmup-adjusted results are reviewed.
+- Review Generation 1 output before changing thresholds.
+- Add multi-window decision simulation using the same v0 rule before any tuning.
+- Add stop/target path evaluation using OHLC data if GPT wants to judge trade plan quality rather than close-to-close labels.
+- Fix instrument-type filtering precision before expanding the watchlist further.
+- Do not start Generation 2 until GPT reviews this report.

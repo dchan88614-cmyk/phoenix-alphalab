@@ -80,7 +80,8 @@ def build_smoke_test(
     research = research.merge(benchmark, on="date", how="left")
 
     label_columns = [f"fwd_return_{h}d" for h in horizons] + [f"benchmark_fwd_return_{h}d" for h in horizons]
-    candidate_columns = ["date", "ticker", *SMOKE_RANK_FACTORS, *label_columns]
+    context_columns = [column for column in ["close", "atr"] if column in research.columns]
+    candidate_columns = ["date", "ticker", *context_columns, *SMOKE_RANK_FACTORS, *label_columns]
     candidates = research[candidate_columns].dropna(subset=SMOKE_RANK_FACTORS + label_columns)
     if candidates.empty:
         return pd.DataFrame()
@@ -110,6 +111,7 @@ def build_smoke_test(
         "rank",
         "ticker",
         "smoke_score",
+        *context_columns,
         *SMOKE_RANK_FACTORS,
         *[f"fwd_return_{h}d" for h in horizons],
         *[f"benchmark_fwd_return_{h}d" for h in horizons],

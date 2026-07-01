@@ -4,6 +4,8 @@ Phoenix AlphaLab is a local research system for US common stocks. Its first goal
 
 The project focuses on high-elasticity opportunities that a small account might realistically research, while keeping the research process reproducible and explicit.
 
+The product goal is not a beautiful research report. Research reports are internal engine diagnostics. The final user-facing product is improving the quality of a daily `BUY` or `NO TRADE` decision.
+
 ## Scope
 
 Included:
@@ -32,6 +34,8 @@ Excluded:
 - Forward returns are labels for validation, not inputs to factors.
 - Reports must be exportable, explainable, and reproducible.
 - Missing metadata is treated conservatively by the universe filter when configured to do so.
+- Generation-based improvement is preferred over adding random features.
+- Each generation should change only a small number of rules so GPT can judge what improved or broke.
 
 ## Factor Timing
 
@@ -72,6 +76,12 @@ Run the same smoke ranking rule across default non-overlapping windows:
 python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --multi-window-smoke-test
 ```
 
+Run the Generation 1 decision simulation:
+
+```bash
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --decision-simulation
+```
+
 Outputs:
 
 - `data/reports/factor_report.csv`
@@ -80,6 +90,8 @@ Outputs:
 - `data/reports/smoke_test.md`
 - `data/reports/multi_window_smoke_test.csv`
 - `data/reports/multi_window_smoke_test.md`
+- `data/reports/decision_simulation.csv`
+- `data/reports/decision_simulation.md`
 - `data/processed/factor_dataset.csv`
 - `data/raw/prices/*.csv`
 
