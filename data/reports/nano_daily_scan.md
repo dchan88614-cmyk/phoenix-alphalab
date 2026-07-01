@@ -25,7 +25,7 @@ Reason: NO_CANDIDATE_PASSED_RULES
 - Candidate rule: Candidate 34 Nano with max_entry_price $50.00.
 - Stale data: False
 - Data source: yfinance
-- Scan timestamp UTC: 2026-07-01T18:58:16.757149+00:00
+- Scan timestamp UTC: 2026-07-01T19:03:39.834664+00:00
 
 ## Top 5 Scanned Candidates
 

@@ -92,7 +92,7 @@ End-to-end command completed successfully:
 - Result stale/current: current, `is_stale = False`
 - Reason: `NO_CANDIDATE_PASSED_RULES`
 - Data source: `yfinance`
-- Scan timestamp UTC: `2026-07-01T18:58:16.757149+00:00`
+- Scan timestamp UTC: `2026-07-01T19:03:39.834664+00:00`
 - Forward returns used for ranking: no
 - Realized trade outcomes used for ranking: no
 
