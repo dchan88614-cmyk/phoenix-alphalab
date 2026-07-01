@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 from src.backtest.factor_test import DEFAULT_FACTORS, build_factor_report
 from src.backtest.forward_returns import add_forward_returns
+from src.backtest.multi_window_smoke_test import build_multi_window_smoke_test, write_multi_window_smoke_markdown
 from src.backtest.smoke_test import build_smoke_test, summarize_smoke_test, write_smoke_test_markdown
 from src.data.filters import apply_price_liquidity_filters
 from src.data.prices import download_many_prices
@@ -149,6 +150,21 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote smoke test CSV: %s", smoke_csv_path)
         logger.info("Wrote smoke test Markdown report: %s", smoke_md_path)
 
+    if args.multi_window_smoke_test:
+        multi_window_summary = build_multi_window_smoke_test(
+            dataset,
+            benchmark_ticker=benchmark,
+            horizons=horizons,
+            universe_ticker_count=len(passed_tickers),
+            top_n=5,
+        )
+        multi_csv_path = reports_dir / "multi_window_smoke_test.csv"
+        multi_md_path = reports_dir / "multi_window_smoke_test.md"
+        write_csv(multi_window_summary, multi_csv_path)
+        write_multi_window_smoke_markdown(multi_window_summary, multi_md_path, benchmark)
+        logger.info("Wrote multi-window smoke test CSV: %s", multi_csv_path)
+        logger.info("Wrote multi-window smoke test Markdown report: %s", multi_md_path)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Phoenix AlphaLab factor research runner.")
@@ -161,6 +177,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--log-level", default="INFO", help="Logging level")
     parser.add_argument("--smoke-test", action="store_true", help="Run the simple recent-window Top 5 smoke test")
     parser.add_argument("--smoke-days", type=int, default=60, help="Number of recent eligible signal days for smoke test")
+    parser.add_argument(
+        "--multi-window-smoke-test",
+        action="store_true",
+        help="Run the fixed-rule smoke test across default non-overlapping windows",
+    )
     return parser
 
 

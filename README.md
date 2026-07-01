@@ -66,12 +66,20 @@ Run the smoke test from a watchlist file:
 python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --smoke-days 60
 ```
 
+Run the same smoke ranking rule across default non-overlapping windows:
+
+```bash
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --multi-window-smoke-test
+```
+
 Outputs:
 
 - `data/reports/factor_report.csv`
 - `data/reports/factor_report.md`
 - `data/reports/smoke_test.csv`
 - `data/reports/smoke_test.md`
+- `data/reports/multi_window_smoke_test.csv`
+- `data/reports/multi_window_smoke_test.md`
 - `data/processed/factor_dataset.csv`
 - `data/raw/prices/*.csv`
 

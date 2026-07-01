@@ -9,115 +9,115 @@
 
 ## Completed
 
-- Completed Phoenix AlphaLab Sprint 3.1: Real Smoke Test Universe.
-- Added `config/watchlists/us_liquid_growth_100.txt`.
-- Added CLI support for `--watchlist`; when both `--tickers` and `--watchlist` are supplied, `--watchlist` wins.
-- Kept the smoke test ranking rule unchanged:
-  - `relative_volume_prev20`
-  - `return_5d`
-  - `return_20d`
-  - `distance_to_52w_high_prev`
-  - `dollar_volume`
-- Added smoke report realism checks:
-  - Universe ticker count
-  - Selected unique ticker count
-  - Top 10 most selected tickers
-  - Best/worst trade excluding the most selected ticker
-  - Result excluding best single trade
-  - Result excluding worst single trade
-  - Result excluding SMCI if SMCI appears
-  - Small-universe warning when universe count is below 30
-- Added tests for watchlist reading, universe count reporting, small-universe warning, and excluding-best-trade output.
-- Re-ran the requested watchlist smoke test.
+- Completed Phoenix AlphaLab Sprint 3.2: Multi-Window Smoke Test.
+- Added `src/backtest/multi_window_smoke_test.py`.
+- Added CLI support for `--multi-window-smoke-test`.
+- Reused the exact Sprint 3 smoke ranking rule without adding or changing factors.
+- Added default non-overlapping windows from 2024-01-02 through 2026-06-30.
+- Added per-window outputs:
+  - universe ticker count
+  - selected unique ticker count
+  - signal days
+  - 5d/10d/20d average return
+  - 5d/10d/20d average excess return vs SPY
+  - 5d/10d/20d win rate
+  - 20d days outperformed SPY
+  - best trade
+  - worst trade
+  - top 5 most selected tickers
+- Added cross-window summary outputs:
+  - count of windows with 20d average excess above 0
+  - count of windows where 20d days_outperformed_spy is above 50%
+  - best window
+  - worst window
+  - initial cross-window judgment
+- Added `insufficient_data` status for windows without enough eligible rows.
+- Added tests for independent window stats, non-overlapping windows, output files, and insufficient-data marking.
+- Re-ran the requested watchlist multi-window smoke test.
 
 ## Files Changed
 
 - `README.md`
 - `REPORT_TO_GPT.md`
-- `config/watchlists/us_liquid_growth_100.txt`
 - `src/main.py`
-- `src/backtest/smoke_test.py`
-- `tests/test_smoke_test.py`
-- `data/reports/factor_report.csv`
-- `data/reports/factor_report.md`
-- `data/reports/smoke_test.csv`
-- `data/reports/smoke_test.md`
+- `src/backtest/multi_window_smoke_test.py`
+- `tests/test_multi_window_smoke_test.py`
+- `data/reports/multi_window_smoke_test.csv`
+- `data/reports/multi_window_smoke_test.md`
 
 ## How To Run
 
 ```bash
 pip install -r requirements.txt
-python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --smoke-days 60
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --multi-window-smoke-test
 ```
 
 If using the local virtual environment:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --smoke-days 60
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --multi-window-smoke-test
 ```
 
 Expected outputs:
 
 - `data/reports/factor_report.csv`
 - `data/reports/factor_report.md`
-- `data/reports/smoke_test.csv`
-- `data/reports/smoke_test.md`
+- `data/reports/multi_window_smoke_test.csv`
+- `data/reports/multi_window_smoke_test.md`
 - `data/processed/factor_dataset.csv`
 
 ## Output
 
-Latest watchlist smoke test run:
+Latest multi-window smoke test run:
 
-- Test range: 2026-03-05 to 2026-05-29
-- Universe ticker count after strict metadata filter: 98
-- Selected unique ticker count: 45
-- Signal days: 60
-- Selected rows: 300
-- 5d average return: 5.50%
-- 5d average excess return vs SPY: 4.59%
-- 5d win rate: 62.33%
-- 5d days outperformed SPY: 43 / 60
-- 10d average return: 9.61%
-- 10d average excess return vs SPY: 7.81%
-- 10d win rate: 68.00%
-- 10d days outperformed SPY: 49 / 60
-- 20d average return: 22.79%
-- 20d average excess return vs SPY: 18.69%
-- 20d win rate: 77.00%
-- 20d days outperformed SPY: 57 / 60
-- Top selected ticker: MRVL, selected 29 times
-- Best 20d trade: 2026-04-07 INTC, 104.40%
-- Worst 20d trade: 2026-05-27 RKLB, -46.29%
-- Result excluding best single trade, 20d average return: 22.52%
-- Result excluding worst single trade, 20d average return: 23.02%
-- Result excluding SMCI: Not applicable because SMCI was not selected in the latest smoke test output.
+- Windows tested: 10
+- Windows with sufficient data: 10
+- Universe ticker count: 98
+- Windows with 20d average excess > 0: 6 / 10
+- Windows with 20d days_outperformed_spy above 50%: 7 / 10
+- Best window by 20d average excess: 2026-04-01 to 2026-06-30, 23.45%
+- Worst window by 20d average excess: 2025-01-02 to 2025-03-31, -5.93%
+- Cross-window judgment: initial cross-window strength exists, but it still needs stricter universe and data validation.
+
+Window-level 20d average excess:
+
+- 2024-01-02 to 2024-03-29: -1.30%
+- 2024-04-01 to 2024-06-28: 0.82%
+- 2024-07-01 to 2024-09-30: -0.32%
+- 2024-10-01 to 2024-12-31: 9.35%
+- 2025-01-02 to 2025-03-31: -5.93%
+- 2025-04-01 to 2025-06-30: 6.19%
+- 2025-07-01 to 2025-09-30: 7.11%
+- 2025-10-01 to 2025-12-31: -1.55%
+- 2026-01-02 to 2026-03-31: 4.00%
+- 2026-04-01 to 2026-06-30: 23.45%
 
 ## Test Results
 
 ```bash
 .venv/bin/python -m pytest -q
-# 13 passed, 1 warning in 0.60s
+# 17 passed, 1 warning in 0.70s
 ```
 
-End-to-end watchlist smoke test command completed successfully and wrote both smoke test reports.
+End-to-end multi-window smoke test command completed successfully and wrote both multi-window reports.
 
 ## Known Issues
 
-- The watchlist file contains a broad manually curated basket, not a formal point-in-time universe.
-- yfinance metadata rejected several tickers under strict metadata filtering; this improves purity but can exclude valid names.
-- The existing keyword filter rejected `U` because `UNIT` matches the company name text for Unity; this needs a more precise instrument-type filter later.
-- The run emitted pandas `pct_change` future warnings and the existing macOS LibreSSL warning; neither blocked the run.
-- Strong smoke results are not proof of a deployable strategy. This is still a recent-window sanity check.
+- The first window has only 1 eligible signal day because previous-window factors need warmup data from the 2024-01-01 start.
+- Current windows use the same downloaded dataset ending 2026-06-30; latest dates without complete forward labels are not eligible signal rows.
+- The watchlist remains manually curated and not point-in-time.
+- Strict yfinance metadata filtering still rejects some names and has false exclusions such as `U` via keyword matching.
+- The run emitted pandas `pct_change` future warnings and the existing macOS LibreSSL warning; neither blocked this run.
 
 ## Questions For GPT
 
-- Is the broader watchlist smoke result enough to justify one larger fixed-rule basket run?
-- Should the instrument-type filtering be upgraded before any more smoke tests, specifically to avoid false exclusions like `U`?
-- Should the current smoke rule be frozen and rerun across multiple historical windows before any ranking tweak is allowed?
+- Should the first window be rerun with earlier warmup data, such as starting downloads from 2023-01-01, before judging 2024 Q1?
+- Is 6 / 10 positive 20d excess windows enough to continue, or should the stop/go threshold be stricter?
+- Should the next step be fixing universe/filter precision before any more result interpretation?
 
 ## Next Suggested Tasks
 
-- Fix instrument-type filtering precision without adding new alpha factors.
-- Add run metadata to smoke reports, including watchlist path, rejected ticker count, and rejected reasons.
-- Run the same fixed rule across several non-overlapping 60-day windows.
-- Do not add news, SEC, short interest, Phoenix Score, or AI ranking until the simple smoke evidence survives out-of-sample windows.
+- Add a warmup-start option so window tests can score early windows without losing signal days.
+- Fix instrument-type filtering precision without changing alpha factors.
+- Add rejected ticker count/reasons to multi-window reports.
+- Keep the ranking rule frozen until cross-window and warmup-adjusted results are reviewed.
