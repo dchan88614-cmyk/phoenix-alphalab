@@ -54,3 +54,11 @@ backtest:
     - 10
     - 20
   quantiles: 5
+
+account:
+  starting_capital: 100.0
+  fractional_shares: false
+  max_position_fraction: 1.0
+  min_cash_reserve: 0.0
+  commission_per_trade: 0.0
+  slippage_bps: 10

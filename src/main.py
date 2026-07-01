@@ -8,6 +8,12 @@ import pandas as pd
 import yaml
 from dotenv import load_dotenv
 
+from src.account.account_simulator import (
+    AccountSettings,
+    merge_nano_results,
+    summarize_nano_candidates,
+    write_nano_summary,
+)
 from src.backtest.factor_test import DEFAULT_FACTORS, build_factor_report
 from src.backtest.forward_returns import add_forward_returns
 from src.backtest.multi_window_smoke_test import build_multi_window_smoke_test, write_multi_window_smoke_markdown
@@ -222,6 +228,23 @@ def run(args: argparse.Namespace) -> None:
         robustness_csv_path = reports_dir / "robustness_report.csv"
         regime_csv_path = reports_dir / "regime_diagnostics.csv"
         regime_md_path = reports_dir / "regime_diagnostics.md"
+        if args.nano_account_simulation:
+            account_settings = AccountSettings.from_config(settings)
+            nano_summary, nano_trades, nano_equity = summarize_nano_candidates(
+                trade_results,
+                account_settings,
+                max_entry_prices=[20.0, 30.0, 50.0, 75.0, 100.0],
+            )
+            auto_results = merge_nano_results(auto_results, nano_summary)
+            nano_trades_path = reports_dir / "nano_account_trades.csv"
+            nano_equity_path = reports_dir / "nano_account_equity_curve.csv"
+            nano_summary_path = reports_dir / "nano_account_summary.md"
+            write_csv(nano_trades, nano_trades_path)
+            write_csv(nano_equity, nano_equity_path)
+            write_nano_summary(nano_summary, nano_trades, nano_equity, nano_summary_path, account_settings)
+            logger.info("Wrote Nano account trades CSV: %s", nano_trades_path)
+            logger.info("Wrote Nano account equity curve CSV: %s", nano_equity_path)
+            logger.info("Wrote Nano account summary Markdown: %s", nano_summary_path)
         concentration_report, concentration_summary = build_concentration_report(trade_results)
         robustness_report = build_robustness_report(trade_results)
         regime_report = build_regime_diagnostics(trade_results, dataset)
@@ -261,6 +284,11 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run the fixed-rule smoke test across default non-overlapping windows",
     )
     parser.add_argument("--auto-research-loop", action="store_true", help="Run offline candidate decision-rule research loop")
+    parser.add_argument(
+        "--nano-account-simulation",
+        action="store_true",
+        help="Run Phoenix Nano $100 whole-share account simulation after the auto research loop",
+    )
     return parser
 
 

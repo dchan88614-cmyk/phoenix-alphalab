@@ -36,6 +36,7 @@ class CandidateRule:
     distance_to_52w_high_prev_min: float
     dollar_volume_min: float
     max_trades_per_ticker_per_year: int | None = None
+    max_entry_price: float = 100.0
 
 
 MAX_BUY_RATES = [1.0, 0.70, 0.50, 0.30, 0.15]
@@ -47,6 +48,7 @@ RETURN_20D_REQUIREMENTS = [True, False]
 DISTANCE_TO_HIGH_MINIMUMS = [-0.35, -0.25, -0.15]
 DOLLAR_VOLUME_MINIMUMS = [10_000_000, 20_000_000, 50_000_000]
 MAX_TRADES_PER_TICKER_PER_YEAR = [None, 20, 10, 5]
+MAX_ENTRY_PRICES = [20.0, 30.0, 50.0, 75.0, 100.0]
 
 
 def generate_candidate_rules(limit: int = 100) -> list[CandidateRule]:
@@ -61,6 +63,7 @@ def generate_candidate_rules(limit: int = 100) -> list[CandidateRule]:
             DISTANCE_TO_HIGH_MINIMUMS,
             DOLLAR_VOLUME_MINIMUMS,
             MAX_TRADES_PER_TICKER_PER_YEAR,
+            MAX_ENTRY_PRICES,
         )
     )
     early_diverse: list[tuple] = []
@@ -76,6 +79,7 @@ def generate_candidate_rules(limit: int = 100) -> list[CandidateRule]:
                 DISTANCE_TO_HIGH_MINIMUMS[index % len(DISTANCE_TO_HIGH_MINIMUMS)],
                 DOLLAR_VOLUME_MINIMUMS[(index // 7) % len(DOLLAR_VOLUME_MINIMUMS)],
                 MAX_TRADES_PER_TICKER_PER_YEAR[(index // 8) % len(MAX_TRADES_PER_TICKER_PER_YEAR)],
+                MAX_ENTRY_PRICES[(index // 9) % len(MAX_ENTRY_PRICES)],
             )
         )
 
@@ -239,6 +243,8 @@ def evaluate_candidate(
             buys["window_start"] = item["window_start"]
             buys["window_end"] = item["window_end"]
         trades = simulate_trades(buys, item["path_data"], benchmark_ticker=benchmark_ticker)
+        if not trades.empty:
+            trades = trades.loc[trades["entry_price"].le(candidate.max_entry_price)].copy()
         if not trades.empty:
             all_trade_frames.append(trades)
         window_rows.append(_window_metrics(trades, signal_days, eligible_buy_days, final_buy_days, item["window_start"], item["window_end"]))
@@ -510,8 +516,13 @@ def run_auto_research_loop(
 def write_auto_research_summary(results: pd.DataFrame, summary: dict, output_path: str | Path) -> None:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    qualified = results.loc[results["status"].eq(RESEARCH_QUALIFIED_NOT_LIVE)].copy()
-    best_qualified = None if qualified.empty else qualified.sort_values("score", ascending=False).iloc[0]
+    qualified = results.loc[results["status"].astype(str).str.endswith("RESEARCH_QUALIFIED_NOT_LIVE")].copy()
+    qualified_score_col = "nano_score" if "nano_score" in qualified.columns else "score"
+    best_qualified = (
+        None
+        if qualified.empty
+        else qualified.sort_values(qualified_score_col, ascending=False, na_position="last").iloc[0]
+    )
     best_any = None
     if not results.empty:
         best_any = results.sort_values("risk_adjusted_score", ascending=False, na_position="last").iloc[0]

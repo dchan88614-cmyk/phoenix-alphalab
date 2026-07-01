@@ -37,11 +37,11 @@ def _smoke_row(date, ticker="AAA", rank=1, smoke_score=0.85, fwd_20=0.1):
     }
 
 
-def _price_rows(start="2025-01-01", days=30, ticker="AAA", up=True):
+def _price_rows(start="2025-01-01", days=30, ticker="AAA", up=True, base_price=20):
     rows = []
     dates = pd.bdate_range(start, periods=days)
     for index, date in enumerate(dates):
-        base = 100 + index if up else 100
+        base = base_price + index if up else base_price
         rows.append(
             {
                 "date": date.strftime("%Y-%m-%d"),

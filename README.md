@@ -6,6 +6,12 @@ The project focuses on high-elasticity opportunities that a small account might 
 
 The product goal is not a beautiful research report. Research reports are internal engine diagnostics. The final user-facing product is improving the quality of a daily `BUY` or `NO TRADE` decision.
 
+## Phoenix Nano Active Objective
+
+Phoenix Nano is the current active research objective. The active starting capital is $100. Whole-share affordability is required unless fractional shares are explicitly configured on. A candidate BUY that cannot calculate executable shares, total cost, cash remaining, stop loss, targets, and dollar risk is invalid.
+
+Average trade return is not enough for Phoenix Nano. The account equity curve must be simulated with cash updates, one open position at a time, and affordability checks. No version is live-tradable until historical research and paper trading have both passed GPT review.
+
 ## Scope
 
 Included:
@@ -88,6 +94,12 @@ Run the offline auto research loop:
 python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --auto-research-loop
 ```
 
+Run the Phoenix Nano $100 account-aware simulation:
+
+```bash
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --auto-research-loop --nano-account-simulation
+```
+
 Outputs:
 
 - `data/reports/factor_report.csv`
@@ -100,6 +112,9 @@ Outputs:
 - `data/reports/decision_simulation.md`
 - `data/reports/auto_research_generations.csv`
 - `data/reports/auto_research_summary.md`
+- `data/reports/nano_account_trades.csv`
+- `data/reports/nano_account_equity_curve.csv`
+- `data/reports/nano_account_summary.md`
 - `data/processed/factor_dataset.csv`
 - `data/raw/prices/*.csv`
 

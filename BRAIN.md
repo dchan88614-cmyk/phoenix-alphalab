@@ -15,6 +15,12 @@ The initial objective is research validation, not live trading. The system shoul
 
 Research reports are internal engine diagnostics. The product goal is to improve daily BUY / NO TRADE decision quality, not to produce polished reports for their own sake.
 
+## Phoenix Nano Active Objective
+
+Phoenix Nano is the active research objective. The current starting capital is $100. Whole-share affordability is required unless fractional shares are explicitly configured otherwise. Average trade return is not sufficient evidence; the account equity curve must be simulated with actual cash, share count, entry cost, stop loss, targets, dollar risk, and one open position at a time.
+
+No version is live-tradable until historical research and paper trading have both passed GPT review.
+
 ## Hard Rules
 
 - US stocks only.
@@ -47,6 +53,9 @@ Research reports are internal engine diagnostics. The product goal is to improve
 - Auto Research Loop may run many controlled experiments automatically, but it cannot mark any rule live-tradable.
 - `RESEARCH_QUALIFIED_NOT_LIVE` means worth deeper review, not safe to trade.
 - GPT must review before any rule becomes user-facing.
+- Phoenix Nano BUY decisions must be executable by the configured account.
+- If shares cannot be calculated, the decision is not a BUY.
+- Account equity growth must be simulated; average trade return alone is not enough.
 
 ## Codex Responsibilities
 
