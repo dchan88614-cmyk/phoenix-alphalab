@@ -23,6 +23,7 @@ from src.decision.decision_engine import (
 from src.factors.technical import add_all_factors
 from src.reports.csv_export import write_csv
 from src.reports.markdown_report import write_markdown_report
+from src.research.auto_loop import run_auto_research_loop, write_auto_research_summary
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -183,6 +184,19 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote multi-window smoke test CSV: %s", multi_csv_path)
         logger.info("Wrote multi-window smoke test Markdown report: %s", multi_md_path)
 
+    if args.auto_research_loop:
+        auto_results, auto_summary = run_auto_research_loop(
+            dataset,
+            benchmark_ticker=benchmark,
+            horizons=horizons,
+        )
+        auto_csv_path = reports_dir / "auto_research_generations.csv"
+        auto_md_path = reports_dir / "auto_research_summary.md"
+        write_csv(auto_results, auto_csv_path)
+        write_auto_research_summary(auto_results, auto_summary, auto_md_path)
+        logger.info("Wrote auto research generations CSV: %s", auto_csv_path)
+        logger.info("Wrote auto research summary Markdown report: %s", auto_md_path)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Phoenix AlphaLab factor research runner.")
@@ -201,6 +215,7 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Run the fixed-rule smoke test across default non-overlapping windows",
     )
+    parser.add_argument("--auto-research-loop", action="store_true", help="Run offline candidate decision-rule research loop")
     return parser
 
 

@@ -82,6 +82,12 @@ Run the Generation 1 decision simulation:
 python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --decision-simulation
 ```
 
+Run the offline auto research loop:
+
+```bash
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --auto-research-loop
+```
+
 Outputs:
 
 - `data/reports/factor_report.csv`
@@ -92,6 +98,8 @@ Outputs:
 - `data/reports/multi_window_smoke_test.md`
 - `data/reports/decision_simulation.csv`
 - `data/reports/decision_simulation.md`
+- `data/reports/auto_research_generations.csv`
+- `data/reports/auto_research_summary.md`
 - `data/processed/factor_dataset.csv`
 - `data/raw/prices/*.csv`
 
@@ -125,3 +133,5 @@ For each factor and quantile group, the report includes:
 - `yfinance` metadata can be incomplete or inconsistent. The code includes filtering interfaces, but exchange and instrument-type validation should be upgraded for institutional-grade research.
 - Market cap history is not point-in-time in this version. It is used only as a configurable filter interface and should not be treated as a bias-free historical factor.
 - The system does not claim any factor works until you run and inspect real reports.
+- Auto Research Loop is an offline historical research process. It may run many experiments automatically, but it cannot mark anything live-tradable.
+- `RESEARCH_QUALIFIED_NOT_LIVE` means a rule is worth deeper GPT review, not safe to trade.

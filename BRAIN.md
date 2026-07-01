@@ -43,6 +43,10 @@ Research reports are internal engine diagnostics. The product goal is to improve
 - If a data source is incomplete or non-point-in-time, the limitation must be disclosed.
 - Generation-based improvement is preferred over random feature expansion.
 - Each generation should change only a small number of rules so GPT can judge what improved or broke.
+- Auto Research Loop is an offline historical research process only.
+- Auto Research Loop may run many controlled experiments automatically, but it cannot mark any rule live-tradable.
+- `RESEARCH_QUALIFIED_NOT_LIVE` means worth deeper review, not safe to trade.
+- GPT must review before any rule becomes user-facing.
 
 ## Codex Responsibilities
 
