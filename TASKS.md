@@ -2,249 +2,317 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1B — Execution Risk, Stop-Out, and Drawdown Diagnostics
+## Current Task: Phoenix Nano Phase 1C — Robustness Failure Analysis and Close-Stop Realism
 
-David's clarified roadmap remains:
+David's product roadmap remains:
 
-1. Phase 1: simulate old dates, select a stock or NO TRADE using only past data, reveal future outcome, repeat until accuracy and risk improve.
-2. Phase 2: current-market manual paper validation only after Phase 1 gates improve.
-3. Phase 3: real-money execution only after Phase 1 and Phase 2 gates are satisfied.
+1. **Phase 1: historical replay training** — simulate old dates using only data available up to each date, select one stock or `NO_TRADE`, reveal future outcome, and improve accuracy/risk.
+2. **Phase 2: current-market manual paper validation** — only after Phase 1 gates are materially stronger and GPT reviews the evidence.
+3. **Phase 3: real-money execution** — only after Phase 1 and Phase 2 gates are satisfied.
 
-This task is **Phase 1B only**.
+This task is **Phase 1C only**.
 
 Do not start Phase 2.
 Do not start Phase 3.
 Do not start paper trading.
 Do not start live trading.
-Do not loosen Candidate 34 entry thresholds yet.
+Do not loosen Candidate 34 entry thresholds.
+Do not adopt `close_based_stop_2_0x` as a real policy yet.
 Keep all output research/manual-review only.
 
 ## Why This Task
 
-The completed Phase 1A 100-round replay found a useful but risky pattern:
+Phase 1B found a promising but not approved execution hypothesis:
 
-- 100 replay rounds
-- 34 BUY candidates
-- 66 NO_TRADE rounds
-- 20d forward-return accuracy: 58.82%
-- 20d average forward return: 13.61%
-- trade-simulation accuracy: 41.18%
-- ending account value: $179.61
-- max drawdown: -45.86%
-- status: `PHASE_1A_NEEDS_MORE_ITERATION`
+- Baseline Phase 1A sample: 100 replay rounds, 34 BUYs, 66 NO_TRADE.
+- Baseline 20d accuracy: 58.82%.
+- Baseline ending account value: $179.61.
+- Baseline max drawdown: -45.86%.
+- Baseline trade-simulation accuracy: 41.18%.
+- `close_based_stop_2_0x` improved the baseline sample to ending value about $483.59, max drawdown about -31.46%, and trade-simulation accuracy about 53.85%.
 
-The highest-priority problem is not signal generation yet. It is execution quality and drawdown. Several picks appear to have positive 20d forward returns but were stopped out under the current simulator. Phase 1B must explain whether the drawdown comes from:
+But robustness was mixed:
 
-- stop placement too tight
-- next-open entry gap behavior
-- target/stop ordering assumptions
-- volatile tickers dominating risk
-- one or two path-dependent trades such as early-2024 SMCI
-- sample-selection luck
+- Samples 0, 1, and 2 were promising or passed a diagnostic policy gate.
+- Samples 3 and 4 failed badly, with ending account values near $60.49 and $43.16 and max drawdowns worse than -60%.
+- `close_based_stop_2_0x` may be optimistic because close-based stops can hide intraday stop breaches.
+
+The highest-priority research question is:
+
+**Is the Phase 1B improvement real and robust, or was it caused by one favorable sample and an unrealistic close-based stop assumption?**
 
 ## Goal
 
-Build an execution-risk diagnostic layer over the existing Phase 1A historical replay outputs.
+Build a Phase 1C robustness layer that explains why deterministic samples 3 and 4 failed and stress-tests the `close_based_stop_2_0x` hypothesis under more realistic stop assumptions.
 
-Use the existing 100-round replay decision process as the baseline. Do not change which ticker is selected. Only analyze what happened after selection under different execution assumptions.
+The selected ticker/date decisions must remain frozen for each replay sample. Phase 1C may analyze execution, regimes, sample failures, stop behavior, and diagnostics, but must not change the Candidate 34 entry rules yet.
 
-## Required New Outputs
+## CLI
+
+Add or update CLI support:
+
+```bash
+--phase1c-robustness-analysis
+--replay-rounds 100
+--replay-sample-count 10
+```
+
+Preferred command:
+
+```bash
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1c-robustness-analysis --replay-rounds 100 --replay-sample-count 10
+```
+
+If runtime is too high, use 5 deterministic samples but keep the implementation capable of 10.
+
+## Required Outputs
 
 Create or update:
 
-- `data/reports/phase1b_execution_diagnostics.csv`
-- `data/reports/phase1b_execution_summary.md`
-- `data/reports/phase1b_exit_policy_comparison.csv`
-- `data/reports/phase1b_ticker_risk_attribution.csv`
+- `data/reports/phase1c_policy_robustness_matrix.csv`
+- `data/reports/phase1c_sample_failure_trades.csv`
+- `data/reports/phase1c_close_stop_realism.csv`
+- `data/reports/phase1c_regime_attribution.csv`
+- `data/reports/phase1c_robustness_summary.md`
 - `REPORT_TO_GPT.md`
 
-Keep existing Phase 1A reports intact unless regeneration is required by the command.
+Keep Phase 1A and Phase 1B reports intact unless regeneration is required by the command.
 
-## Part 1: Baseline Replay Diagnostics
+## Part 1: Full Policy Robustness Matrix
 
-Read or regenerate:
+For each deterministic sample and each execution policy, compute one row in `phase1c_policy_robustness_matrix.csv`.
 
-- `data/reports/phase1_historical_replay_decisions.csv`
-- `data/reports/phase1_historical_replay_near_misses.csv`
+Use at least these policies:
 
-For every `HISTORICAL_BUY_CANDIDATE`, compute and record:
+1. `baseline_current`
+2. `atr_stop_2_0x`
+3. `atr_stop_2_5x`
+4. `time_exit_20d_no_intraday_stop`
+5. `close_based_stop_2_0x`
+6. `close_based_stop_2_0x_with_intraday_breach_flag`
+7. `close_confirmed_stop_2_0x_next_open_exit`
+8. `hybrid_close_stop_2_0x_intraday_catastrophic_3_0x`
 
-- replay_date
-- ticker
-- reference_price
-- entry_date
-- entry_price
-- entry_gap_pct = entry_price / reference_price - 1
-- current stop_loss
-- current target_1
-- current target_2
-- current exit_date
-- current exit_reason
-- current pnl_dollars
-- current trade_return_pct
-- current account_return_pct
-- forward_return_1d / 3d / 5d / 10d / 20d
-- max_favorable_excursion_20d
-- max_adverse_excursion_20d
-- stopped_out_then_20d_positive
-- stopped_out_then_20d_above_target_1
-- stopped_out_then_20d_above_target_2
-- recovered_after_stop_within_20d
-- days_to_stop
-- days_to_target_1_if_any
-- days_to_target_2_if_any
-- days_to_max_favorable_20d
-- days_to_max_adverse_20d
+Definitions:
 
-Use future data only for diagnostics after the historical decision has already been recorded. Do not let future data affect selection or ranking.
+- `close_based_stop_2_0x_with_intraday_breach_flag`: same exit behavior as close-based stop, but records every trade where intraday low breached the stop before the close-based exit.
+- `close_confirmed_stop_2_0x_next_open_exit`: stop triggers only when close <= stop; exit at next trading day's open if available, otherwise close.
+- `hybrid_close_stop_2_0x_intraday_catastrophic_3_0x`: primary stop is close-based 2.0x ATR; catastrophic intraday stop exits if price breaches 3.0x ATR intraday.
 
-## Part 2: Exit Policy Comparison
-
-Compare baseline selection under multiple execution policies. The selected ticker/date set must stay fixed.
-
-At minimum compare:
-
-1. `baseline_current`: existing simulator behavior.
-2. `atr_stop_1_5x`: current 1.5 ATR stop and current targets.
-3. `atr_stop_2_0x`: 2.0 ATR stop, target_1 = 2R, target_2 = 4R.
-4. `atr_stop_2_5x`: 2.5 ATR stop, target_1 = 2R, target_2 = 4R.
-5. `atr_stop_3_0x`: 3.0 ATR stop, target_1 = 2R, target_2 = 4R.
-6. `time_exit_20d_no_intraday_stop`: buy next session, hold to 20 trading days or last available bar; diagnostic only.
-7. `close_based_stop_1_5x`: stop only if close <= stop; diagnostic only.
-8. `close_based_stop_2_0x`: stop only if close <= stop; diagnostic only.
-
-For each policy report:
-
-- buy_count
-- executed_count
-- win_rate
-- trade_simulation_accuracy
-- average win
-- average loss
-- profit factor
-- ending account value
-- max drawdown
-- worst trade account loss
-- stop count
-- target_1 count
-- target_2 count
-- time_exit count
-- median holding days
-- average entry_gap_pct
-- percentage of stopped trades that were 20d-positive
-
-Important: these are diagnostics only. Do not automatically adopt any policy.
-
-## Part 3: Drawdown Attribution
-
-Create ticker and trade-level attribution.
-
-For each ticker selected in Phase 1A, report:
-
-- selection count
-- total pnl_dollars
-- average pnl_dollars
-- win rate
-- worst trade pnl_dollars
-- worst account_return_pct
-- contribution_to_total_profit_pct
-- contribution_to_total_loss_pct
-- max consecutive losses if selected multiple times
-
-Also report:
-
-- biggest equity peak-to-trough drawdown period
-- trades inside the worst drawdown period
-- whether removing the single best trade leaves ending account value above $105
-- whether removing the single worst trade improves max drawdown above -35%
-- whether any one ticker contributes more than 50% of total profit
-- whether any one ticker contributes more than 50% of total loss
-
-## Part 4: Robustness Check Across Samples
-
-Add optional CLI flags:
-
-```bash
---phase1b-execution-diagnostics
---replay-rounds 100
---replay-sample-offset 0
---replay-sample-count 5
-```
-
-If `--replay-sample-count 5` is used, run five deterministic 100-round samples across the same date range using offsets 0 through 4. Each sample should still cover the full 2024-01-01 to 2026-06-30 period.
-
-Report for each sample:
+Required columns:
 
 - sample_id
 - replay_rounds
+- policy
 - buy_count
-- 20d accuracy
-- baseline ending account value
-- baseline max drawdown
-- baseline trade-simulation accuracy
-- best alternative policy by ending account value subject to max drawdown better than -35%
-- whether any policy achieved all Phase 1B research gates below
+- no_trade_count
+- executed_count
+- trade_simulation_accuracy
+- accuracy_1d
+- accuracy_3d
+- accuracy_5d
+- accuracy_10d
+- accuracy_20d
+- average_return_20d
+- median_return_20d
+- average_win
+- average_loss
+- profit_factor
+- ending_account_value
+- max_drawdown
+- worst_trade_account_loss
+- ending_value_excluding_best_trade
+- top_ticker_profit_share
+- top_ticker_loss_share
+- stop_count
+- target_1_count
+- target_2_count
+- time_exit_count
+- median_holding_days
+- average_entry_gap_pct
+- intraday_stop_breach_count
+- intraday_stop_breach_rate
+- passes_phase1c_policy_gate
 
-Do not use random sampling unless a fixed seed is explicitly provided. Deterministic reproducibility is required.
+## Part 2: Sample Failure Analysis
 
-## Part 5: Phase 1B Research Gates
+Create `phase1c_sample_failure_trades.csv`.
 
-Mark Phase 1B status as one of:
+Focus especially on samples that fail:
 
-- `PHASE_1B_FAILED`
-- `PHASE_1B_NEEDS_MORE_ITERATION`
-- `PHASE_1B_EXECUTION_POLICY_PROMISING_NOT_APPROVED`
+- ending account value <= $100
+- max drawdown <= -35%
+- trade_simulation_accuracy < 50%
+- 20d accuracy <= 50%
+
+For every losing trade in failing samples, record:
+
+- sample_id
+- replay_date
+- ticker
+- entry_date
+- entry_price
+- reference_price
+- entry_gap_pct
+- exit_date
+- exit_reason
+- pnl_dollars
+- trade_return_pct
+- account_return_pct
+- forward_return_20d
+- max_favorable_excursion_20d
+- max_adverse_excursion_20d
+- stopped_out_then_20d_positive
+- intraday_stop_breached
+- close_recovered_after_intraday_breach
+- days_to_stop
+- days_to_max_adverse_20d
+- failed_checks_at_selection if available
+- decision_strength
+- smoke_score
+- sector_or_theme if available, otherwise blank
+
+The summary must explain whether failing samples were caused mostly by:
+
+- a few outlier tickers
+- repeated losses in one theme, such as EV, AI, small-cap momentum, crypto-adjacent, or semiconductor
+- bad entry gaps
+- broad market regime
+- stop assumptions
+- weak entry signal quality
+- sample-selection luck
+
+## Part 3: Close-Based Stop Realism
+
+Create `phase1c_close_stop_realism.csv`.
+
+For every BUY candidate where `close_based_stop_2_0x` differs from `baseline_current` or where intraday low breaches the close-based stop, record:
+
+- sample_id
+- replay_date
+- ticker
+- policy
+- baseline_exit_reason
+- close_based_exit_reason
+- baseline_pnl_dollars
+- close_based_pnl_dollars
+- intraday_low_breached_close_stop
+- breach_date
+- breach_low
+- breach_stop_price
+- same_day_close
+- same_day_recovered_above_stop
+- next_day_open_after_close_stop
+- close_confirmed_exit_pnl_dollars
+- hybrid_catastrophic_exit_pnl_dollars
+- realism_warning
+
+`realism_warning` should be one of:
+
+- `NO_WARNING`
+- `INTRADAY_STOP_BREACH_IGNORED_BY_CLOSE_STOP`
+- `GAP_BEYOND_STOP`
+- `CLOSE_STOP_REQUIRES_NEXT_OPEN_SLIPPAGE`
+- `POLICY_TOO_OPTIMISTIC_FOR_RESEARCH_GATE`
+
+The markdown summary must explicitly state whether `close_based_stop_2_0x` remains a plausible hypothesis after realism checks.
+
+## Part 4: Regime and Theme Attribution
+
+Create `phase1c_regime_attribution.csv`.
+
+For each sample and quarter/month, aggregate:
+
+- sample_id
+- period
+- policy
+- trade_count
+- win_count
+- loss_count
+- total_pnl_dollars
+- average_pnl_dollars
+- max_drawdown_contribution
+- tickers_in_period
+- worst_ticker
+- worst_trade_pnl_dollars
+- average_entry_gap_pct
+- average_forward_return_20d
+
+If sector/theme metadata is available or easy to derive, also aggregate by ticker theme. If not available, use a deterministic local mapping for repeated tickers in the report, for example:
+
+- EV / mobility: RIVN, F, ACHR, JOBY
+- AI / software: AI, PLTR, PATH, BBAI
+- semiconductor / hardware: SMCI, INTC, HPE
+- crypto-adjacent / high beta: CORZ, IREN, HOOD
+- space / defense / nuclear: RKLB, KTOS, OKLO, CCJ
+
+Do not use external web lookup for theme mapping unless already available; keep it deterministic and documented.
+
+## Part 5: Phase 1C Research Gates
+
+Mark Phase 1C status as one of:
+
+- `PHASE_1C_FAILED`
+- `PHASE_1C_NEEDS_ENTRY_RULE_WORK`
+- `PHASE_1C_EXECUTION_HYPOTHESIS_NEEDS_REALISM_WORK`
+- `PHASE_1C_ROBUSTNESS_PROMISING_NOT_APPROVED`
 
 Do not mark Phase 2 ready from this task.
 
 Suggested status logic:
 
-- `PHASE_1B_FAILED` if no tested policy has ending account value > $100 across the baseline sample.
-- `PHASE_1B_NEEDS_MORE_ITERATION` if returns improve but max drawdown remains <= -35%, or trade-simulation accuracy remains < 50%.
-- `PHASE_1B_EXECUTION_POLICY_PROMISING_NOT_APPROVED` only if at least one policy has:
-  - ending account value > $120
-  - max drawdown better than -35%
-  - trade-simulation accuracy >= 50%
-  - worst trade account loss better than -15%
-  - at least 20 BUY decisions
-  - removing the single best trade leaves ending account value > $105
-  - no single ticker contributes more than 50% of total profit
+- `PHASE_1C_FAILED` if no policy has median ending account value > $100 across all samples.
+- `PHASE_1C_NEEDS_ENTRY_RULE_WORK` if execution variants cannot prevent repeated failing samples or if 20d accuracy is weak in multiple samples.
+- `PHASE_1C_EXECUTION_HYPOTHESIS_NEEDS_REALISM_WORK` if close-based policies look good only when intraday breaches are ignored.
+- `PHASE_1C_ROBUSTNESS_PROMISING_NOT_APPROVED` only if at least one realistic policy has:
+  - median ending account value > $120 across samples
+  - worst-sample ending account value > $100
+  - median max drawdown better than -35%
+  - worst-sample max drawdown better than -45%
+  - median trade-simulation accuracy >= 50%
+  - at least 20 BUY decisions in each sample
+  - ending value excluding best trade > $105 in the median sample
+  - no single ticker contributes more than 50% of total profit in any passing sample
 
 Even if promising, this is not paper-trading approval. GPT review required.
 
 ## Part 6: Markdown Summary Requirements
 
-`phase1b_execution_summary.md` must start with:
+`phase1c_robustness_summary.md` must start with:
 
 ```text
-PHOENIX NANO PHASE 1B — EXECUTION RISK AND DRAWDOWN DIAGNOSTICS
+PHOENIX NANO PHASE 1C — ROBUSTNESS FAILURE ANALYSIS AND CLOSE-STOP REALISM
 ```
 
 It must include:
 
-- baseline Phase 1A recap
-- core problem diagnosis
-- exit policy comparison table
-- drawdown attribution
-- stopped-out-but-later-positive count and rate
-- ticker concentration analysis
-- sample robustness results if multiple samples were run
-- Phase 1B status
-- explicit statement: `Research/manual-review only. Do not start paper trading or live trading.`
+- research/manual-review only statement
+- Phase 1B recap
+- policy robustness matrix summary
+- best policy by median ending value
+- best realistic policy after intraday-breach penalties
+- number of passing samples per policy
+- worst sample per policy
+- sample 3 and 4 failure explanation
+- close-based stop realism findings
+- regime/theme attribution
+- whether the current problem is mostly entry-rule weakness or execution-rule weakness
+- Phase 1C status
+- explicit statement: `Do not start paper trading or live trading.`
 - concrete recommendation for the next research task
 
 ## Part 7: Tests
 
 Add or update tests for:
 
-1. Execution diagnostics do not change the selected ticker/date decisions.
-2. Future data is used only after decisions are recorded.
-3. Entry gap is computed correctly.
-4. Stopped-out-then-20d-positive detection is correct.
-5. Exit policy comparison computes win rate, profit factor, ending value, and drawdown correctly.
-6. One-position-at-a-time account replay is respected for each policy.
-7. Ticker risk attribution identifies concentration.
-8. Sample offsets are deterministic and produce exactly the requested number of rounds.
+1. Phase 1C sample generation is deterministic and creates the requested number of rounds per sample.
+2. Policy robustness matrix contains every sample-policy combination.
+3. Close-based stop realism flags intraday breaches correctly.
+4. Close-confirmed next-open stop exits at the next open, not the same close.
+5. Hybrid catastrophic stop exits on intraday catastrophic breach.
+6. Failing sample trades are captured when sample gates fail.
+7. Regime attribution aggregates trades by period and policy.
+8. Phase 1C status logic does not approve Phase 2.
 9. Reports are written.
 10. Full pytest suite passes.
 
@@ -252,7 +320,7 @@ Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1b-execution-diagnostics --replay-rounds 100 --replay-sample-count 5
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1c-robustness-analysis --replay-rounds 100 --replay-sample-count 10
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -263,18 +331,16 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1B Execution Diagnostic Summary
-- Baseline Phase 1A recap
-- Exit policy comparison
-- Best diagnostic policy, if any
-- Baseline vs best-policy ending account value
-- Baseline vs best-policy max drawdown
-- Baseline vs best-policy trade-simulation accuracy
-- Stopped-out-then-20d-positive rate
-- Drawdown attribution
-- Ticker concentration findings
-- Robustness across samples
-- Phase 1B status
+- Phase 1C Robustness Summary
+- Policy robustness matrix summary
+- Best policy by median ending account value
+- Best realistic policy after intraday-breach penalties
+- Passing sample count per policy
+- Worst sample per policy
+- Sample 3 and 4 failure explanation
+- Close-stop realism findings
+- Regime/theme attribution
+- Phase 1C status
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
