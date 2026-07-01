@@ -2,156 +2,136 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Daily Scan v1.4 — History Ledger and Calendar Stale Gate
+## Current Task: Phoenix Nano v1.5 — Near-Miss Outcome Tracker
 
-Latest review state:
+Latest state:
 
-- The executable-first daily scan is working.
-- High-priced symbols such as AMAT and AMD are no longer shown as executable near-misses.
+- Executable-first daily scan is working.
+- Daily scan history ledger exists.
 - The latest final action remains `NO_TRADE_MANUAL_REVIEW`.
+- The latest closest executable near-miss list included RIVN, SDGR, PATH, S, and F.
 - No candidate is approved for paper trading or live trading.
-- `nano_daily_scan.csv` is now multi-row, but it is still not a durable research ledger.
-- `data/reports/nano_daily_scan_history.csv` does not exist yet.
-- Stale-data detection still needs a market-calendar-aware expected trading date.
 
-## Highest-Priority Improvement
+David may manually watch the top near-miss, but Phoenix must continue training from data, not from subjective preference.
 
-Create a reliable longitudinal research ledger and calendar-aware stale-data gate before considering any rule change, threshold tuning, paper trading, or live trading.
+## Goal
+
+Build a near-miss outcome tracker so Phoenix can learn whether rejected but executable near-misses were actually worth watching.
 
 Do not loosen Candidate 34 thresholds in this task.
 Do not start paper trading.
 Do not start live trading.
-Keep all output research/manual-review only.
+Keep all outputs research/manual-review only.
+
+## Key Question
+
+For each executable near-miss from the daily scan history, what happened after the signal date?
+
+Track forward outcomes for 1, 3, 5, 10, and 20 trading days, but use them only for post-hoc research diagnostics. Do not use forward outcomes to create today's signal.
 
 ## Required Outputs
 
-Update or create:
+Create or update:
 
-- `data/reports/nano_daily_scan.csv`
-- `data/reports/nano_daily_scan.md`
-- `data/reports/nano_daily_scan_history.csv`
+- `data/reports/nano_near_miss_outcomes.csv`
+- `data/reports/nano_near_miss_outcomes.md`
 - `REPORT_TO_GPT.md`
 
-## Part 1: Enrich Current Diagnostic CSV
+## Part 1: Read History Ledger
 
-`data/reports/nano_daily_scan.csv` must include machine-readable scan metadata and factor diagnostics on each applicable row.
-
-Required columns:
-
-- scan_timestamp_utc
-- latest_data_date
-- expected_latest_trading_date
-- is_stale
-- data_source
-- row_type
-- ticker
-- action
-- status
-- reference_price
-- shares_with_100
-- estimated_total_cost
-- estimated_cash_remaining
-- affordability_pass
-- max_entry_price_pass
-- signal_rule_pass
-- full_rule_pass
-- smoke_score
-- decision_strength
-- relative_volume_prev20
-- return_5d
-- return_20d
-- distance_to_52w_high_prev
-- dollar_volume
-- failed_checks
-- rejection_reason
-
-Required row_type values:
-
-- FINAL
-- EXECUTABLE_NEAR_MISS
-- REJECTED_BEFORE_NANO_RANKING
-
-Rules:
-
-- Keep up to 5 `EXECUTABLE_NEAR_MISS` rows.
-- Keep at most 10 `REJECTED_BEFORE_NANO_RANKING` sample rows.
-- Every `EXECUTABLE_NEAR_MISS` row must be affordable for a $100 whole-share account and must pass Candidate 34 max_entry_price.
-- High-priced or unaffordable symbols may appear only as rejected diagnostics.
-
-## Part 2: Add Append-Only History Ledger
-
-Create or update:
+Read:
 
 `data/reports/nano_daily_scan_history.csv`
 
-Rules:
+Use rows where:
 
-- Append the latest diagnostic CSV rows after each scan.
-- Preserve previous history rows.
-- Make reruns idempotent by de-duplicating on:
-  - scan_timestamp_utc
-  - latest_data_date
-  - row_type
-  - ticker
-- If the same EOD date is rescanned with a new timestamp, keep the new scan so GPT can compare repeated runs.
-- Include row counts by row_type in `REPORT_TO_GPT.md`.
+- row_type == `EXECUTABLE_NEAR_MISS`
+- affordability_pass == true
+- max_entry_price_pass == true
+- latest_data_date is present
+- ticker is present
 
-## Part 3: Market-Calendar-Aware Stale Gate
+Each near-miss observation should be uniquely identified by:
 
-Implement `expected_latest_trading_date` for the daily scan.
+- scan_timestamp_utc
+- latest_data_date
+- ticker
 
-Requirements:
+## Part 2: Add Outcome Windows
 
-- A weekend or US market holiday should not automatically make the latest completed EOD bar stale.
-- If a reliable market-calendar package is already available in the repo environment, use it.
-- If not, implement a small NYSE helper that handles weekdays plus common US market holidays.
-- Report both:
-  - `latest_data_date`
-  - `expected_latest_trading_date`
-- If `latest_data_date` is older than `expected_latest_trading_date`, output final action `NO_TRADE_MANUAL_REVIEW` with reason `STALE_DATA`.
+For each near-miss observation, compute forward outcomes from the latest_data_date close/reference price using available OHLCV data.
 
-## Part 4: Markdown Report
+Windows:
 
-Update `data/reports/nano_daily_scan.md` to include:
+- 1 trading day
+- 3 trading days
+- 5 trading days
+- 10 trading days
+- 20 trading days
 
-- Final action
-- Latest data date
-- Expected latest trading date
-- Stale/current status
-- Data source
-- Executable universe count
-- Rejected not affordable count
-- Rejected above max_entry_price count
-- History file path
-- History rows written in this run
-- History total row count
-- Closest Executable Near-Misses
-- Rejected Before Nano Ranking
+For each window, compute:
 
-Do not include unconditional trade language.
+- forward_return_close_to_close
+- max_favorable_excursion
+- max_adverse_excursion
+- hit_plus_5pct
+- hit_plus_10pct
+- hit_minus_5pct
+- hit_minus_10pct
+- data_complete flag
+
+If insufficient future bars exist, mark data_complete false and do not invent values.
+
+## Part 3: Explain Which Rule Failed
+
+Group outcomes by failed_checks.
+
+Questions to answer:
+
+1. Are near-misses that failed only `smoke_score_below_min` actually performing well afterward?
+2. Are near-misses that failed `relative_volume_prev20_below_min` underperforming or just early?
+3. Are near-misses with positive 5d and 20d return better than other near-misses?
+4. Does any failed check look too strict or useful?
+
+Do not change the rules yet. Only report evidence.
+
+## Part 4: Markdown Summary
+
+`nano_near_miss_outcomes.md` must include:
+
+- total near-miss observations
+- observations with complete 1d / 3d / 5d / 10d / 20d data
+- best near-miss by 5d return
+- worst near-miss by 5d return
+- best near-miss by 20d return if complete
+- worst near-miss by 20d return if complete
+- average forward return by window
+- hit rate for +5%, +10%, -5%, -10%
+- outcome summary by failed_checks
+- explicit statement: `Post-hoc research only. Do not use this as a live signal.`
 
 ## Part 5: Tests
 
 Add or update tests for:
 
-1. Diagnostic CSV contains `scan_timestamp_utc`, `latest_data_date`, `expected_latest_trading_date`, `is_stale`, and `data_source`.
-2. Diagnostic CSV has row types `FINAL`, `EXECUTABLE_NEAR_MISS`, and `REJECTED_BEFORE_NANO_RANKING` when those rows exist.
-3. `EXECUTABLE_NEAR_MISS` rows contain only affordable symbols under Candidate 34 max_entry_price.
-4. High-priced symbols appear only in rejected diagnostics.
-5. History CSV is created if missing.
-6. History CSV preserves previous rows.
-7. Re-running the same scan timestamp does not duplicate rows.
-8. Re-scanning the same latest_data_date with a new scan timestamp appends a new run.
-9. Weekend and holiday scans use the prior valid market trading date as expected latest trading date.
-10. Data older than expected latest trading date returns `NO_TRADE_MANUAL_REVIEW` with reason `STALE_DATA`.
-11. Reports remain research/manual-review only.
-12. Full pytest suite passes.
+1. Near-miss outcomes are computed only for EXECUTABLE_NEAR_MISS rows.
+2. Insufficient future data sets data_complete false.
+3. Forward outcomes are not used by the daily scan ranking.
+4. Outcome report groups by failed_checks.
+5. Reports are written.
+6. Full pytest suite passes.
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
 .venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-daily-scan
+```
+
+If a new CLI flag is needed, add:
+
+```bash
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-near-miss-outcomes
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -162,19 +142,10 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Final Daily Scan Action
-- Candidate ticker, if any
-- Latest data date used
-- Expected latest trading date
-- Is stale
-- Executable universe count
-- Rejected not affordable count
-- Rejected above max_entry_price count
-- Closest executable near-misses
-- Diagnostic CSV row counts by row_type
-- History CSV row counts by row_type
-- History rows written this run
-- Whether history append was idempotent
+- Near-Miss Outcome Summary
+- Best and Worst Near-Misses
+- Outcome by Failed Check
+- Whether any rule looks too strict based on evidence
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
