@@ -2,200 +2,145 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano v1.1 — Candidate 34 Robustness Review Before Paper Trading
+## Current Task: Phoenix Nano Daily Scan v0 — Current Data Manual-Review Candidate
 
-Phoenix Nano v1 correctly reset the system around a $100 whole-share account.
+David does not want a blind GPT-picked stock. The daily stock candidate must come from Phoenix Nano rules run on the latest available market data.
 
-Important result:
+Goal:
+Run a current-date Phoenix Nano scan using the best currently reviewed rule family, especially Candidate 34 / Nano constraints, and output either exactly one manual-review candidate or `NO_TRADE_MANUAL_REVIEW`.
 
-- 250 Nano candidate variants were evaluated.
-- 1 candidate became `NANO_RESEARCH_QUALIFIED_NOT_LIVE`.
-- Candidate 34 is the first historically research-qualified Nano candidate.
-- Candidate 34: max entry price $50, 27 executed trades, ending equity $164.06, total return 64.06%, max drawdown -31.29%, profit factor 1.3075, win rate 48.15%, worst account trade loss -11.78%, 14 traded tickers.
+This is **not live trading** and not financial advice. This is for David's manual validation only.
 
-This is progress, but Candidate 34 is not approved for paper trading yet.
-
-Reasons:
-
-- Only 27 executed trades.
-- Max drawdown is close to the -35% gate.
-- Ending equity excluding best trade is only about $120.59, barely above the $120 gate.
-- Top ticker profit share is 31.95%, acceptable but still meaningful.
-
-Do not start paper trading.
+Do not add news, SEC, short interest, options, LLM ranking, paid data, or external APIs.
 Do not start live trading.
 Do not label anything live-tradable.
-Do not change Candidate 34 rules in this task.
 
-## Goal
+## Hard Account Constraint
 
-Perform a deep robustness and path review of Candidate 34 exactly as-is.
+The account is a $100 whole-share account.
 
-The output should answer:
+Default:
 
-1. Is Candidate 34 strong enough to freeze for paper-trading review?
-2. Is performance stable by year, quarter, and month?
-3. Does the equity curve depend too much on one trade, one ticker, or one short period?
-4. Are the drawdowns survivable for a $100 account?
-5. What exact trade template would Candidate 34 produce if later approved for paper trading?
+- starting_capital: 100.0
+- fractional_shares: false
+- whole shares only
+- max_entry_price: use Candidate 34 max entry price if available, otherwise $50
+- if the account cannot buy at least 1 share, output NO_TRADE_MANUAL_REVIEW
 
-## Part 1: Freeze Candidate 34 Parameters
+Every candidate output must include:
 
-Extract and record Candidate 34’s exact rule parameters from `auto_research_generations.csv`.
-
-Create:
-
-`data/reports/nano_candidate_34_parameters.md`
-
-Include:
-
-- candidate_id
-- max_entry_price
-- all smoke/decision rule parameters
-- account settings
-- max position settings
-- stop/target settings
-- exact historical run date range
-
-Do not modify the rules.
-
-## Part 2: Candidate 34 Trade List
-
-Create:
-
-`data/reports/nano_candidate_34_trades.csv`
-
-This should include only Candidate 34 executed trades and all relevant fields:
-
-- signal_date
-- entry_date
-- exit_date
 - ticker
-- adjusted_entry_price
-- shares
-- total_cost
-- cash_before
-- cash_after_entry
-- exit_price
-- exit_reason
-- cash_after_exit
-- trade_return_pct
-- account_return_pct
-- dollar_pnl
-- stop_loss
-- target_1
-- target_2
-- dollar_risk
+- latest data date used
+- action: MANUAL_REVIEW_CANDIDATE or NO_TRADE_MANUAL_REVIEW
+- reference price
+- estimated shares with $100
+- estimated total cost
+- estimated cash remaining
+- stop loss
+- target 1
+- target 2
+- max dollar risk
+- expected holding period
+- reason
+- all rule checks passed/failed
 
-## Part 3: Monthly / Quarterly / Yearly Robustness
+## Part 1: Use Latest Available Market Data
 
-Create:
+Add or update a daily scan command that fetches the latest available OHLCV data.
 
-`data/reports/nano_candidate_34_period_review.csv`
-`data/reports/nano_candidate_34_period_review.md`
+Important:
 
-For Candidate 34, report by:
+- The system is still EOD-based.
+- If today's EOD daily bar is unavailable, use the latest completed daily bar and explicitly report the `latest_data_date`.
+- Do not pretend intraday data is EOD data.
+- If market data is stale, output `NO_TRADE_MANUAL_REVIEW` with reason `STALE_DATA`.
 
-- year
-- quarter
-- month
+Create output:
 
-Metrics:
+`data/reports/nano_daily_scan.csv`
+`data/reports/nano_daily_scan.md`
 
-- starting equity
-- ending equity
-- period return
-- executed trades
-- win rate
-- profit factor
-- max drawdown within period
-- worst trade
-- best trade
-- stop hit count
-- target 1 hit count
-- target 2 hit count
-- time exit count
+## Part 2: Candidate 34 Rule Application
 
-## Part 4: Dependency / Fragility Tests
+Use Candidate 34 parameters if they can be extracted from prior generated files. If not available, use the Nano v1 rule family that produced Candidate 34:
 
-For Candidate 34, compute:
+- max_entry_price: 50
+- $100 whole-share affordability
+- same smoke ranking factors as current system
+- do not use forward returns
+- do not use realized returns
+- use only signal-date-safe factors
 
-- ending equity excluding single best trade
-- ending equity excluding single worst trade
-- ending equity excluding top profit ticker
-- ending equity excluding top 3 profit tickers
-- ending equity excluding worst loss ticker
-- ending equity excluding best month
-- ending equity excluding best quarter
-- ending equity using only 2024 trades
-- ending equity using only 2025 trades
-- ending equity using only 2026 trades
-- first-half period result versus second-half period result
+Apply the rule to the latest available date.
 
-Create:
+If multiple candidates pass, choose the highest decision strength candidate.
 
-`data/reports/nano_candidate_34_fragility.md`
+If no candidates pass, output `NO_TRADE_MANUAL_REVIEW`.
 
-This report must explicitly say whether Candidate 34 is:
+## Part 3: Output Exactly One Result
 
-- `ROBUST_ENOUGH_FOR_PAPER_REVIEW`
-- or `NOT_ROBUST_ENOUGH`
-
-Criteria for `ROBUST_ENOUGH_FOR_PAPER_REVIEW`:
-
-1. Ending equity excluding best single trade remains above $115.
-2. Ending equity excluding top profit ticker remains above $110.
-3. No single month contributes more than 50% of total profit.
-4. At least 2 different calendar years are profitable or approximately flat, defined as ending equity >= $95 if run standalone.
-5. Max drawdown remains better than -35% in the base run.
-6. Worst trade account loss remains better than -15%.
-
-If any fail, mark `NOT_ROBUST_ENOUGH`.
-
-## Part 5: Paper Trading Template, But Do Not Start Paper Trading
-
-Create:
-
-`data/reports/nano_candidate_34_paper_template.md`
-
-This is only a template, not a live signal.
-
-It should show what a future paper-trading signal would look like:
+The markdown report must start with one of:
 
 ```text
-PHOENIX NANO PAPER CANDIDATE
-Status: NOT ACTIVE UNTIL GPT APPROVAL
-Account: $100 whole-share account
-Action: BUY / NO TRADE
+PHOENIX NANO DAILY SCAN
+Action: MANUAL_REVIEW_CANDIDATE
+```
+
+or
+
+```text
+PHOENIX NANO DAILY SCAN
+Action: NO_TRADE_MANUAL_REVIEW
+```
+
+If there is a candidate, include:
+
+```text
 Ticker:
-Entry:
-Shares:
-Total Cost:
-Cash Remaining:
-Stop Loss:
+Latest data date:
+Reference price:
+Shares with $100:
+Estimated total cost:
+Estimated cash remaining:
+Stop loss:
 Target 1:
 Target 2:
-Max Dollar Risk:
-Expected Holding:
+Max dollar risk:
+Expected holding period:
 Reason:
 ```
 
-Include a clear warning:
+Also include a table of top 5 scanned candidates with pass/fail flags.
 
-`This is not active paper trading yet.`
+## Part 4: CLI
 
-## Part 6: Tests
+Add CLI flag:
+
+`--nano-daily-scan`
+
+Example:
+
+```bash
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-daily-scan
+```
+
+The command should write:
+
+- `data/reports/nano_daily_scan.csv`
+- `data/reports/nano_daily_scan.md`
+
+## Part 5: Tests
 
 Add tests for:
 
-1. Candidate 34 extraction returns exactly one candidate configuration.
-2. Candidate 34 trade list includes only candidate_id 34.
-3. Fragility test fails if excluding best trade drops equity below threshold.
-4. Period review groups by year, quarter, and month correctly.
-5. Paper template does not contain a live BUY recommendation.
+1. Daily scan outputs exactly one action.
+2. A stock above $100 is rejected for whole-share $100 account.
+3. A candidate below max_entry_price and affordable can produce MANUAL_REVIEW_CANDIDATE.
+4. If latest data is stale, output NO_TRADE_MANUAL_REVIEW.
+5. Daily scan does not use forward returns or realized trade outcomes.
 6. Reports are written.
 
-## Part 7: Update REPORT_TO_GPT.md
+## Part 6: Update REPORT_TO_GPT.md
 
 When done, update `REPORT_TO_GPT.md` with:
 
@@ -204,10 +149,10 @@ When done, update `REPORT_TO_GPT.md` with:
 - How To Run
 - Output
 - Test Results
-- Candidate 34 Parameter Summary
-- Candidate 34 Period Review Summary
-- Candidate 34 Fragility Summary
-- Final Candidate 34 status: `ROBUST_ENOUGH_FOR_PAPER_REVIEW` or `NOT_ROBUST_ENOUGH`
+- Daily Scan Result
+- Candidate Ticker, if any
+- Latest data date used
+- Whether result is stale or current
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
@@ -217,4 +162,4 @@ When done, update `REPORT_TO_GPT.md` with:
 Commit, push, and stop.
 Do not start paper trading.
 Do not start live trading.
-Do not label Candidate 34 live-tradable.
+Do not label anything live-tradable.
