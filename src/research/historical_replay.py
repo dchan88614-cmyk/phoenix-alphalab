@@ -25,6 +25,7 @@ def build_phase1_historical_replay(
     rule: CandidateRule,
     replay_rounds: int = 100,
     benchmark_ticker: str = "SPY",
+    replay_sample_offset: int = 0,
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
     required = {"date", "ticker", "open", "high", "low", "close", "atr", *SMOKE_RANK_FACTORS}
     missing = required.difference(data.columns)
@@ -35,7 +36,12 @@ def build_phase1_historical_replay(
     frame["date"] = pd.to_datetime(frame["date"])
     frame = frame.sort_values(["date", "ticker"]).reset_index(drop=True)
 
-    replay_dates = sample_replay_dates(frame, replay_rounds, benchmark_ticker=benchmark_ticker)
+    replay_dates = sample_replay_dates(
+        frame,
+        replay_rounds,
+        benchmark_ticker=benchmark_ticker,
+        replay_sample_offset=replay_sample_offset,
+    )
     decisions: list[dict] = []
     near_miss_frames: list[pd.DataFrame] = []
     cash = float(account_settings.starting_capital)
@@ -122,7 +128,12 @@ def build_phase1_historical_replay(
     return decisions_frame, near_misses, summary
 
 
-def sample_replay_dates(data: pd.DataFrame, replay_rounds: int, benchmark_ticker: str = "SPY") -> list[pd.Timestamp]:
+def sample_replay_dates(
+    data: pd.DataFrame,
+    replay_rounds: int,
+    benchmark_ticker: str = "SPY",
+    replay_sample_offset: int = 0,
+) -> list[pd.Timestamp]:
     frame = data.copy()
     frame["date"] = pd.to_datetime(frame["date"])
     required_signal_columns = ["close", "atr", *SMOKE_RANK_FACTORS]
@@ -137,7 +148,10 @@ def sample_replay_dates(data: pd.DataFrame, replay_rounds: int, benchmark_ticker
         raise ValueError("replay_rounds must be positive.")
     if replay_rounds == 1:
         return [dates[-1]]
-    positions = [round(index * (len(dates) - 1) / (replay_rounds - 1)) for index in range(replay_rounds)]
+    positions = [
+        min(len(dates) - 1, round(index * (len(dates) - 1) / (replay_rounds - 1)) + max(0, replay_sample_offset))
+        for index in range(replay_rounds)
+    ]
     sampled = [dates[position] for position in positions]
     deduped: list[pd.Timestamp] = []
     used: set[pd.Timestamp] = set()

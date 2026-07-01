@@ -46,6 +46,7 @@ from src.research.concentration import (
     write_regime_markdown,
 )
 from src.research.historical_replay import build_phase1_historical_replay, write_phase1_historical_replay_reports
+from src.research.execution_diagnostics import build_phase1b_execution_diagnostics, write_phase1b_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -246,6 +247,40 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1A historical replay summary Markdown: %s", replay_summary_path)
         logger.info("Wrote Phase 1A historical replay near misses CSV: %s", replay_near_misses_path)
 
+    if args.phase1b_execution_diagnostics:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        diagnostics, comparison, attribution, phase1b_summary = build_phase1b_execution_diagnostics(
+            research_dataset,
+            account_settings=account_settings,
+            rule=candidate_rule,
+            replay_rounds=int(args.replay_rounds),
+            replay_sample_offset=int(args.replay_sample_offset),
+            replay_sample_count=int(args.replay_sample_count),
+            benchmark_ticker=benchmark,
+        )
+        phase1b_diagnostics_path = reports_dir / "phase1b_execution_diagnostics.csv"
+        phase1b_summary_path = reports_dir / "phase1b_execution_summary.md"
+        phase1b_comparison_path = reports_dir / "phase1b_exit_policy_comparison.csv"
+        phase1b_attribution_path = reports_dir / "phase1b_ticker_risk_attribution.csv"
+        write_phase1b_reports(
+            diagnostics,
+            comparison,
+            attribution,
+            phase1b_summary,
+            phase1b_diagnostics_path,
+            phase1b_summary_path,
+            phase1b_comparison_path,
+            phase1b_attribution_path,
+        )
+        logger.info("Wrote Phase 1B execution diagnostics CSV: %s", phase1b_diagnostics_path)
+        logger.info("Wrote Phase 1B execution summary Markdown: %s", phase1b_summary_path)
+        logger.info("Wrote Phase 1B exit policy comparison CSV: %s", phase1b_comparison_path)
+        logger.info("Wrote Phase 1B ticker risk attribution CSV: %s", phase1b_attribution_path)
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -388,6 +423,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run Phoenix Nano Phase 1A historical replay rounds",
     )
     parser.add_argument("--replay-rounds", type=int, default=100, help="Number of Phase 1A historical replay rounds")
+    parser.add_argument(
+        "--phase1b-execution-diagnostics",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1B execution risk and drawdown diagnostics",
+    )
+    parser.add_argument("--replay-sample-offset", type=int, default=0, help="Deterministic Phase 1 replay sample offset")
+    parser.add_argument("--replay-sample-count", type=int, default=1, help="Number of deterministic replay samples for Phase 1B")
     return parser
 
 
