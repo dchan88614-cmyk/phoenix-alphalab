@@ -9,30 +9,32 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Daily Scan v1.2 - Fix Ranking Order and Executable Diagnostics.
-- Confirmed daily scan now splits latest rows into executable candidates and rejected-before-ranking rows before ranking.
-- Ranked only executable candidates.
-- Applied Candidate 34 checks only after executable filtering.
-- Kept high-priced or unaffordable names out of `Closest Executable Near-Misses`.
-- Added deterministic CSV row types:
+- Executed the latest `TASKS.md`: Phoenix Nano Daily Scan v1.4 - History Ledger and Calendar Stale Gate.
+- Enriched `data/reports/nano_daily_scan.csv` into a machine-readable diagnostic CSV with scan metadata and factor diagnostics.
+- Added required row types:
   - `FINAL`
   - `EXECUTABLE_NEAR_MISS`
   - `REJECTED_BEFORE_NANO_RANKING`
-- Added required CSV columns including affordability flags, max-entry flags, `signal_rule_pass`, `full_rule_pass`, and `failed_checks`.
-- Added `decision_strength` and `signal_rule_pass` to the Markdown near-miss table.
-- Verified Markdown no longer contains `Top 5 Scanned Candidates`.
-- Did not use forward returns or realized outcomes.
+- Added append-only `data/reports/nano_daily_scan_history.csv`.
+- Made history append idempotent by de-duplicating on `scan_timestamp_utc`, `latest_data_date`, `row_type`, and `ticker`.
+- Preserved repeated scans of the same EOD date when the scan timestamp changes.
+- Added market-calendar-aware `expected_latest_trading_date` for the daily scan.
+- Added weekend and common NYSE holiday handling without adding a new dependency.
+- Updated Markdown daily scan report with expected latest trading date, history rows written, history total row count, and history file path.
+- Kept Candidate 34 thresholds frozen.
 - Did not start paper trading.
 - Did not start live trading.
-- Did not output live-tradable language.
+- Kept outputs research/manual-review only.
 
 ## Files Changed
 
 - `src/backtest/nano_daily_scan.py`
+- `src/main.py`
 - `tests/test_nano_daily_scan.py`
 - `data/reports/nano_daily_candidate_34_frozen_rules.md`
 - `data/reports/nano_daily_scan.csv`
 - `data/reports/nano_daily_scan.md`
+- `data/reports/nano_daily_scan_history.csv`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
@@ -46,13 +48,17 @@
 
 ```bash
 .venv/bin/python -m pytest tests/test_nano_daily_scan.py -q
-# 14 passed in 0.66s
+# 19 passed in 0.49s
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 65 passed, 1 warning in 1.32s
+# 71 passed, 1 warning in 1.38s
 ```
+
+Remaining warning:
+
+- macOS LibreSSL / urllib3 warning from the local Python environment.
 
 End-to-end command completed successfully:
 
@@ -66,10 +72,11 @@ End-to-end command completed successfully:
 - Status: `RESEARCH_ONLY_NOT_TRADABLE`
 - Candidate ticker: none
 - Latest data date used: `2026-06-30`
+- Expected latest trading date: `2026-06-30`
 - Is stale: false
 - Reason: `NO_CANDIDATE_PASSED_RULES`
 - Data source: `yfinance`
-- Scan timestamp UTC: `2026-07-01T20:55:45.486831+00:00`
+- Scan timestamp UTC: `2026-07-01T22:01:41.789282+00:00`
 
 ## Executable Diagnostics
 
@@ -78,43 +85,60 @@ End-to-end command completed successfully:
 - Rejected above max_entry_price count: 70
 - Candidate 34 max_entry_price: $50.00
 - Account: $100, whole shares only, 10 bps slippage
-- High-priced names in executable table: no
+- High-priced names in executable near-miss table: no
 
 ## Closest Executable Near-Misses
 
 | ticker | reference_price | shares_with_100 | estimated_total_cost | smoke_score | decision_strength | failed_checks |
 |:--|--:|--:|--:|--:|--:|:--|
-| RIVN | 17.35 | 5 | 86.84 | 0.7926 | 0.5075 | smoke score below min, relative volume below min |
-| SDGR | 16.25 | 6 | 97.60 | 0.7111 | 0.4419 | smoke score below min |
-| PATH | 10.87 | 9 | 97.93 | 0.6815 | 0.3705 | smoke score/rank gap/RVOL/52w distance checks failed |
-| S | 16.97 | 5 | 84.93 | 0.6741 | 0.3354 | smoke score/rank gap/RVOL checks failed |
-| F | 13.90 | 7 | 97.40 | 0.6667 | 0.3369 | smoke score/rank gap/RVOL/5d return checks failed |
+| RIVN | 17.35 | 5 | 86.84 | 0.7926 | 0.5075 | smoke_score_below_min, relative_volume_prev20_below_min |
+| SDGR | 16.25 | 6 | 97.60 | 0.7111 | 0.4419 | smoke_score_below_min |
+| PATH | 10.87 | 9 | 97.93 | 0.6815 | 0.3705 | smoke_score_below_min, rank_gap_below_min, relative_volume_prev20_below_min, distance_to_52w_high_prev_below_min |
+| S | 16.97 | 5 | 84.93 | 0.6741 | 0.3354 | smoke_score_below_min, rank_gap_below_min, relative_volume_prev20_below_min |
+| F | 13.90 | 7 | 97.40 | 0.6667 | 0.3369 | smoke_score_below_min, rank_gap_below_min, relative_volume_prev20_below_min, return_5d_not_positive |
 
-## Rejected-Before-Ranking Summary
+## Diagnostic CSV Row Counts By row_type
 
-- CSV includes 10 sample `REJECTED_BEFORE_NANO_RANKING` rows.
-- Sample rejected names include ASML, GEV, MU, AMAT, PWR, AMD, APP, LMT, NOC, and TER.
-- These rows were not eligible for Nano ranking because they failed affordability, max-entry, or both gates.
-- AMAT/AMD-style high-priced names remain only in rejected diagnostics, not in the executable near-miss table.
+| row_type | rows |
+|:--|--:|
+| FINAL | 1 |
+| EXECUTABLE_NEAR_MISS | 5 |
+| REJECTED_BEFORE_NANO_RANKING | 10 |
+
+## History CSV Row Counts By row_type
+
+| row_type | rows |
+|:--|--:|
+| FINAL | 2 |
+| EXECUTABLE_NEAR_MISS | 10 |
+| REJECTED_BEFORE_NANO_RANKING | 20 |
+
+## History Ledger
+
+- History file: `data/reports/nano_daily_scan_history.csv`
+- History rows written this run: 16
+- History total row count: 32
+- Unique scan timestamps in history: 2
+- History append idempotent: yes, covered by tests for same timestamp de-duplication.
+- Same latest_data_date with new scan timestamp appends a new run: yes, covered by tests and reflected in current history.
 
 ## Problems
 
 - No executable candidate passed the frozen Candidate 34 daily scan gate.
-- The executable universe exists, but the best executable names failed Candidate 34 strength or momentum/liquidity checks.
 - yfinance metadata rejected several watchlist tickers; `BITF` emitted a yfinance 404 and was rejected as metadata incomplete.
-- Existing pandas `pct_change` future warnings and macOS LibreSSL warning remain; neither blocked execution.
-- yfinance data remains non-institutional retail data and should not be treated as a live execution feed.
+- Existing pandas `pct_change` future warnings appeared during the end-to-end scan; they did not block execution.
+- yfinance data remains non-institutional retail data and should not be treated as an execution feed.
 
 ## Questions For GPT
 
-- Should GPT keep Candidate 34 frozen while daily near-misses accumulate, or request a separate Nano-specific candidate rule search constrained to executable stocks first?
-- Should daily scan history be appended over time so near-miss quality can be reviewed longitudinally?
-- Should stale-date checks become market-calendar-aware before any paper-trading workflow is considered?
+- Should GPT keep Candidate 34 frozen while the new history ledger accumulates more daily evidence?
+- Should the next task review the longitudinal near-miss ledger before any threshold search is allowed?
+- Should metadata quality issues be split into a separate watchlist hygiene task?
 
 ## Next Suggested Tasks
 
 - Do not start live trading.
 - Do not start paper trading until GPT explicitly approves.
 - Keep daily scan output manual-review only.
-- Add market-calendar-aware stale-date checks.
-- Add an append-only `nano_daily_scan_history.csv` if GPT wants longitudinal review.
+- Let the history ledger accumulate multiple daily scans before changing Candidate 34 thresholds.
+- Review rejected metadata names separately from signal quality.

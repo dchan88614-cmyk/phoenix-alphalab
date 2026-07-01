@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -152,6 +152,8 @@ def build_nano_daily_scan(
     if missing:
         raise ValueError(f"Nano daily scan missing required columns: {', '.join(missing)}")
 
+    expected_latest = expected_latest_trading_date(requested_end) if requested_end else None
+
     if rule is None:
         try:
             rule, _ = extract_candidate_34_rule()
@@ -164,6 +166,7 @@ def build_nano_daily_scan(
                 rejected_candidates=pd.DataFrame(),
                 stale=True,
                 rule=None,
+                expected_latest=expected_latest,
                 data_source=data_source,
                 scan_timestamp_utc=scan_timestamp_utc,
             )
@@ -181,6 +184,7 @@ def build_nano_daily_scan(
             rejected_candidates=pd.DataFrame(),
             stale=True,
             rule=rule,
+            expected_latest=expected_latest,
             data_source=data_source,
             scan_timestamp_utc=scan_timestamp_utc,
         )
@@ -188,7 +192,8 @@ def build_nano_daily_scan(
     latest_date = research["date"].max()
     latest = research.loc[research["date"].eq(latest_date)].copy()
     latest_data_date = latest_date.strftime("%Y-%m-%d")
-    stale = _is_stale(latest_date, requested_end, stale_after_calendar_days)
+    expected_latest = expected_latest or latest_date
+    stale = pd.Timestamp(latest_date).normalize() < pd.Timestamp(expected_latest).normalize()
 
     scanned, rejected = _score_latest_candidates(latest, rule, account_settings)
     if stale:
@@ -200,6 +205,7 @@ def build_nano_daily_scan(
             rejected_candidates=rejected,
             stale=True,
             rule=rule,
+            expected_latest=expected_latest,
             data_source=data_source,
             scan_timestamp_utc=scan_timestamp_utc,
         )
@@ -214,6 +220,7 @@ def build_nano_daily_scan(
             rejected_candidates=rejected,
             stale=False,
             rule=rule,
+            expected_latest=expected_latest,
             data_source=data_source,
             scan_timestamp_utc=scan_timestamp_utc,
         )
@@ -227,6 +234,7 @@ def build_nano_daily_scan(
         scanned,
         rejected,
         stale=False,
+        expected_latest=expected_latest,
         data_source=data_source,
         scan_timestamp_utc=scan_timestamp_utc,
     )
@@ -237,13 +245,43 @@ def write_nano_daily_scan_reports(
     metadata: dict,
     csv_path: str | Path,
     md_path: str | Path,
+    history_csv_path: str | Path | None = None,
 ) -> None:
     csv_output = Path(csv_path)
     md_output = Path(md_path)
     csv_output.parent.mkdir(parents=True, exist_ok=True)
     md_output.parent.mkdir(parents=True, exist_ok=True)
-    _daily_scan_csv(scan, metadata).to_csv(csv_output, index=False)
+    diagnostic = _daily_scan_csv(scan, metadata)
+    diagnostic.to_csv(csv_output, index=False)
+    if history_csv_path is not None:
+        history_path = Path(history_csv_path)
+        before_count = len(pd.read_csv(history_path)) if history_path.exists() else 0
+        history = append_scan_history(diagnostic, history_path)
+        metadata["history_rows_written"] = int(len(history) - before_count)
+        metadata["history_file_path"] = str(history_path)
+        metadata["history_total_row_count"] = int(len(history))
+    else:
+        metadata["history_rows_written"] = 0
+        metadata["history_file_path"] = ""
+        metadata["history_total_row_count"] = 0
     md_output.write_text(_daily_scan_markdown(scan, metadata), encoding="utf-8")
+
+
+def append_scan_history(diagnostic_rows: pd.DataFrame, history_csv_path: str | Path) -> pd.DataFrame:
+    path = Path(history_csv_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    existing = pd.read_csv(path) if path.exists() else pd.DataFrame(columns=diagnostic_rows.columns)
+    combined = diagnostic_rows.copy() if existing.empty else pd.concat([existing, diagnostic_rows], ignore_index=True)
+    for column in ["scan_timestamp_utc", "latest_data_date", "row_type", "ticker"]:
+        if column not in combined.columns:
+            combined[column] = ""
+        combined[column] = combined[column].fillna("").astype(str)
+    combined = combined.drop_duplicates(
+        subset=["scan_timestamp_utc", "latest_data_date", "row_type", "ticker"],
+        keep="last",
+    )
+    combined.to_csv(path, index=False)
+    return combined
 
 
 def _score_latest_candidates(
@@ -349,6 +387,7 @@ def _result_from_candidate(
     scanned: pd.DataFrame,
     rejected: pd.DataFrame,
     stale: bool,
+    expected_latest: pd.Timestamp,
     data_source: str,
     scan_timestamp_utc: str | None,
 ) -> tuple[pd.DataFrame, dict]:
@@ -377,7 +416,9 @@ def _result_from_candidate(
             }
         ]
     )
-    return result, _metadata(rule, account_settings, scanned, rejected, latest_data_date, stale, data_source, scan_timestamp_utc)
+    return result, _metadata(
+        rule, account_settings, scanned, rejected, latest_data_date, stale, expected_latest, data_source, scan_timestamp_utc
+    )
 
 
 def _no_trade_result(
@@ -388,6 +429,7 @@ def _no_trade_result(
     rejected_candidates: pd.DataFrame,
     stale: bool,
     rule: CandidateRule | None,
+    expected_latest: pd.Timestamp | None,
     data_source: str,
     scan_timestamp_utc: str | None,
 ) -> tuple[pd.DataFrame, dict]:
@@ -416,7 +458,17 @@ def _no_trade_result(
             }
         ]
     )
-    return result, _metadata(rule, account_settings, top_candidates, rejected_candidates, latest_data_date, stale, data_source, scan_timestamp_utc)
+    return result, _metadata(
+        rule,
+        account_settings,
+        top_candidates,
+        rejected_candidates,
+        latest_data_date,
+        stale,
+        expected_latest,
+        data_source,
+        scan_timestamp_utc,
+    )
 
 
 def _metadata(
@@ -426,6 +478,7 @@ def _metadata(
     rejected: pd.DataFrame,
     latest_data_date: str,
     stale: bool,
+    expected_latest: pd.Timestamp | None,
     data_source: str,
     scan_timestamp_utc: str | None,
 ) -> dict:
@@ -435,6 +488,9 @@ def _metadata(
         "top_candidates": scanned.head(5).copy() if not scanned.empty else pd.DataFrame(),
         "rejected_candidates": rejected.copy() if not rejected.empty else pd.DataFrame(),
         "latest_data_date": latest_data_date,
+        "expected_latest_trading_date": (
+            pd.Timestamp(expected_latest).strftime("%Y-%m-%d") if expected_latest is not None else ""
+        ),
         "is_stale": stale,
         "data_source": data_source,
         "scan_timestamp_utc": scan_timestamp_utc or datetime.now(timezone.utc).isoformat(),
@@ -472,6 +528,7 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
         "",
         f"Ticker: {row['ticker']}",
         f"Latest data date: {row['latest_data_date']}",
+        f"Expected latest trading date: {metadata['expected_latest_trading_date']}",
         f"Reference price: {_format_money(row['reference_price'])}",
         f"Shares with $100: {row['shares_with_100']}",
         f"Estimated total cost: {_format_money(row['estimated_total_cost'])}",
@@ -495,6 +552,9 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
         f"- Stale data: {metadata['is_stale']}",
         f"- Data source: {metadata['data_source']}",
         f"- Scan timestamp UTC: {metadata['scan_timestamp_utc']}",
+        f"- History rows written: {metadata.get('history_rows_written', 0)}",
+        f"- History total row count: {metadata.get('history_total_row_count', 0)}",
+        f"- History file path: {metadata.get('history_file_path', '')}",
         "",
     ]
     if action == MANUAL_REVIEW_CANDIDATE:
@@ -564,11 +624,20 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
 
 def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
     row = scan.iloc[0]
+    base = {
+        "scan_timestamp_utc": metadata["scan_timestamp_utc"],
+        "latest_data_date": row["latest_data_date"],
+        "expected_latest_trading_date": metadata["expected_latest_trading_date"],
+        "is_stale": row["is_stale"],
+        "data_source": metadata["data_source"],
+    }
     rows = [
         {
+            **base,
             "row_type": "FINAL",
             "ticker": row["ticker"],
             "action": row["action"],
+            "status": row["status"],
             "reference_price": row["reference_price"],
             "shares_with_100": row["shares_with_100"],
             "estimated_total_cost": row["estimated_total_cost"],
@@ -577,7 +646,15 @@ def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
             "max_entry_price_pass": pd.NA,
             "signal_rule_pass": row["all_rule_checks_passed"],
             "full_rule_pass": row["all_rule_checks_passed"],
+            "smoke_score": pd.NA,
+            "decision_strength": pd.NA,
+            "relative_volume_prev20": pd.NA,
+            "return_5d": pd.NA,
+            "return_20d": pd.NA,
+            "distance_to_52w_high_prev": pd.NA,
+            "dollar_volume": pd.NA,
             "failed_checks": "" if bool(row["all_rule_checks_passed"]) else row["reason"],
+            "rejection_reason": "",
         }
     ]
     top = metadata.get("top_candidates", pd.DataFrame())
@@ -585,9 +662,11 @@ def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
         for _, item in top.head(5).iterrows():
             rows.append(
                 {
+                    **base,
                     "row_type": "EXECUTABLE_NEAR_MISS",
                     "ticker": item["ticker"],
                     "action": row["action"],
+                    "status": row["status"],
                     "reference_price": item["reference_price"],
                     "shares_with_100": item["shares_with_100"],
                     "estimated_total_cost": item["estimated_total_cost"],
@@ -596,7 +675,15 @@ def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
                     "max_entry_price_pass": item["max_entry_price_pass"],
                     "signal_rule_pass": item["signal_rule_pass"],
                     "full_rule_pass": item["all_rule_checks_passed"],
+                    "smoke_score": item["smoke_score"],
+                    "decision_strength": item["decision_strength"],
+                    "relative_volume_prev20": item["relative_volume_prev20"],
+                    "return_5d": item["return_5d"],
+                    "return_20d": item["return_20d"],
+                    "distance_to_52w_high_prev": item["distance_to_52w_high_prev"],
+                    "dollar_volume": item["dollar_volume"],
                     "failed_checks": item["failed_checks"],
+                    "rejection_reason": "",
                 }
             )
     rejected = metadata.get("rejected_candidates", pd.DataFrame())
@@ -604,9 +691,11 @@ def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
         for _, item in rejected.head(10).iterrows():
             rows.append(
                 {
+                    **base,
                     "row_type": "REJECTED_BEFORE_NANO_RANKING",
                     "ticker": item["ticker"],
                     "action": row["action"],
+                    "status": row["status"],
                     "reference_price": item["reference_price"],
                     "shares_with_100": item["shares_with_100"],
                     "estimated_total_cost": item["estimated_total_cost"],
@@ -615,7 +704,15 @@ def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
                     "max_entry_price_pass": item["max_entry_price_pass"],
                     "signal_rule_pass": False,
                     "full_rule_pass": False,
+                    "smoke_score": pd.NA,
+                    "decision_strength": pd.NA,
+                    "relative_volume_prev20": item["relative_volume_prev20"],
+                    "return_5d": item["return_5d"],
+                    "return_20d": item["return_20d"],
+                    "distance_to_52w_high_prev": item["distance_to_52w_high_prev"],
+                    "dollar_volume": item["dollar_volume"],
                     "failed_checks": item["rejection_reason"],
+                    "rejection_reason": item["rejection_reason"],
                 }
             )
     return pd.DataFrame(rows)
@@ -627,6 +724,80 @@ def _is_stale(latest_data_date: pd.Timestamp, requested_end: str | None, stale_a
     end = pd.Timestamp(requested_end).normalize()
     latest = pd.Timestamp(latest_data_date).normalize()
     return (end - latest).days > stale_after_calendar_days
+
+
+def expected_latest_trading_date(as_of_date: str | pd.Timestamp) -> pd.Timestamp:
+    day = pd.Timestamp(as_of_date).normalize() - pd.Timedelta(days=1)
+    while not _is_trading_day(day):
+        day -= pd.Timedelta(days=1)
+    return day
+
+
+def _is_trading_day(day: pd.Timestamp) -> bool:
+    day = pd.Timestamp(day).normalize()
+    if day.weekday() >= 5:
+        return False
+    return day.date() not in _nyse_holidays(day.year)
+
+
+def _nyse_holidays(year: int) -> set:
+    holidays = {
+        _observed_fixed_holiday(year, 1, 1),
+        _nth_weekday(year, 1, 0, 3),  # Martin Luther King Jr. Day
+        _nth_weekday(year, 2, 0, 3),  # Presidents Day
+        _good_friday(year),
+        _last_weekday(year, 5, 0),  # Memorial Day
+        _observed_fixed_holiday(year, 6, 19),
+        _observed_fixed_holiday(year, 7, 4),
+        _nth_weekday(year, 9, 0, 1),  # Labor Day
+        _nth_weekday(year, 11, 3, 4),  # Thanksgiving
+        _observed_fixed_holiday(year, 12, 25),
+    }
+    return holidays
+
+
+def _observed_fixed_holiday(year: int, month: int, day: int):
+    value = datetime(year, month, day).date()
+    if value.weekday() == 5:
+        return value - timedelta(days=1)
+    if value.weekday() == 6:
+        return value + timedelta(days=1)
+    return value
+
+
+def _nth_weekday(year: int, month: int, weekday: int, n: int):
+    day = datetime(year, month, 1).date()
+    while day.weekday() != weekday:
+        day += timedelta(days=1)
+    return day + timedelta(days=7 * (n - 1))
+
+
+def _last_weekday(year: int, month: int, weekday: int):
+    if month == 12:
+        day = datetime(year + 1, 1, 1).date() - timedelta(days=1)
+    else:
+        day = datetime(year, month + 1, 1).date() - timedelta(days=1)
+    while day.weekday() != weekday:
+        day -= timedelta(days=1)
+    return day
+
+
+def _good_friday(year: int):
+    a = year % 19
+    b = year // 100
+    c = year % 100
+    d = b // 4
+    e = b % 4
+    f = (b + 8) // 25
+    g = (b - f + 1) // 3
+    h = (19 * a + b - d - g + 15) % 30
+    i = c // 4
+    k = c % 4
+    l = (32 + 2 * e + 2 * i - h - k) % 7
+    m = (a + 11 * h + 22 * l) // 451
+    month = (h + l - 7 * m + 114) // 31
+    day = ((h + l - 7 * m + 114) % 31) + 1
+    return datetime(year, month, day).date() - timedelta(days=2)
 
 
 def _clip(value: float, minimum: float, maximum: float) -> float:

@@ -3,7 +3,7 @@
 Research only. Candidate 34 is not approved for paper trading or live trading.
 
 - Source: `data/reports/auto_research_generations.csv`
-- Frozen timestamp UTC: 2026-07-01T20:55:45.484021+00:00
+- Frozen timestamp UTC: 2026-07-01T22:01:41.786253+00:00
 
 ## Candidate Rule
 

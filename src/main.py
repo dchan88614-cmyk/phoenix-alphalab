@@ -203,15 +203,18 @@ def run(args: argparse.Namespace) -> None:
         )
         nano_daily_csv_path = reports_dir / "nano_daily_scan.csv"
         nano_daily_md_path = reports_dir / "nano_daily_scan.md"
+        nano_daily_history_path = reports_dir / "nano_daily_scan_history.csv"
         write_nano_daily_scan_reports(
             nano_daily_scan,
             nano_daily_metadata,
             nano_daily_csv_path,
             nano_daily_md_path,
+            history_csv_path=nano_daily_history_path,
         )
         logger.info("Wrote Nano daily frozen Candidate 34 rules: %s", candidate_rules_path)
         logger.info("Wrote Nano daily scan CSV: %s", nano_daily_csv_path)
         logger.info("Wrote Nano daily scan Markdown report: %s", nano_daily_md_path)
+        logger.info("Wrote Nano daily scan history CSV: %s", nano_daily_history_path)
 
     smoke_results = None
     if args.smoke_test or args.decision_simulation:

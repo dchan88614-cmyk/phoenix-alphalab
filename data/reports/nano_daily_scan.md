@@ -6,6 +6,7 @@ This is not active paper trading or live trading. It is only a research-derived 
 
 Ticker: 
 Latest data date: 2026-06-30
+Expected latest trading date: 2026-06-30
 Reference price: 
 Shares with $100: 0
 Estimated total cost: $0.00
@@ -28,7 +29,10 @@ Reason: NO_CANDIDATE_PASSED_RULES
 - Rejected above max entry price count: 70
 - Stale data: False
 - Data source: yfinance
-- Scan timestamp UTC: 2026-07-01T20:55:45.486831+00:00
+- Scan timestamp UTC: 2026-07-01T22:01:41.789282+00:00
+- History rows written: 16
+- History total row count: 32
+- History file path: data/reports/nano_daily_scan_history.csv
 
 ## Closest Executable Near-Misses
 

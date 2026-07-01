@@ -10,7 +10,9 @@ from src.backtest.nano_daily_scan import (
     MANUAL_VERIFY_ONLY_NOT_TRADE_SIGNAL,
     NO_TRADE_MANUAL_REVIEW,
     STALE_DATA,
+    append_scan_history,
     extract_candidate_34_rule,
+    expected_latest_trading_date,
     build_nano_daily_scan,
     write_candidate_34_frozen_rules,
     write_nano_daily_scan_reports,
@@ -293,3 +295,122 @@ def test_daily_scan_csv_uses_required_row_types(tmp_path: Path):
     assert bool(near["affordability_pass"])
     assert bool(near["max_entry_price_pass"])
     assert isinstance(near["failed_checks"], str) and near["failed_checks"]
+
+
+def test_diagnostic_csv_includes_scan_metadata_columns(tmp_path: Path):
+    data = pd.DataFrame([_row("2026-06-30", "GOOD", 40.0, 2.0), _row("2026-06-30", "NEAR", 30.0, 1.0)])
+    scan, metadata = build_nano_daily_scan(
+        data,
+        _settings(),
+        requested_end="2026-07-01",
+        rule=_rule(),
+        data_source="unit",
+        scan_timestamp_utc="2026-07-01T12:00:00+00:00",
+    )
+    csv_path = tmp_path / "nano_daily_scan.csv"
+
+    write_nano_daily_scan_reports(scan, metadata, csv_path, tmp_path / "nano_daily_scan.md")
+    rows = pd.read_csv(csv_path)
+
+    assert {
+        "scan_timestamp_utc",
+        "latest_data_date",
+        "expected_latest_trading_date",
+        "is_stale",
+        "data_source",
+        "status",
+        "smoke_score",
+        "decision_strength",
+        "relative_volume_prev20",
+        "return_5d",
+        "return_20d",
+        "distance_to_52w_high_prev",
+        "dollar_volume",
+        "rejection_reason",
+    }.issubset(rows.columns)
+
+
+def test_history_csv_is_created_and_idempotent(tmp_path: Path):
+    data = pd.DataFrame([_row("2026-06-30", "GOOD", 40.0, 2.0), _row("2026-06-30", "NEAR", 30.0, 1.0)])
+    scan, metadata = build_nano_daily_scan(
+        data,
+        _settings(),
+        requested_end="2026-07-01",
+        rule=_rule(),
+        scan_timestamp_utc="2026-07-01T12:00:00+00:00",
+    )
+    csv_path = tmp_path / "nano_daily_scan.csv"
+    history_path = tmp_path / "nano_daily_scan_history.csv"
+
+    write_nano_daily_scan_reports(scan, metadata, csv_path, tmp_path / "nano_daily_scan.md", history_path)
+    first = pd.read_csv(history_path)
+    write_nano_daily_scan_reports(scan, metadata, csv_path, tmp_path / "nano_daily_scan.md", history_path)
+    second = pd.read_csv(history_path)
+
+    assert history_path.exists()
+    assert len(first) == len(second)
+
+
+def test_history_appends_new_scan_when_timestamp_changes(tmp_path: Path):
+    data = pd.DataFrame([_row("2026-06-30", "GOOD", 40.0, 2.0), _row("2026-06-30", "NEAR", 30.0, 1.0)])
+    history_path = tmp_path / "nano_daily_scan_history.csv"
+    for timestamp in ["2026-07-01T12:00:00+00:00", "2026-07-01T13:00:00+00:00"]:
+        scan, metadata = build_nano_daily_scan(
+            data,
+            _settings(),
+            requested_end="2026-07-01",
+            rule=_rule(),
+            scan_timestamp_utc=timestamp,
+        )
+        write_nano_daily_scan_reports(
+            scan,
+            metadata,
+            tmp_path / "nano_daily_scan.csv",
+            tmp_path / "nano_daily_scan.md",
+            history_path,
+        )
+
+    history = pd.read_csv(history_path)
+    assert history["scan_timestamp_utc"].nunique() == 2
+    assert set(history["scan_timestamp_utc"]) == {
+        "2026-07-01T12:00:00+00:00",
+        "2026-07-01T13:00:00+00:00",
+    }
+
+
+def test_daily_report_includes_history_total_row_count(tmp_path: Path):
+    data = pd.DataFrame([_row("2026-06-30", "GOOD", 40.0, 2.0), _row("2026-06-30", "NEAR", 30.0, 1.0)])
+    scan, metadata = build_nano_daily_scan(
+        data,
+        _settings(),
+        requested_end="2026-07-01",
+        rule=_rule(),
+        scan_timestamp_utc="2026-07-01T12:00:00+00:00",
+    )
+    md_path = tmp_path / "nano_daily_scan.md"
+
+    write_nano_daily_scan_reports(
+        scan,
+        metadata,
+        tmp_path / "nano_daily_scan.csv",
+        md_path,
+        tmp_path / "nano_daily_scan_history.csv",
+    )
+
+    assert "History total row count:" in md_path.read_text(encoding="utf-8")
+
+
+def test_weekend_and_holiday_use_prior_market_trading_day():
+    assert expected_latest_trading_date("2026-07-06").strftime("%Y-%m-%d") == "2026-07-02"
+    assert expected_latest_trading_date("2026-07-05").strftime("%Y-%m-%d") == "2026-07-02"
+
+
+def test_stale_data_older_than_expected_trading_date_outputs_stale():
+    data = pd.DataFrame([_row("2026-06-29", "GOOD", 40.0, 2.0), _row("2026-06-29", "NEAR", 30.0, 1.0)])
+
+    scan, metadata = build_nano_daily_scan(data, _settings(), requested_end="2026-07-01", rule=_rule())
+
+    assert scan.iloc[0]["action"] == NO_TRADE_MANUAL_REVIEW
+    assert scan.iloc[0]["reason"] == STALE_DATA
+    assert bool(scan.iloc[0]["is_stale"])
+    assert metadata["expected_latest_trading_date"] == "2026-06-30"
