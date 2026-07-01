@@ -161,6 +161,7 @@ def build_nano_daily_scan(
                 reason=MISSING_OR_AMBIGUOUS_CANDIDATE_34_RULES,
                 account_settings=account_settings,
                 top_candidates=pd.DataFrame(),
+                rejected_candidates=pd.DataFrame(),
                 stale=True,
                 rule=None,
                 data_source=data_source,
@@ -177,6 +178,7 @@ def build_nano_daily_scan(
             reason="NO_ELIGIBLE_DATA",
             account_settings=account_settings,
             top_candidates=pd.DataFrame(),
+            rejected_candidates=pd.DataFrame(),
             stale=True,
             rule=rule,
             data_source=data_source,
@@ -188,13 +190,14 @@ def build_nano_daily_scan(
     latest_data_date = latest_date.strftime("%Y-%m-%d")
     stale = _is_stale(latest_date, requested_end, stale_after_calendar_days)
 
-    scanned = _score_latest_candidates(latest, rule, account_settings)
+    scanned, rejected = _score_latest_candidates(latest, rule, account_settings)
     if stale:
         return _no_trade_result(
             latest_data_date=latest_data_date,
             reason=STALE_DATA,
             account_settings=account_settings,
             top_candidates=scanned,
+            rejected_candidates=rejected,
             stale=True,
             rule=rule,
             data_source=data_source,
@@ -208,6 +211,7 @@ def build_nano_daily_scan(
             reason="NO_CANDIDATE_PASSED_RULES",
             account_settings=account_settings,
             top_candidates=scanned,
+            rejected_candidates=rejected,
             stale=False,
             rule=rule,
             data_source=data_source,
@@ -221,6 +225,7 @@ def build_nano_daily_scan(
         account_settings,
         rule,
         scanned,
+        rejected,
         stale=False,
         data_source=data_source,
         scan_timestamp_utc=scan_timestamp_utc,
@@ -245,8 +250,52 @@ def _score_latest_candidates(
     latest: pd.DataFrame,
     rule: CandidateRule,
     account_settings: AccountSettings,
-) -> pd.DataFrame:
-    scored = latest.copy()
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    prechecked_rows: list[dict] = []
+    for _, row in latest.copy().iterrows():
+        stop_loss, target_1, target_2 = _risk_levels(row)
+        affordability = calculate_affordability(
+            pd.Series({"entry_price": row["close"], "stop_loss": stop_loss}),
+            account_settings.starting_capital,
+            account_settings,
+        )
+        max_entry_pass = float(row["close"]) <= rule.max_entry_price
+        affordable_pass = int(affordability["shares"]) >= 1 and affordability["total_cost"] <= account_settings.starting_capital
+        prechecked_rows.append(
+            {
+                "ticker": row["ticker"],
+                "reference_price": float(row["close"]),
+                "relative_volume_prev20": float(row["relative_volume_prev20"]),
+                "return_5d": float(row["return_5d"]),
+                "return_20d": float(row["return_20d"]),
+                "distance_to_52w_high_prev": float(row["distance_to_52w_high_prev"]),
+                "dollar_volume": float(row["dollar_volume"]),
+                "stop_loss": stop_loss,
+                "target_1": target_1,
+                "target_2": target_2,
+                "shares_with_100": affordability["shares"],
+                "estimated_total_cost": affordability["total_cost"],
+                "estimated_cash_remaining": affordability["cash_remaining"],
+                "max_dollar_risk": affordability["dollar_risk"],
+                "max_entry_price_pass": bool(max_entry_pass),
+                "affordability_pass": bool(affordable_pass),
+                "executable_pre_rank": bool(max_entry_pass and affordable_pass),
+            }
+        )
+
+    prechecked = pd.DataFrame(prechecked_rows)
+    if prechecked.empty:
+        return pd.DataFrame(), pd.DataFrame()
+
+    rejected = prechecked.loc[~prechecked["executable_pre_rank"]].copy()
+    if not rejected.empty:
+        rejected["rejection_reason"] = rejected.apply(_rejection_reason, axis=1)
+
+    executable = prechecked.loc[prechecked["executable_pre_rank"]].copy()
+    if executable.empty:
+        return pd.DataFrame(), rejected.sort_values(["reference_price", "ticker"], ascending=[False, True]).reset_index(drop=True)
+
+    scored = executable.copy()
     score_columns: list[str] = []
     for factor in SMOKE_RANK_FACTORS:
         score_column = f"{factor}_score"
@@ -261,20 +310,13 @@ def _score_latest_candidates(
 
     rows: list[dict] = []
     for _, row in scored.iterrows():
-        stop_loss, target_1, target_2 = _risk_levels(row)
-        affordability = calculate_affordability(
-            pd.Series({"entry_price": row["close"], "stop_loss": stop_loss}),
-            account_settings.starting_capital,
-            account_settings,
-        )
         signal_rule_pass = row_passes_candidate(row, rule)
-        max_entry_pass = float(row["close"]) <= rule.max_entry_price
-        affordable_pass = int(affordability["shares"]) >= 1 and affordability["total_cost"] <= account_settings.starting_capital
+        failed_checks = _candidate_failed_checks(row, rule)
         rows.append(
             {
                 "rank": int(row["rank"]),
                 "ticker": row["ticker"],
-                "reference_price": float(row["close"]),
+                "reference_price": float(row["reference_price"]),
                 "smoke_score": float(row["smoke_score"]),
                 "decision_strength": float(row["decision_strength"]),
                 "relative_volume_prev20": float(row["relative_volume_prev20"]),
@@ -282,20 +324,21 @@ def _score_latest_candidates(
                 "return_20d": float(row["return_20d"]),
                 "distance_to_52w_high_prev": float(row["distance_to_52w_high_prev"]),
                 "dollar_volume": float(row["dollar_volume"]),
-                "stop_loss": stop_loss,
-                "target_1": target_1,
-                "target_2": target_2,
-                "shares_with_100": affordability["shares"],
-                "estimated_total_cost": affordability["total_cost"],
-                "estimated_cash_remaining": affordability["cash_remaining"],
-                "max_dollar_risk": affordability["dollar_risk"],
+                "stop_loss": float(row["stop_loss"]),
+                "target_1": float(row["target_1"]),
+                "target_2": float(row["target_2"]),
+                "shares_with_100": row["shares_with_100"],
+                "estimated_total_cost": row["estimated_total_cost"],
+                "estimated_cash_remaining": row["estimated_cash_remaining"],
+                "max_dollar_risk": row["max_dollar_risk"],
                 "signal_rule_pass": bool(signal_rule_pass),
-                "max_entry_price_pass": bool(max_entry_pass),
-                "affordability_pass": bool(affordable_pass),
-                "all_rule_checks_passed": bool(signal_rule_pass and max_entry_pass and affordable_pass),
+                "max_entry_price_pass": True,
+                "affordability_pass": True,
+                "all_rule_checks_passed": bool(signal_rule_pass),
+                "failed_checks": failed_checks,
             }
         )
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows), rejected.sort_values(["reference_price", "ticker"], ascending=[False, True]).reset_index(drop=True)
 
 
 def _result_from_candidate(
@@ -304,6 +347,7 @@ def _result_from_candidate(
     account_settings: AccountSettings,
     rule: CandidateRule,
     scanned: pd.DataFrame,
+    rejected: pd.DataFrame,
     stale: bool,
     data_source: str,
     scan_timestamp_utc: str | None,
@@ -327,10 +371,13 @@ def _result_from_candidate(
                 "reason": "Candidate 34 Nano rule passed with $100 whole-share affordability.",
                 "all_rule_checks_passed": True,
                 "is_stale": stale,
+                "executable_universe_count": int(len(scanned)),
+                "rejected_not_affordable_count": _rejected_not_affordable_count(rejected),
+                "rejected_above_max_entry_price_count": _rejected_above_max_entry_price_count(rejected),
             }
         ]
     )
-    return result, _metadata(rule, account_settings, scanned, latest_data_date, stale, data_source, scan_timestamp_utc)
+    return result, _metadata(rule, account_settings, scanned, rejected, latest_data_date, stale, data_source, scan_timestamp_utc)
 
 
 def _no_trade_result(
@@ -338,6 +385,7 @@ def _no_trade_result(
     reason: str,
     account_settings: AccountSettings,
     top_candidates: pd.DataFrame,
+    rejected_candidates: pd.DataFrame,
     stale: bool,
     rule: CandidateRule | None,
     data_source: str,
@@ -362,16 +410,20 @@ def _no_trade_result(
                 "reason": reason,
                 "all_rule_checks_passed": False,
                 "is_stale": stale,
+                "executable_universe_count": int(len(top_candidates)),
+                "rejected_not_affordable_count": _rejected_not_affordable_count(rejected_candidates),
+                "rejected_above_max_entry_price_count": _rejected_above_max_entry_price_count(rejected_candidates),
             }
         ]
     )
-    return result, _metadata(rule, account_settings, top_candidates, latest_data_date, stale, data_source, scan_timestamp_utc)
+    return result, _metadata(rule, account_settings, top_candidates, rejected_candidates, latest_data_date, stale, data_source, scan_timestamp_utc)
 
 
 def _metadata(
     rule: CandidateRule | None,
     account_settings: AccountSettings,
     scanned: pd.DataFrame,
+    rejected: pd.DataFrame,
     latest_data_date: str,
     stale: bool,
     data_source: str,
@@ -381,10 +433,14 @@ def _metadata(
         "rule": rule,
         "account_settings": account_settings,
         "top_candidates": scanned.head(5).copy() if not scanned.empty else pd.DataFrame(),
+        "rejected_candidates": rejected.copy() if not rejected.empty else pd.DataFrame(),
         "latest_data_date": latest_data_date,
         "is_stale": stale,
         "data_source": data_source,
         "scan_timestamp_utc": scan_timestamp_utc or datetime.now(timezone.utc).isoformat(),
+        "executable_universe_count": int(len(scanned)),
+        "rejected_not_affordable_count": _rejected_not_affordable_count(rejected),
+        "rejected_above_max_entry_price_count": _rejected_above_max_entry_price_count(rejected),
     }
 
 
@@ -433,6 +489,9 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
         "- Uses only latest-date-safe factors; forward returns and realized trade outcomes are not ranking inputs.",
         "- Account: $100, whole shares only.",
         f"- Candidate rule: Candidate 34 Nano with max_entry_price ${_rule_max_entry(metadata)}.",
+        f"- Executable universe count: {metadata['executable_universe_count']}",
+        f"- Rejected not affordable count: {metadata['rejected_not_affordable_count']}",
+        f"- Rejected above max entry price count: {metadata['rejected_above_max_entry_price_count']}",
         f"- Stale data: {metadata['is_stale']}",
         f"- Data source: {metadata['data_source']}",
         f"- Scan timestamp UTC: {metadata['scan_timestamp_utc']}",
@@ -452,27 +511,52 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
                 "",
             ]
         )
-    lines.extend(["## Top 5 Scanned Candidates", ""])
+    if action == MANUAL_REVIEW_CANDIDATE:
+        lines.extend(["## Top Executable Candidates", ""])
+    else:
+        lines.extend(["## Closest Executable Near-Misses", ""])
     top = metadata.get("top_candidates", pd.DataFrame())
     if top is None or top.empty:
-        lines.append("No scanned candidates.")
+        lines.append("No executable candidates were available for Nano ranking.")
     else:
         display = top[
             [
-                "rank",
                 "ticker",
                 "reference_price",
-                "smoke_score",
-                "decision_strength",
                 "shares_with_100",
                 "estimated_total_cost",
-                "signal_rule_pass",
-                "max_entry_price_pass",
-                "affordability_pass",
-                "all_rule_checks_passed",
+                "estimated_cash_remaining",
+                "smoke_score",
+                "relative_volume_prev20",
+                "return_5d",
+                "return_20d",
+                "distance_to_52w_high_prev",
+                "dollar_volume",
+                "failed_checks",
             ]
         ].copy()
         lines.append(display.to_markdown(index=False))
+    lines.extend(["", "## Rejected Before Nano Ranking", ""])
+    rejected = metadata.get("rejected_candidates", pd.DataFrame())
+    if rejected is None or rejected.empty:
+        lines.append("No candidates were rejected before Nano ranking.")
+    else:
+        lines.append(
+            "These names were not eligible for Nano ranking because they failed account executability filters before ranking."
+        )
+        rejected_display = rejected[
+            [
+                "ticker",
+                "reference_price",
+                "shares_with_100",
+                "estimated_total_cost",
+                "max_entry_price_pass",
+                "affordability_pass",
+                "rejection_reason",
+            ]
+        ].head(10)
+        lines.append("")
+        lines.append(rejected_display.to_markdown(index=False))
     return "\n".join(lines) + "\n"
 
 
@@ -507,3 +591,43 @@ def _as_bool(value: object) -> bool:
     if isinstance(value, str):
         return value.strip().lower() == "true"
     return bool(value)
+
+
+def _rejection_reason(row: pd.Series) -> str:
+    reasons = []
+    if not bool(row["affordability_pass"]):
+        reasons.append("not_affordable")
+    if not bool(row["max_entry_price_pass"]):
+        reasons.append("above_candidate_34_max_entry_price")
+    return ", ".join(reasons)
+
+
+def _candidate_failed_checks(row: pd.Series, rule: CandidateRule) -> str:
+    failed = []
+    if float(row["smoke_score"]) < rule.min_smoke_score:
+        failed.append("smoke_score_below_min")
+    if float(row.get("rank_gap", 0.0)) < rule.min_rank_gap:
+        failed.append("rank_gap_below_min")
+    if pd.isna(row["relative_volume_prev20"]) or float(row["relative_volume_prev20"]) < rule.min_relative_volume_prev20:
+        failed.append("relative_volume_prev20_below_min")
+    if rule.require_return_5d_positive and float(row["return_5d"]) <= 0:
+        failed.append("return_5d_not_positive")
+    if rule.require_return_20d_positive and float(row["return_20d"]) <= 0:
+        failed.append("return_20d_not_positive")
+    if pd.isna(row["distance_to_52w_high_prev"]) or float(row["distance_to_52w_high_prev"]) < rule.distance_to_52w_high_prev_min:
+        failed.append("distance_to_52w_high_prev_below_min")
+    if float(row["dollar_volume"]) < rule.dollar_volume_min:
+        failed.append("dollar_volume_below_min")
+    return ", ".join(failed)
+
+
+def _rejected_not_affordable_count(rejected: pd.DataFrame) -> int:
+    if rejected.empty or "affordability_pass" not in rejected.columns:
+        return 0
+    return int((~rejected["affordability_pass"].astype(bool)).sum())
+
+
+def _rejected_above_max_entry_price_count(rejected: pd.DataFrame) -> int:
+    if rejected.empty or "max_entry_price_pass" not in rejected.columns:
+        return 0
+    return int((~rejected["max_entry_price_pass"].astype(bool)).sum())

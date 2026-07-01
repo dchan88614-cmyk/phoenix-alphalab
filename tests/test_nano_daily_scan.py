@@ -115,9 +115,10 @@ def test_daily_scan_rejects_stock_above_100_for_whole_share_account():
     scan, metadata = build_nano_daily_scan(data, _settings(), requested_end="2026-07-01", rule=_rule(max_entry_price=150.0))
 
     assert scan.iloc[0]["action"] == NO_TRADE_MANUAL_REVIEW
-    top = metadata["top_candidates"].iloc[0]
-    assert top["ticker"] == "EXPENSIVE"
-    assert not bool(top["affordability_pass"])
+    assert "EXPENSIVE" not in metadata["top_candidates"]["ticker"].tolist()
+    rejected = metadata["rejected_candidates"].set_index("ticker")
+    assert "EXPENSIVE" in rejected.index
+    assert not bool(rejected.loc["EXPENSIVE", "affordability_pass"])
 
 
 def test_daily_scan_rejects_stock_above_candidate_34_max_entry_price():
@@ -126,10 +127,11 @@ def test_daily_scan_rejects_stock_above_candidate_34_max_entry_price():
     scan, metadata = build_nano_daily_scan(data, _settings(), requested_end="2026-07-01", rule=_rule())
 
     assert scan.iloc[0]["action"] == NO_TRADE_MANUAL_REVIEW
-    top = metadata["top_candidates"].iloc[0]
-    assert top["ticker"] == "TOO_HIGH"
-    assert not bool(top["max_entry_price_pass"])
-    assert bool(top["affordability_pass"])
+    assert "TOO_HIGH" not in metadata["top_candidates"]["ticker"].tolist()
+    rejected = metadata["rejected_candidates"].set_index("ticker")
+    assert "TOO_HIGH" in rejected.index
+    assert not bool(rejected.loc["TOO_HIGH", "max_entry_price_pass"])
+    assert bool(rejected.loc["TOO_HIGH", "affordability_pass"])
 
 
 def test_daily_scan_affordable_candidate_can_produce_manual_review_candidate():
@@ -167,6 +169,42 @@ def test_daily_scan_does_not_use_forward_returns_or_realized_outcomes():
 
     assert scan.iloc[0]["action"] == MANUAL_REVIEW_CANDIDATE
     assert scan.iloc[0]["ticker"] == "GOOD"
+
+
+def test_near_miss_table_contains_only_executable_stocks():
+    data = pd.DataFrame(
+        [
+            _row("2026-06-30", "EXPENSIVE", 120.0, 2.0),
+            _row("2026-06-30", "TOO_HIGH", 60.0, 1.9),
+            _row("2026-06-30", "NEAR", 40.0, 1.0),
+        ]
+    )
+
+    scan, metadata = build_nano_daily_scan(data, _settings(), requested_end="2026-07-01", rule=_rule())
+
+    assert scan.iloc[0]["action"] == NO_TRADE_MANUAL_REVIEW
+    assert metadata["top_candidates"]["ticker"].tolist() == ["NEAR"]
+    assert metadata["top_candidates"]["affordability_pass"].all()
+    assert metadata["top_candidates"]["max_entry_price_pass"].all()
+
+
+def test_rejected_high_priced_names_appear_only_in_rejected_summary(tmp_path: Path):
+    data = pd.DataFrame(
+        [
+            _row("2026-06-30", "AMAT", 723.0, 2.0),
+            _row("2026-06-30", "NEAR", 40.0, 1.0),
+        ]
+    )
+    scan, metadata = build_nano_daily_scan(data, _settings(), requested_end="2026-07-01", rule=_rule())
+    md_path = tmp_path / "nano_daily_scan.md"
+
+    write_nano_daily_scan_reports(scan, metadata, tmp_path / "nano_daily_scan.csv", md_path)
+    text = md_path.read_text(encoding="utf-8")
+
+    near_miss_section = text.split("## Rejected Before Nano Ranking", 1)[0]
+    rejected_section = text.split("## Rejected Before Nano Ranking", 1)[1]
+    assert "AMAT" not in near_miss_section
+    assert "AMAT" in rejected_section
 
 
 def test_daily_scan_does_not_hardcode_a_ticker():
