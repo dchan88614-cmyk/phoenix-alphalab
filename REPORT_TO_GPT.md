@@ -9,51 +9,53 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Daily Scan v1.4 - History Ledger and Calendar Stale Gate.
-- Enriched `data/reports/nano_daily_scan.csv` into a machine-readable diagnostic CSV with scan metadata and factor diagnostics.
-- Added required row types:
-  - `FINAL`
-  - `EXECUTABLE_NEAR_MISS`
-  - `REJECTED_BEFORE_NANO_RANKING`
-- Added append-only `data/reports/nano_daily_scan_history.csv`.
-- Made history append idempotent by de-duplicating on `scan_timestamp_utc`, `latest_data_date`, `row_type`, and `ticker`.
-- Preserved repeated scans of the same EOD date when the scan timestamp changes.
-- Added market-calendar-aware `expected_latest_trading_date` for the daily scan.
-- Added weekend and common NYSE holiday handling without adding a new dependency.
-- Updated Markdown daily scan report with expected latest trading date, history rows written, history total row count, and history file path.
-- Kept Candidate 34 thresholds frozen.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1A - Run 100 Historical Replay Rounds.
+- Added a Phase 1A historical replay engine that samples 100 completed historical trading dates across 2024-01-01 to 2026-06-30.
+- Each replay date pretends that date is today, applies replay-date EOD factors, rejects unaffordable symbols before ranking, and outputs exactly one decision.
+- Kept the frozen Candidate 34 / current Nano rule set.
+- Used forward returns only after each decision row was recorded.
+- Added one-position-at-a-time account replay with $100 whole-share constraints.
+- Added Phase 1A CLI flags:
+  - `--phase1-historical-replay`
+  - `--replay-rounds 100`
+- Created Phase 1A outputs:
+  - `data/reports/phase1_historical_replay_decisions.csv`
+  - `data/reports/phase1_historical_replay_summary.md`
+  - `data/reports/phase1_historical_replay_near_misses.csv`
+- Did not start Phase 2.
+- Did not start Phase 3.
 - Did not start paper trading.
 - Did not start live trading.
-- Kept outputs research/manual-review only.
 
 ## Files Changed
 
-- `src/backtest/nano_daily_scan.py`
+- `src/research/historical_replay.py`
 - `src/main.py`
-- `tests/test_nano_daily_scan.py`
-- `data/reports/nano_daily_candidate_34_frozen_rules.md`
-- `data/reports/nano_daily_scan.csv`
-- `data/reports/nano_daily_scan.md`
-- `data/reports/nano_daily_scan_history.csv`
+- `tests/test_historical_replay.py`
+- `data/reports/phase1_historical_replay_decisions.csv`
+- `data/reports/phase1_historical_replay_summary.md`
+- `data/reports/phase1_historical_replay_near_misses.csv`
+- `data/reports/factor_report.csv`
+- `data/reports/factor_report.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-daily-scan
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1-historical-replay --replay-rounds 100
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_nano_daily_scan.py -q
-# 19 passed in 0.49s
+.venv/bin/python -m pytest tests/test_historical_replay.py -q
+# 7 passed in 0.59s
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 71 passed, 1 warning in 1.38s
+# 78 passed, 1 warning in 1.62s
 ```
 
 Remaining warning:
@@ -63,82 +65,58 @@ Remaining warning:
 End-to-end command completed successfully:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-daily-scan
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1-historical-replay --replay-rounds 100
 ```
 
-## Final Daily Scan Action
+## Phase 1A 100-Round Summary
 
-- Action: `NO_TRADE_MANUAL_REVIEW`
-- Status: `RESEARCH_ONLY_NOT_TRADABLE`
-- Candidate ticker: none
-- Latest data date used: `2026-06-30`
-- Expected latest trading date: `2026-06-30`
-- Is stale: false
-- Reason: `NO_CANDIDATE_PASSED_RULES`
-- Data source: `yfinance`
-- Scan timestamp UTC: `2026-07-01T22:01:41.789282+00:00`
+- Total replay rounds: 100
+- BUY count: 34
+- NO_TRADE count: 66
+- BUY rate: 34.00%
+- Accuracy 1d: 55.88%
+- Accuracy 3d: 55.88%
+- Accuracy 5d: 50.00%
+- Accuracy 10d: 52.94%
+- Accuracy 20d: 58.82%
+- Trade-simulation accuracy: 41.18%
+- Account ending value: $179.61
+- Max drawdown: -45.86%
+- Profit factor: 1.2969
+- Average win size: $24.84
+- Average loss size: $-13.41
+- Worst trade account loss: -11.66%
+- Best pick: 2024-01-10 SMCI 20d=103.87%
+- Worst pick: 2025-06-27 CORZ 20d=-17.45%
+- Top selected tickers: HPE:4, SMCI:3, RIVN:3, PLTR:3, CORZ:2, HOOD:2, F:2, INTC:2, RKLB:2, PATH:1
 
-## Executable Diagnostics
+## Phase 1A Status
 
-- Executable universe count: 27
-- Rejected not affordable count: 56
-- Rejected above max_entry_price count: 70
-- Candidate 34 max_entry_price: $50.00
-- Account: $100, whole shares only, 10 bps slippage
-- High-priced names in executable near-miss table: no
-
-## Closest Executable Near-Misses
-
-| ticker | reference_price | shares_with_100 | estimated_total_cost | smoke_score | decision_strength | failed_checks |
-|:--|--:|--:|--:|--:|--:|:--|
-| RIVN | 17.35 | 5 | 86.84 | 0.7926 | 0.5075 | smoke_score_below_min, relative_volume_prev20_below_min |
-| SDGR | 16.25 | 6 | 97.60 | 0.7111 | 0.4419 | smoke_score_below_min |
-| PATH | 10.87 | 9 | 97.93 | 0.6815 | 0.3705 | smoke_score_below_min, rank_gap_below_min, relative_volume_prev20_below_min, distance_to_52w_high_prev_below_min |
-| S | 16.97 | 5 | 84.93 | 0.6741 | 0.3354 | smoke_score_below_min, rank_gap_below_min, relative_volume_prev20_below_min |
-| F | 13.90 | 7 | 97.40 | 0.6667 | 0.3369 | smoke_score_below_min, rank_gap_below_min, relative_volume_prev20_below_min, return_5d_not_positive |
-
-## Diagnostic CSV Row Counts By row_type
-
-| row_type | rows |
-|:--|--:|
-| FINAL | 1 |
-| EXECUTABLE_NEAR_MISS | 5 |
-| REJECTED_BEFORE_NANO_RANKING | 10 |
-
-## History CSV Row Counts By row_type
-
-| row_type | rows |
-|:--|--:|
-| FINAL | 2 |
-| EXECUTABLE_NEAR_MISS | 10 |
-| REJECTED_BEFORE_NANO_RANKING | 20 |
-
-## History Ledger
-
-- History file: `data/reports/nano_daily_scan_history.csv`
-- History rows written this run: 16
-- History total row count: 32
-- Unique scan timestamps in history: 2
-- History append idempotent: yes, covered by tests for same timestamp de-duplication.
-- Same latest_data_date with new scan timestamp appends a new run: yes, covered by tests and reflected in current history.
+- Status: `PHASE_1A_NEEDS_MORE_ITERATION`
+- Reason: ending account value was above $100, but max drawdown was worse than -35% and trade-simulation accuracy was below 50%.
+- This result is not Phase 2 ready.
+- This result is not paper-trading approval.
 
 ## Problems
 
-- No executable candidate passed the frozen Candidate 34 daily scan gate.
+- The 20d forward-return accuracy was positive at 58.82%, but simulated execution quality was weak at 41.18%.
+- Ending account value reached $179.61, but max drawdown was severe at -45.86%.
+- The strongest single 20d pick was SMCI early in 2024, so GPT should review concentration and path dependency before trusting the result.
 - yfinance metadata rejected several watchlist tickers; `BITF` emitted a yfinance 404 and was rejected as metadata incomplete.
-- Existing pandas `pct_change` future warnings appeared during the end-to-end scan; they did not block execution.
+- Existing pandas `pct_change` future warnings appeared during the end-to-end run; they did not block execution.
 - yfinance data remains non-institutional retail data and should not be treated as an execution feed.
 
 ## Questions For GPT
 
-- Should GPT keep Candidate 34 frozen while the new history ledger accumulates more daily evidence?
-- Should the next task review the longitudinal near-miss ledger before any threshold search is allowed?
-- Should metadata quality issues be split into a separate watchlist hygiene task?
+- Should Phase 1A repeat with several different evenly spaced samples before changing any Candidate 34 thresholds?
+- Should GPT require max drawdown improvement before allowing Phase 2 manual paper validation?
+- Should replay analysis separate close-to-close forward accuracy from stop/target execution accuracy?
+- Should SMCI-heavy early-2024 contribution be stress-tested before any rule iteration?
 
 ## Next Suggested Tasks
 
-- Do not start live trading.
-- Do not start paper trading until GPT explicitly approves.
-- Keep daily scan output manual-review only.
-- Let the history ledger accumulate multiple daily scans before changing Candidate 34 thresholds.
-- Review rejected metadata names separately from signal quality.
+- Do not start Phase 2 yet.
+- Do not start Phase 3.
+- Do not start paper trading.
+- Run additional Phase 1 replay batches or a full-date replay before changing thresholds.
+- Add a drawdown-focused replay diagnostic to identify whether losses come from stop placement, entry timing, or ticker concentration.

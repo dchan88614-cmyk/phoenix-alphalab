@@ -45,6 +45,7 @@ from src.research.concentration import (
     write_concentration_markdown,
     write_regime_markdown,
 )
+from src.research.historical_replay import build_phase1_historical_replay, write_phase1_historical_replay_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -121,7 +122,8 @@ def run(args: argparse.Namespace) -> None:
     factors = add_all_factors(prices, settings)
     filtered = apply_price_liquidity_filters(factors, settings)
     horizons = [int(horizon) for horizon in settings["backtest"].get("forward_return_horizons", [5, 10, 20])]
-    dataset = add_forward_returns(filtered, horizons)
+    replay_horizons = sorted(set(horizons + [1, 3, 5, 10, 20]))
+    dataset = add_forward_returns(filtered, replay_horizons)
     dataset["date"] = pd.to_datetime(dataset["date"])
     research_dataset = dataset.loc[
         dataset["date"].between(pd.Timestamp(research_start), pd.Timestamp(research_end))
@@ -215,6 +217,34 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Nano daily scan CSV: %s", nano_daily_csv_path)
         logger.info("Wrote Nano daily scan Markdown report: %s", nano_daily_md_path)
         logger.info("Wrote Nano daily scan history CSV: %s", nano_daily_history_path)
+
+    if args.phase1_historical_replay:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        replay_decisions, replay_near_misses, replay_summary = build_phase1_historical_replay(
+            research_dataset,
+            account_settings=account_settings,
+            rule=candidate_rule,
+            replay_rounds=int(args.replay_rounds),
+            benchmark_ticker=benchmark,
+        )
+        replay_decisions_path = reports_dir / "phase1_historical_replay_decisions.csv"
+        replay_summary_path = reports_dir / "phase1_historical_replay_summary.md"
+        replay_near_misses_path = reports_dir / "phase1_historical_replay_near_misses.csv"
+        write_phase1_historical_replay_reports(
+            replay_decisions,
+            replay_near_misses,
+            replay_summary,
+            replay_decisions_path,
+            replay_summary_path,
+            replay_near_misses_path,
+        )
+        logger.info("Wrote Phase 1A historical replay decisions CSV: %s", replay_decisions_path)
+        logger.info("Wrote Phase 1A historical replay summary Markdown: %s", replay_summary_path)
+        logger.info("Wrote Phase 1A historical replay near misses CSV: %s", replay_near_misses_path)
 
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
@@ -352,6 +382,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="Run latest EOD Phoenix Nano daily scan for one manual-review candidate or NO_TRADE",
     )
     parser.add_argument("--candidate-id", type=int, default=34, help="Candidate rule id for Nano daily scan. Defaults to 34.")
+    parser.add_argument(
+        "--phase1-historical-replay",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1A historical replay rounds",
+    )
+    parser.add_argument("--replay-rounds", type=int, default=100, help="Number of Phase 1A historical replay rounds")
     return parser
 
 
