@@ -54,10 +54,18 @@ cp .env.example .env
 python -m src.main --tickers AAPL,NVDA,SMCI,PLTR --start 2024-01-01 --end 2026-06-30
 ```
 
+Run the simple recent-window smoke test:
+
+```bash
+python -m src.main --tickers AAPL,NVDA,SMCI,PLTR --start 2024-01-01 --end 2026-06-30 --smoke-test --smoke-days 60
+```
+
 Outputs:
 
 - `data/reports/factor_report.csv`
 - `data/reports/factor_report.md`
+- `data/reports/smoke_test.csv`
+- `data/reports/smoke_test.md`
 - `data/processed/factor_dataset.csv`
 - `data/raw/prices/*.csv`
 

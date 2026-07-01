@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 from src.backtest.factor_test import DEFAULT_FACTORS, build_factor_report
 from src.backtest.forward_returns import add_forward_returns
+from src.backtest.smoke_test import build_smoke_test, summarize_smoke_test, write_smoke_test_markdown
 from src.data.filters import apply_price_liquidity_filters
 from src.data.prices import download_many_prices
 from src.data.universe import build_universe
@@ -109,6 +110,22 @@ def run(args: argparse.Namespace) -> None:
     logger.info("Wrote CSV report: %s", csv_path)
     logger.info("Wrote Markdown report: %s", md_path)
 
+    if args.smoke_test:
+        smoke_results = build_smoke_test(
+            dataset,
+            benchmark_ticker=benchmark,
+            horizons=horizons,
+            smoke_days=int(args.smoke_days),
+            top_n=5,
+        )
+        smoke_summary = summarize_smoke_test(smoke_results, horizons)
+        smoke_csv_path = reports_dir / "smoke_test.csv"
+        smoke_md_path = reports_dir / "smoke_test.md"
+        write_csv(smoke_results, smoke_csv_path)
+        write_smoke_test_markdown(smoke_results, smoke_summary, smoke_md_path, benchmark, horizons)
+        logger.info("Wrote smoke test CSV: %s", smoke_csv_path)
+        logger.info("Wrote smoke test Markdown report: %s", smoke_md_path)
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Phoenix AlphaLab factor research runner.")
@@ -118,6 +135,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--benchmark", default=None, help="Benchmark ticker for excess returns. Defaults to settings.yaml")
     parser.add_argument("--config", default="config/settings.yaml", help="Path to YAML settings file")
     parser.add_argument("--log-level", default="INFO", help="Logging level")
+    parser.add_argument("--smoke-test", action="store_true", help="Run the simple recent-window Top 5 smoke test")
+    parser.add_argument("--smoke-days", type=int, default=60, help="Number of recent eligible signal days for smoke test")
     return parser
 
 
