@@ -95,7 +95,15 @@ def run(args: argparse.Namespace) -> None:
     csv_path = reports_dir / "factor_report.csv"
     md_path = reports_dir / "factor_report.md"
     write_csv(report, csv_path)
-    write_markdown_report(report, md_path, passed_tickers, start, end, benchmark)
+    write_markdown_report(
+        report,
+        md_path,
+        passed_tickers,
+        start,
+        end,
+        benchmark,
+        data_source=str(settings["data"].get("provider", "unknown")),
+    )
 
     logger.info("Wrote processed dataset: %s", dataset_path)
     logger.info("Wrote CSV report: %s", csv_path)
@@ -126,4 +134,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

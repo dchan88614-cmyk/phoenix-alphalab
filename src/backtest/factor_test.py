@@ -5,12 +5,14 @@ import pandas as pd
 
 
 DEFAULT_FACTORS = [
-    "relative_volume",
+    "relative_volume_eod",
+    "relative_volume_prev20",
     "volume_change_20d",
     "return_5d",
     "return_10d",
     "return_20d",
-    "distance_to_52w_high",
+    "distance_to_52w_high_eod",
+    "distance_to_52w_high_prev",
     "atr_pct",
     "gap_pct",
     "dollar_volume",

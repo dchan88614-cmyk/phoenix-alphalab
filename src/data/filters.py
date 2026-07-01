@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import logging
+
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def apply_price_liquidity_filters(prices: pd.DataFrame, settings: dict) -> pd.DataFrame:
@@ -16,6 +20,11 @@ def apply_price_liquidity_filters(prices: pd.DataFrame, settings: dict) -> pd.Da
     min_dollar_volume = float(filters.get("min_avg_dollar_volume_20d", 0) or 0)
     min_market_cap = filters.get("min_market_cap")
     max_market_cap = filters.get("max_market_cap")
+    if min_market_cap is not None or max_market_cap is not None:
+        logger.warning(
+            "Market cap filters use current metadata, not point-in-time market cap. "
+            "Do not treat market cap filtered historical tests as bias-free."
+        )
 
     frame = prices.copy()
     frame["dollar_volume"] = frame["close"] * frame["volume"]
@@ -29,10 +38,11 @@ def apply_price_liquidity_filters(prices: pd.DataFrame, settings: dict) -> pd.Da
         mask &= frame["avg_dollar_volume_20d"].ge(min_dollar_volume)
 
     if "market_cap" in frame.columns:
+        # market_cap is current metadata from the provider, not point-in-time history.
+        # It is allowed only as an explicit user-configured filter, never as a historical factor.
         if min_market_cap is not None:
             mask &= frame["market_cap"].ge(float(min_market_cap))
         if max_market_cap is not None:
             mask &= frame["market_cap"].le(float(max_market_cap))
 
     return frame.loc[mask].copy()
-

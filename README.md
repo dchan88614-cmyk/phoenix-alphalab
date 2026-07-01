@@ -33,6 +33,12 @@ Excluded:
 - Reports must be exportable, explainable, and reproducible.
 - Missing metadata is treated conservatively by the universe filter when configured to do so.
 
+## Factor Timing
+
+Phoenix AlphaLab is currently an End-of-Day research system. Factors may use data that is only known after the same trading day's close, such as final close, high, low, and total daily volume. These EOD factors are valid for historical research labels, but they must not be used as same-day intraday trading signals.
+
+If the project later adds pre-market or intraday signals, it must add a separate `signal_time` module so every factor declares exactly when it would have been knowable.
+
 ## Install
 
 ```bash
@@ -61,10 +67,10 @@ The first version uses `yfinance` for public historical OHLCV data and basic tic
 
 ## First-Stage Factors
 
-- Relative Volume
+- Relative Volume EOD and previous-20-day Relative Volume
 - 20-day volume change
 - 5-day, 10-day, and 20-day returns
-- Distance from 52-week high
+- Distance from 52-week high EOD and previous-window 52-week high distance
 - ATR volatility
 - Gap percent
 - Market cap filter interface
@@ -85,4 +91,3 @@ For each factor and quantile group, the report includes:
 - `yfinance` metadata can be incomplete or inconsistent. The code includes filtering interfaces, but exchange and instrument-type validation should be upgraded for institutional-grade research.
 - Market cap history is not point-in-time in this version. It is used only as a configurable filter interface and should not be treated as a bias-free historical factor.
 - The system does not claim any factor works until you run and inspect real reports.
-

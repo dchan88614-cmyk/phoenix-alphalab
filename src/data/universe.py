@@ -65,6 +65,11 @@ def classify_ticker(ticker: str, settings: dict) -> TickerMetadata:
             ticker, None, None, None, None, None, not require_metadata_pass, "metadata_missing"
         )
 
+    if require_metadata_pass and (not quote_type or not exchange):
+        return TickerMetadata(
+            ticker, quote_type, exchange, short_name, long_name, market_cap, False, "metadata_incomplete"
+        )
+
     if quote_type and allowed_quote_types and quote_type not in allowed_quote_types:
         return TickerMetadata(
             ticker, quote_type, exchange, short_name, long_name, market_cap, False, "quote_type_excluded"

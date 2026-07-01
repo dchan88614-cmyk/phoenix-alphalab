@@ -16,3 +16,20 @@ def test_forward_returns_use_future_close_as_label():
     assert result.loc[0, "fwd_return_1d"] == pytest.approx(0.1)
     assert result.loc[1, "fwd_return_1d"] == pytest.approx(12.0 / 11.0 - 1.0)
     assert pd.isna(result.loc[2, "fwd_return_1d"])
+
+
+def test_forward_returns_do_not_cross_tickers():
+    frame = pd.DataFrame(
+        {
+            "date": pd.to_datetime(["2024-01-01", "2024-01-02", "2024-01-01", "2024-01-02"]),
+            "ticker": ["AAA", "AAA", "BBB", "BBB"],
+            "close": [10.0, 11.0, 100.0, 50.0],
+        }
+    )
+
+    result = add_forward_returns(frame, [1])
+
+    assert result.loc[0, "fwd_return_1d"] == pytest.approx(0.1)
+    assert pd.isna(result.loc[1, "fwd_return_1d"])
+    assert result.loc[2, "fwd_return_1d"] == pytest.approx(-0.5)
+    assert pd.isna(result.loc[3, "fwd_return_1d"])

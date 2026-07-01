@@ -31,6 +31,10 @@ The initial objective is research validation, not live trading. The system shoul
 ## Research Constraints
 
 - Factors must use only information known on or before the factor date.
+- The current system is an End-of-Day research system.
+- EOD factors may use same-day close, high, low, and total volume after the market close.
+- EOD factors must not be used as same-day intraday trading signals.
+- If pre-market or intraday signals are added later, the project must add a dedicated `signal_time` module.
 - Forward returns are labels for validation only, never inputs to factors.
 - Reports must be reproducible from code and source data.
 - If a data source is incomplete or non-point-in-time, the limitation must be disclosed.

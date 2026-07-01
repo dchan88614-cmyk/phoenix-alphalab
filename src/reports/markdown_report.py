@@ -18,6 +18,7 @@ def write_markdown_report(
     start: str,
     end: str,
     benchmark: str,
+    data_source: str,
 ) -> None:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -29,6 +30,14 @@ def write_markdown_report(
         f"- Date range: {start} to {end}",
         f"- Benchmark: {benchmark}",
         "- Note: forward returns are validation labels and are not used in factor calculation.",
+        "",
+        "## Research Mode",
+        "",
+        f"- Data source: {data_source}",
+        f"- Benchmark: {benchmark}",
+        "- Factor timing: EOD",
+        "- Look-ahead limitations: factors may use values known after the factor date close; forward returns are labels only.",
+        "- Point-in-time metadata warning: yfinance metadata and market cap are not point-in-time in this MVP.",
         "",
     ]
 
@@ -53,4 +62,3 @@ def write_markdown_report(
         lines.append(display.to_markdown(index=False))
 
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-

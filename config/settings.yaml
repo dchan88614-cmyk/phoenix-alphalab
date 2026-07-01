@@ -30,7 +30,7 @@ universe:
     - UNIT
     - SPAC
     - ACQUISITION
-  require_metadata_pass: false
+  require_metadata_pass: true
 
 filters:
   min_close_price: 1.0
@@ -54,4 +54,3 @@ backtest:
     - 10
     - 20
   quantiles: 5
-
