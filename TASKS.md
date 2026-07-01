@@ -2,124 +2,53 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Daily Scan v1.2 — Fix Ranking Order and Executable Diagnostics
+## Current Task: Phoenix Nano Daily Scan v1.3 — Machine-Readable Scan Ledger
 
-Latest GPT review found the daily scan still ranks the full high-priced universe before applying Nano executability. This caused AMAT/KLAC/LRCX/AMD/PANW-style names to appear in the main Top 5 even though Phoenix Nano is a $100 whole-share account and Candidate 34 has a max_entry_price of about $50.
+The latest report shows the executable-first filter is now working. High-priced names such as AMAT and AMD no longer appear in the main executable candidate table. The daily scan result remains `NO_TRADE_MANUAL_REVIEW` with no candidate approved for paper trading or live trading.
 
-This is a blocker for any useful manual-review output. Fix this before any new research expansion.
+Highest-priority improvement: the Markdown report now contains useful executable near-misses, but `data/reports/nano_daily_scan.csv` still contains only the final one-line result. That makes the daily scan hard to audit, compare, or trend over time.
 
-Do not start paper trading.
-Do not start live trading.
-Do not label any output tradable.
-Keep all outputs research/manual-review only.
-
-## Evidence To Address
-
-Current implementation problem:
-
-- `build_nano_daily_scan()` calls `_score_latest_candidates(latest, rule, account_settings)` before any executable filtering.
-- `_score_latest_candidates()` ranks all latest rows first.
-- `_metadata()` stores `scanned.head(5)` as `top_candidates`, which is therefore the top high-priced universe, not the executable Nano universe.
-- `nano_daily_scan.md` currently shows high-priced non-executable names in `Top 5 Scanned Candidates`.
+Do not loosen Candidate 34 thresholds yet. Do not start paper trading. Do not start live trading. Keep all outputs research/manual-review only.
 
 ## Goal
 
-Make the daily scan answer David's actual account question:
+Create a durable, machine-readable daily scan ledger so GPT can review how executable near-misses evolve over time before considering any threshold change or paper-trading gate.
 
-1. Which tickers are executable for a $100 whole-share account?
-2. Which executable tickers are also <= Candidate 34 max_entry_price?
-3. Among executable tickers only, does any ticker pass Candidate 34?
-4. If none passes, what are the closest executable near-misses?
+The system must preserve:
 
-## Required Implementation
+1. the final daily action,
+2. the top executable near-misses,
+3. rejected-before-ranking samples,
+4. scan metadata and stale/current status,
+5. enough rule-check columns to analyze why no candidate passed.
 
-Update `src/backtest/nano_daily_scan.py` so the effective pipeline is:
+## Required Outputs
 
-1. Load latest available EOD OHLCV.
-2. Compute only signal-date-safe factors.
-3. Determine latest completed data date.
-4. Apply universe / metadata filters.
-5. Calculate affordability and max-entry flags for every latest row.
-6. Split rows into:
-   - `executable_candidates`: `affordability_pass == True` and `max_entry_price_pass == True`
-   - `rejected_before_nano_ranking`: all rows failing either gate
-7. Rank only `executable_candidates`.
-8. Apply Candidate 34 checks only after the executable split.
-9. Select final candidate only from executable rows that pass all checks.
-10. If no executable row passes all checks, output `NO_TRADE_MANUAL_REVIEW` plus executable near-misses.
+Update or create:
 
-Important: High-priced or unaffordable names must never appear in the main candidate or near-miss table.
-
-## Required Report Output
-
-Update both:
-
-- `data/reports/nano_daily_scan.md`
 - `data/reports/nano_daily_scan.csv`
+- `data/reports/nano_daily_scan.md`
+- `data/reports/nano_daily_scan_history.csv`
+- `REPORT_TO_GPT.md`
 
-The markdown must include:
+`nano_daily_scan.csv` must become a multi-row diagnostic CSV, not just the final result row.
 
-- `Action`
-- `Latest data date`
-- `Is stale`
-- `Data source`
-- `Account: $100, whole shares only`
-- `Candidate 34 max_entry_price`
-- `Executable universe count`
-- `Rejected not affordable count`
-- `Rejected above max_entry_price count`
-
-Replace the old section name:
-
-`Top 5 Scanned Candidates`
-
-with:
-
-`Closest Executable Near-Misses`
-
-Rules for this table:
-
-- maximum 5 rows
-- every row must have `affordability_pass == True`
-- every row must have `max_entry_price_pass == True`
-- every row must include failed Candidate 34 checks
-
-Columns:
-
-- ticker
-- reference_price
-- shares_with_100
-- estimated_total_cost
-- estimated_cash_remaining
-- smoke_score
-- decision_strength
-- relative_volume_prev20
-- return_5d
-- return_20d
-- distance_to_52w_high_prev
-- dollar_volume
-- signal_rule_pass
-- failed_checks
-
-Add a separate section:
-
-`Rejected Before Nano Ranking`
-
-This section may show summary counts and up to 10 sample rejected tickers. It must clearly say these names were not eligible for Nano ranking. It may include AMAT/KLAC/LRCX/AMD/PANW if they are rejected, but not in the executable table.
-
-## Required CSV Output
-
-`data/reports/nano_daily_scan.csv` must include a row type column:
+Required `row_type` values:
 
 - `FINAL`
 - `EXECUTABLE_NEAR_MISS`
 - `REJECTED_BEFORE_NANO_RANKING`
 
-Required columns:
+Required columns for every row where applicable:
 
+- scan_timestamp_utc
+- latest_data_date
+- is_stale
+- data_source
 - row_type
 - ticker
 - action
+- status
 - reference_price
 - shares_with_100
 - estimated_total_cost
@@ -128,38 +57,76 @@ Required columns:
 - max_entry_price_pass
 - signal_rule_pass
 - full_rule_pass
+- smoke_score
+- decision_strength
+- relative_volume_prev20
+- return_5d
+- return_20d
+- distance_to_52w_high_prev
+- dollar_volume
 - failed_checks
+- rejection_reason
 
-## Failed Check Diagnostics
+## History File
 
-Implement or update a deterministic failed-check helper for Candidate 34. It should identify at least:
+Create or update `data/reports/nano_daily_scan_history.csv` as an append-only ledger.
 
-- affordability
-- max_entry_price
-- min_smoke_score
-- min_relative_volume_prev20
-- require_return_5d_positive
-- require_return_20d_positive
-- distance_to_52w_high_prev_min
-- dollar_volume_min
-- min_rank_gap
+Rules:
 
-Do not use forward returns or realized trade outcomes in this helper.
+- Append one `FINAL` row for each scan run.
+- Append up to 5 `EXECUTABLE_NEAR_MISS` rows for each scan run.
+- Do not append unlimited rejected rows; include at most 10 `REJECTED_BEFORE_NANO_RANKING` samples per scan run.
+- Make reruns idempotent by de-duplicating on:
+  - scan_timestamp_utc
+  - latest_data_date
+  - row_type
+  - ticker
+- Preserve previous history rows.
+- If the file does not exist, create it.
+
+## Market Calendar Stale Check
+
+Improve stale detection so it is market-calendar-aware.
+
+Requirements:
+
+- A latest data date should not be considered stale merely because the scan runs on a weekend or US market holiday.
+- If no reliable market-calendar dependency is available, implement a simple NYSE weekday/holiday helper with tests for common holidays.
+- Report both:
+  - `latest_data_date`
+  - `expected_latest_trading_date`
+- If the latest data date is older than the expected latest trading date, output `NO_TRADE_MANUAL_REVIEW` with reason `STALE_DATA`.
+
+## Markdown Report Changes
+
+Keep the existing clear Markdown sections:
+
+- `PHOENIX NANO DAILY SCAN`
+- `Closest Executable Near-Misses`
+- `Rejected Before Nano Ranking`
+
+Add:
+
+- `Expected latest trading date`
+- `History rows written`
+- `History file path`
+
+Do not include any BUY language or live-trading language.
 
 ## Tests
 
 Add or update tests for:
 
-1. A stock above $100 is excluded from `Closest Executable Near-Misses`.
-2. A stock above Candidate 34 max_entry_price is excluded from `Closest Executable Near-Misses`.
-3. High-priced rejected names may appear only under `Rejected Before Nano Ranking`.
-4. `Closest Executable Near-Misses` contains only rows where affordability and max-entry both pass.
-5. If no executable stock passes full Candidate 34 checks, action is `NO_TRADE_MANUAL_REVIEW`.
-6. If an executable stock passes all Candidate 34 checks, action is `MANUAL_REVIEW_CANDIDATE`.
-7. `failed_checks` is populated for near-misses.
-8. Daily scan still does not use forward returns or realized trade outcomes.
-9. The markdown no longer contains `Top 5 Scanned Candidates`.
-10. Reports are written.
+1. `nano_daily_scan.csv` contains row_type values `FINAL` and `EXECUTABLE_NEAR_MISS` when near-misses exist.
+2. The diagnostic CSV contains no high-priced rejected ticker in `EXECUTABLE_NEAR_MISS` rows.
+3. The diagnostic CSV includes `failed_checks` for each executable near-miss.
+4. The history CSV is created if missing.
+5. Re-running the same scan does not duplicate the same history rows.
+6. History appends a new scan when scan timestamp or latest data date changes.
+7. Weekend or holiday scans use the prior market trading day as expected latest trading date.
+8. Stale data older than the expected latest trading date produces `NO_TRADE_MANUAL_REVIEW` with `STALE_DATA`.
+9. No report contains live-trading or unconditional BUY language.
+10. Full pytest suite passes.
 
 Run:
 
@@ -179,20 +146,19 @@ When done, update `REPORT_TO_GPT.md` with:
 - Final Daily Scan Action
 - Candidate ticker, if any
 - Latest data date used
+- Expected latest trading date
 - Is stale
 - Executable universe count
 - Rejected not affordable count
 - Rejected above max_entry_price count
 - Closest executable near-misses
-- Rejected-before-ranking summary
-- Whether any high-priced names remain in the executable table
+- Diagnostic CSV row counts by row_type
+- History CSV row counts by row_type
+- Whether history append was idempotent
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
 
 ## Stop Condition
 
-Commit, push, and stop.
-Do not start paper trading.
-Do not start live trading.
-Do not output live-tradable language.
+Commit, push, and stop. Do not start paper trading. Do not start live trading. Do not output live-tradable language.
