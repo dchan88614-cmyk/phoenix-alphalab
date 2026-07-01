@@ -1,0 +1,57 @@
+project:
+  name: Phoenix AlphaLab
+  timezone: America/New_York
+
+data:
+  provider: yfinance
+  raw_prices_dir: data/raw/prices
+  processed_dir: data/processed
+  reports_dir: data/reports
+  benchmark: SPY
+  auto_adjust: false
+
+universe:
+  allowed_exchanges:
+    - NMS
+    - NYQ
+    - ASE
+    - NASDAQ
+    - NYSE
+    - NYSE American
+  allowed_quote_types:
+    - EQUITY
+  excluded_keywords:
+    - ETF
+    - ETN
+    - WARRANT
+    - WARRANTS
+    - PREFERRED
+    - PREFERENCE
+    - UNIT
+    - SPAC
+    - ACQUISITION
+  require_metadata_pass: false
+
+filters:
+  min_close_price: 1.0
+  min_avg_dollar_volume_20d: 1000000
+  min_market_cap: null
+  max_market_cap: null
+
+factors:
+  relative_volume_window: 20
+  volume_change_window: 20
+  momentum_windows:
+    - 5
+    - 10
+    - 20
+  atr_window: 14
+  high_lookback_days: 252
+
+backtest:
+  forward_return_horizons:
+    - 5
+    - 10
+    - 20
+  quantiles: 5
+
