@@ -9,21 +9,22 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Daily Scan v1.1 - Executable-First Filtering.
-- Fixed the daily scan product bug where high-priced non-executable names appeared in the main candidate table.
-- Changed daily scan order so Nano executable filters run before ranking:
-  - whole shares with $100 after slippage must be at least 1
-  - estimated total cost must be <= $100
-  - reference price must be <= frozen Candidate 34 max entry price
+- Executed the latest `TASKS.md`: Phoenix Nano Daily Scan v1.2 - Fix Ranking Order and Executable Diagnostics.
+- Confirmed daily scan now splits latest rows into executable candidates and rejected-before-ranking rows before ranking.
 - Ranked only executable candidates.
-- Applied frozen Candidate 34 rule checks after executable-first filtering.
-- Added `Closest Executable Near-Misses` for executable candidates that fail Candidate 34 checks.
-- Added `Rejected Before Nano Ranking` for high-priced or not-affordable names, clearly marked as ineligible for Nano ranking.
-- Added report counts for executable universe, rejected not affordable, and rejected above max entry price.
-- Updated tests for executable-first behavior.
+- Applied Candidate 34 checks only after executable filtering.
+- Kept high-priced or unaffordable names out of `Closest Executable Near-Misses`.
+- Added deterministic CSV row types:
+  - `FINAL`
+  - `EXECUTABLE_NEAR_MISS`
+  - `REJECTED_BEFORE_NANO_RANKING`
+- Added required CSV columns including affordability flags, max-entry flags, `signal_rule_pass`, `full_rule_pass`, and `failed_checks`.
+- Added `decision_strength` and `signal_rule_pass` to the Markdown near-miss table.
+- Verified Markdown no longer contains `Top 5 Scanned Candidates`.
+- Did not use forward returns or realized outcomes.
 - Did not start paper trading.
 - Did not start live trading.
-- Did not label anything live-tradable.
+- Did not output live-tradable language.
 
 ## Files Changed
 
@@ -41,22 +42,16 @@
 .venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-daily-scan
 ```
 
-Equivalent explicit Candidate 34 command:
-
-```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-07-01 --nano-daily-scan --candidate-id 34
-```
-
 ## Test Results
 
 ```bash
 .venv/bin/python -m pytest tests/test_nano_daily_scan.py -q
-# 13 passed in 0.57s
+# 14 passed in 0.66s
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 64 passed, 1 warning in 1.37s
+# 65 passed, 1 warning in 1.32s
 ```
 
 End-to-end command completed successfully:
@@ -71,32 +66,36 @@ End-to-end command completed successfully:
 - Status: `RESEARCH_ONLY_NOT_TRADABLE`
 - Candidate ticker: none
 - Latest data date used: `2026-06-30`
-- Result stale/current: current, `is_stale = False`
+- Is stale: false
 - Reason: `NO_CANDIDATE_PASSED_RULES`
 - Data source: `yfinance`
-- Scan timestamp UTC: `2026-07-01T19:57:03.828548+00:00`
+- Scan timestamp UTC: `2026-07-01T20:55:45.486831+00:00`
 
-## Executable Filtering
+## Executable Diagnostics
 
 - Executable universe count: 27
 - Rejected not affordable count: 56
-- Rejected above max entry price count: 70
-- Candidate 34 max entry price: $50.00
-- Account setting: $100, whole shares only, 10 bps slippage
-
-High-priced names such as AMAT and AMD no longer appear in the main executable candidate table. They appear only in `Rejected Before Nano Ranking`.
+- Rejected above max_entry_price count: 70
+- Candidate 34 max_entry_price: $50.00
+- Account: $100, whole shares only, 10 bps slippage
+- High-priced names in executable table: no
 
 ## Closest Executable Near-Misses
 
-Top executable near-misses:
+| ticker | reference_price | shares_with_100 | estimated_total_cost | smoke_score | decision_strength | failed_checks |
+|:--|--:|--:|--:|--:|--:|:--|
+| RIVN | 17.35 | 5 | 86.84 | 0.7926 | 0.5075 | smoke score below min, relative volume below min |
+| SDGR | 16.25 | 6 | 97.60 | 0.7111 | 0.4419 | smoke score below min |
+| PATH | 10.87 | 9 | 97.93 | 0.6815 | 0.3705 | smoke score/rank gap/RVOL/52w distance checks failed |
+| S | 16.97 | 5 | 84.93 | 0.6741 | 0.3354 | smoke score/rank gap/RVOL checks failed |
+| F | 13.90 | 7 | 97.40 | 0.6667 | 0.3369 | smoke score/rank gap/RVOL/5d return checks failed |
 
-| ticker | reference_price | shares_with_100 | estimated_total_cost | smoke_score | failed_checks |
-|:--|--:|--:|--:|--:|:--|
-| RIVN | 17.35 | 5 | 86.84 | 0.7926 | smoke score below min, relative volume below min |
-| SDGR | 16.25 | 6 | 97.60 | 0.7111 | smoke score below min |
-| PATH | 10.87 | 9 | 97.93 | 0.6815 | smoke score/rank gap/RVOL/52w distance checks failed |
-| S | 16.97 | 5 | 84.93 | 0.6741 | smoke score/rank gap/RVOL checks failed |
-| F | 13.90 | 7 | 97.40 | 0.6667 | smoke score/rank gap/RVOL/5d return checks failed |
+## Rejected-Before-Ranking Summary
+
+- CSV includes 10 sample `REJECTED_BEFORE_NANO_RANKING` rows.
+- Sample rejected names include ASML, GEV, MU, AMAT, PWR, AMD, APP, LMT, NOC, and TER.
+- These rows were not eligible for Nano ranking because they failed affordability, max-entry, or both gates.
+- AMAT/AMD-style high-priced names remain only in rejected diagnostics, not in the executable near-miss table.
 
 ## Problems
 
@@ -108,8 +107,8 @@ Top executable near-misses:
 
 ## Questions For GPT
 
-- Should the next task add a stable CSV export for `Closest Executable Near-Misses`, or is Markdown-only sufficient for manual review?
-- Should GPT adjust Candidate 34 thresholds for the $100 account, or keep the frozen rule strict until more daily scans accumulate?
+- Should GPT keep Candidate 34 frozen while daily near-misses accumulate, or request a separate Nano-specific candidate rule search constrained to executable stocks first?
+- Should daily scan history be appended over time so near-miss quality can be reviewed longitudinally?
 - Should stale-date checks become market-calendar-aware before any paper-trading workflow is considered?
 
 ## Next Suggested Tasks
@@ -118,4 +117,4 @@ Top executable near-misses:
 - Do not start paper trading until GPT explicitly approves.
 - Keep daily scan output manual-review only.
 - Add market-calendar-aware stale-date checks.
-- Track daily scan history over time so GPT can inspect whether near-misses later become valid candidates.
+- Add an append-only `nano_daily_scan_history.csv` if GPT wants longitudinal review.

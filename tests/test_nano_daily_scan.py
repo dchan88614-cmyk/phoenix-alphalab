@@ -186,6 +186,7 @@ def test_near_miss_table_contains_only_executable_stocks():
     assert metadata["top_candidates"]["ticker"].tolist() == ["NEAR"]
     assert metadata["top_candidates"]["affordability_pass"].all()
     assert metadata["top_candidates"]["max_entry_price_pass"].all()
+    assert metadata["top_candidates"]["failed_checks"].astype(str).str.len().gt(0).all()
 
 
 def test_rejected_high_priced_names_appear_only_in_rejected_summary(tmp_path: Path):
@@ -205,6 +206,7 @@ def test_rejected_high_priced_names_appear_only_in_rejected_summary(tmp_path: Pa
     rejected_section = text.split("## Rejected Before Nano Ranking", 1)[1]
     assert "AMAT" not in near_miss_section
     assert "AMAT" in rejected_section
+    assert "Top 5 Scanned Candidates" not in text
 
 
 def test_daily_scan_does_not_hardcode_a_ticker():
@@ -253,3 +255,41 @@ def test_daily_scan_reports_are_written(tmp_path: Path):
     assert md_path.exists()
     assert rules_path.exists()
     assert "PHOENIX NANO DAILY SCAN" in md_path.read_text(encoding="utf-8")
+
+
+def test_daily_scan_csv_uses_required_row_types(tmp_path: Path):
+    data = pd.DataFrame(
+        [
+            _row("2026-06-30", "AMAT", 723.0, 2.0),
+            _row("2026-06-30", "NEAR", 40.0, 1.0),
+        ]
+    )
+    scan, metadata = build_nano_daily_scan(data, _settings(), requested_end="2026-07-01", rule=_rule())
+    csv_path = tmp_path / "nano_daily_scan.csv"
+
+    write_nano_daily_scan_reports(scan, metadata, csv_path, tmp_path / "nano_daily_scan.md")
+    rows = pd.read_csv(csv_path)
+
+    assert {
+        "row_type",
+        "ticker",
+        "action",
+        "reference_price",
+        "shares_with_100",
+        "estimated_total_cost",
+        "estimated_cash_remaining",
+        "affordability_pass",
+        "max_entry_price_pass",
+        "signal_rule_pass",
+        "full_rule_pass",
+        "failed_checks",
+    }.issubset(rows.columns)
+    assert rows["row_type"].tolist() == [
+        "FINAL",
+        "EXECUTABLE_NEAR_MISS",
+        "REJECTED_BEFORE_NANO_RANKING",
+    ]
+    near = rows.loc[rows["row_type"].eq("EXECUTABLE_NEAR_MISS")].iloc[0]
+    assert bool(near["affordability_pass"])
+    assert bool(near["max_entry_price_pass"])
+    assert isinstance(near["failed_checks"], str) and near["failed_checks"]

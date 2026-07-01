@@ -242,7 +242,7 @@ def write_nano_daily_scan_reports(
     md_output = Path(md_path)
     csv_output.parent.mkdir(parents=True, exist_ok=True)
     md_output.parent.mkdir(parents=True, exist_ok=True)
-    scan.to_csv(csv_output, index=False)
+    _daily_scan_csv(scan, metadata).to_csv(csv_output, index=False)
     md_output.write_text(_daily_scan_markdown(scan, metadata), encoding="utf-8")
 
 
@@ -527,11 +527,13 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
                 "estimated_total_cost",
                 "estimated_cash_remaining",
                 "smoke_score",
+                "decision_strength",
                 "relative_volume_prev20",
                 "return_5d",
                 "return_20d",
                 "distance_to_52w_high_prev",
                 "dollar_volume",
+                "signal_rule_pass",
                 "failed_checks",
             ]
         ].copy()
@@ -558,6 +560,65 @@ def _daily_scan_markdown(scan: pd.DataFrame, metadata: dict) -> str:
         lines.append("")
         lines.append(rejected_display.to_markdown(index=False))
     return "\n".join(lines) + "\n"
+
+
+def _daily_scan_csv(scan: pd.DataFrame, metadata: dict) -> pd.DataFrame:
+    row = scan.iloc[0]
+    rows = [
+        {
+            "row_type": "FINAL",
+            "ticker": row["ticker"],
+            "action": row["action"],
+            "reference_price": row["reference_price"],
+            "shares_with_100": row["shares_with_100"],
+            "estimated_total_cost": row["estimated_total_cost"],
+            "estimated_cash_remaining": row["estimated_cash_remaining"],
+            "affordability_pass": pd.NA,
+            "max_entry_price_pass": pd.NA,
+            "signal_rule_pass": row["all_rule_checks_passed"],
+            "full_rule_pass": row["all_rule_checks_passed"],
+            "failed_checks": "" if bool(row["all_rule_checks_passed"]) else row["reason"],
+        }
+    ]
+    top = metadata.get("top_candidates", pd.DataFrame())
+    if top is not None and not top.empty:
+        for _, item in top.head(5).iterrows():
+            rows.append(
+                {
+                    "row_type": "EXECUTABLE_NEAR_MISS",
+                    "ticker": item["ticker"],
+                    "action": row["action"],
+                    "reference_price": item["reference_price"],
+                    "shares_with_100": item["shares_with_100"],
+                    "estimated_total_cost": item["estimated_total_cost"],
+                    "estimated_cash_remaining": item["estimated_cash_remaining"],
+                    "affordability_pass": item["affordability_pass"],
+                    "max_entry_price_pass": item["max_entry_price_pass"],
+                    "signal_rule_pass": item["signal_rule_pass"],
+                    "full_rule_pass": item["all_rule_checks_passed"],
+                    "failed_checks": item["failed_checks"],
+                }
+            )
+    rejected = metadata.get("rejected_candidates", pd.DataFrame())
+    if rejected is not None and not rejected.empty:
+        for _, item in rejected.head(10).iterrows():
+            rows.append(
+                {
+                    "row_type": "REJECTED_BEFORE_NANO_RANKING",
+                    "ticker": item["ticker"],
+                    "action": row["action"],
+                    "reference_price": item["reference_price"],
+                    "shares_with_100": item["shares_with_100"],
+                    "estimated_total_cost": item["estimated_total_cost"],
+                    "estimated_cash_remaining": item["estimated_cash_remaining"],
+                    "affordability_pass": item["affordability_pass"],
+                    "max_entry_price_pass": item["max_entry_price_pass"],
+                    "signal_rule_pass": False,
+                    "full_rule_pass": False,
+                    "failed_checks": item["rejection_reason"],
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def _is_stale(latest_data_date: pd.Timestamp, requested_end: str | None, stale_after_calendar_days: int) -> bool:
