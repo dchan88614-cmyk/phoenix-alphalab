@@ -35,11 +35,27 @@ def parse_tickers(value: str) -> list[str]:
     return sorted(set(tickers))
 
 
+def read_watchlist(path: str | Path) -> list[str]:
+    tickers: list[str] = []
+    for line in Path(path).read_text(encoding="utf-8").splitlines():
+        value = line.split("#", 1)[0].strip().upper()
+        if value:
+            tickers.append(value)
+    if not tickers:
+        raise ValueError(f"Watchlist is empty: {path}")
+    return sorted(set(tickers))
+
+
 def run(args: argparse.Namespace) -> None:
     load_dotenv()
     settings = load_settings(args.config)
 
-    tickers = parse_tickers(args.tickers)
+    if args.watchlist:
+        tickers = read_watchlist(args.watchlist)
+    elif args.tickers:
+        tickers = parse_tickers(args.tickers)
+    else:
+        raise ValueError("Either --tickers or --watchlist is required.")
     start = parse_date(args.start)
     end = parse_date(args.end)
     benchmark = args.benchmark or settings["data"].get("benchmark", "SPY")
@@ -122,14 +138,22 @@ def run(args: argparse.Namespace) -> None:
         smoke_csv_path = reports_dir / "smoke_test.csv"
         smoke_md_path = reports_dir / "smoke_test.md"
         write_csv(smoke_results, smoke_csv_path)
-        write_smoke_test_markdown(smoke_results, smoke_summary, smoke_md_path, benchmark, horizons)
+        write_smoke_test_markdown(
+            smoke_results,
+            smoke_summary,
+            smoke_md_path,
+            benchmark,
+            horizons,
+            universe_ticker_count=len(passed_tickers),
+        )
         logger.info("Wrote smoke test CSV: %s", smoke_csv_path)
         logger.info("Wrote smoke test Markdown report: %s", smoke_md_path)
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Phoenix AlphaLab factor research runner.")
-    parser.add_argument("--tickers", required=True, help="Comma-separated ticker list, e.g. AAPL,NVDA,SMCI,PLTR")
+    parser.add_argument("--tickers", default=None, help="Comma-separated ticker list, e.g. AAPL,NVDA,SMCI,PLTR")
+    parser.add_argument("--watchlist", default=None, help="Path to a newline-delimited ticker watchlist. Overrides --tickers.")
     parser.add_argument("--start", required=True, help="Start date in YYYY-MM-DD format")
     parser.add_argument("--end", required=True, help="End date in YYYY-MM-DD format")
     parser.add_argument("--benchmark", default=None, help="Benchmark ticker for excess returns. Defaults to settings.yaml")

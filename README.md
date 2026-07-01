@@ -60,6 +60,12 @@ Run the simple recent-window smoke test:
 python -m src.main --tickers AAPL,NVDA,SMCI,PLTR --start 2024-01-01 --end 2026-06-30 --smoke-test --smoke-days 60
 ```
 
+Run the smoke test from a watchlist file:
+
+```bash
+python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --smoke-test --smoke-days 60
+```
+
 Outputs:
 
 - `data/reports/factor_report.csv`

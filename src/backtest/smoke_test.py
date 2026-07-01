@@ -36,6 +36,20 @@ def _score_candidates(frame: pd.DataFrame) -> pd.DataFrame:
     return scored
 
 
+def _summarize_returns(results: pd.DataFrame, horizons: list[int]) -> dict[int, dict]:
+    metrics: dict[int, dict] = {}
+    for horizon in horizons:
+        fwd_col = f"fwd_return_{horizon}d"
+        excess_col = f"excess_return_{horizon}d"
+        metrics[horizon] = {
+            "rows": int(len(results)),
+            "avg_return": float(results[fwd_col].mean()) if not results.empty else pd.NA,
+            "avg_excess_return": float(results[excess_col].mean()) if not results.empty else pd.NA,
+            "win_rate": float((results[fwd_col] > 0).mean()) if not results.empty else pd.NA,
+        }
+    return metrics
+
+
 def build_smoke_test(
     data: pd.DataFrame,
     benchmark_ticker: str,
@@ -114,8 +128,15 @@ def summarize_smoke_test(results: pd.DataFrame, horizons: list[int]) -> dict:
             "signal_days": 0,
             "rows": 0,
             "horizons": {},
+            "selected_unique_ticker_count": 0,
+            "top_10_most_selected": [],
             "best_trade": None,
             "worst_trade": None,
+            "best_trade_excluding_most_selected": None,
+            "worst_trade_excluding_most_selected": None,
+            "excluding_best_single_trade": {},
+            "excluding_worst_single_trade": {},
+            "excluding_smci": None,
             "worth_continuing": "No data; cannot judge.",
         }
 
@@ -125,6 +146,7 @@ def summarize_smoke_test(results: pd.DataFrame, horizons: list[int]) -> dict:
         "signal_days": int(results["date"].nunique()),
         "rows": int(len(results)),
         "horizons": {},
+        "selected_unique_ticker_count": int(results["ticker"].nunique()),
     }
     for horizon in horizons:
         fwd_col = f"fwd_return_{horizon}d"
@@ -143,6 +165,15 @@ def summarize_smoke_test(results: pd.DataFrame, horizons: list[int]) -> dict:
     primary_col = f"fwd_return_{primary_horizon}d"
     best = results.loc[results[primary_col].idxmax()]
     worst = results.loc[results[primary_col].idxmin()]
+    top_selected = (
+        results["ticker"]
+        .value_counts()
+        .head(10)
+        .rename_axis("ticker")
+        .reset_index(name="selected_count")
+        .to_dict("records")
+    )
+    summary["top_10_most_selected"] = top_selected
     summary["best_trade"] = {
         "horizon": primary_horizon,
         "date": best["date"],
@@ -155,6 +186,35 @@ def summarize_smoke_test(results: pd.DataFrame, horizons: list[int]) -> dict:
         "ticker": worst["ticker"],
         "return": float(worst[primary_col]),
     }
+    most_selected = top_selected[0]["ticker"] if top_selected else None
+    if most_selected:
+        without_most_selected = results.loc[~results["ticker"].eq(most_selected)]
+        if without_most_selected.empty:
+            summary["best_trade_excluding_most_selected"] = None
+            summary["worst_trade_excluding_most_selected"] = None
+        else:
+            best_without = without_most_selected.loc[without_most_selected[primary_col].idxmax()]
+            worst_without = without_most_selected.loc[without_most_selected[primary_col].idxmin()]
+            summary["best_trade_excluding_most_selected"] = {
+                "excluded_ticker": most_selected,
+                "horizon": primary_horizon,
+                "date": best_without["date"],
+                "ticker": best_without["ticker"],
+                "return": float(best_without[primary_col]),
+            }
+            summary["worst_trade_excluding_most_selected"] = {
+                "excluded_ticker": most_selected,
+                "horizon": primary_horizon,
+                "date": worst_without["date"],
+                "ticker": worst_without["ticker"],
+                "return": float(worst_without[primary_col]),
+            }
+    summary["excluding_best_single_trade"] = _summarize_returns(results.drop(index=best.name), horizons)
+    summary["excluding_worst_single_trade"] = _summarize_returns(results.drop(index=worst.name), horizons)
+    if results["ticker"].eq("SMCI").any():
+        summary["excluding_smci"] = _summarize_returns(results.loc[~results["ticker"].eq("SMCI")], horizons)
+    else:
+        summary["excluding_smci"] = None
 
     positive_excess_horizons = sum(
         1 for horizon in horizons if summary["horizons"][horizon]["avg_excess_return"] > 0
@@ -173,6 +233,7 @@ def write_smoke_test_markdown(
     output_path: str | Path,
     benchmark_ticker: str,
     horizons: list[int],
+    universe_ticker_count: int,
 ) -> None:
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -187,17 +248,26 @@ def write_smoke_test_markdown(
         "- Ranking factors: " + ", ".join(SMOKE_RANK_FACTORS),
         "- Excluded from ranking: forward returns, market cap, news, SEC data, short interest, AI scores.",
         f"- Benchmark: {benchmark_ticker}",
-        "",
-        "## Test Range",
-        "",
-        f"- Start date: {summary['start_date']}",
-        f"- End date: {summary['end_date']}",
-        f"- Signal days: {summary['signal_days']}",
-        f"- Selected rows: {summary['rows']}",
-        "",
-        "## Summary",
+        f"- Universe ticker count: {universe_ticker_count}",
+        f"- Selected unique ticker count: {summary['selected_unique_ticker_count']}",
         "",
     ]
+    if universe_ticker_count < 30:
+        lines.extend(["WARNING: Universe too small; smoke test is not representative.", ""])
+
+    lines.extend(
+        [
+            "## Test Range",
+            "",
+            f"- Start date: {summary['start_date']}",
+            f"- End date: {summary['end_date']}",
+            f"- Signal days: {summary['signal_days']}",
+            f"- Selected rows: {summary['rows']}",
+            "",
+            "## Summary",
+            "",
+        ]
+    )
 
     horizon_rows = []
     for horizon in horizons:
@@ -213,6 +283,13 @@ def write_smoke_test_markdown(
             }
         )
     lines.append(pd.DataFrame(horizon_rows).to_markdown(index=False))
+    lines.extend(["", "## Top 10 Most Selected Tickers", ""])
+    top_selected = summary.get("top_10_most_selected", [])
+    if top_selected:
+        lines.append(pd.DataFrame(top_selected).to_markdown(index=False))
+    else:
+        lines.append("No selections were produced.")
+
     lines.extend(["", "## Best And Worst", ""])
 
     best = summary.get("best_trade")
@@ -225,6 +302,41 @@ def write_smoke_test_markdown(
         lines.append(
             f"- Worst trade ({worst['horizon']}d): {worst['date']} {worst['ticker']} {_format_percent(worst['return'])}"
         )
+    best_without = summary.get("best_trade_excluding_most_selected")
+    worst_without = summary.get("worst_trade_excluding_most_selected")
+    if best_without:
+        lines.append(
+            f"- Best trade excluding most selected ticker ({best_without['excluded_ticker']}, {best_without['horizon']}d): "
+            f"{best_without['date']} {best_without['ticker']} {_format_percent(best_without['return'])}"
+        )
+    if worst_without:
+        lines.append(
+            f"- Worst trade excluding most selected ticker ({worst_without['excluded_ticker']}, {worst_without['horizon']}d): "
+            f"{worst_without['date']} {worst_without['ticker']} {_format_percent(worst_without['return'])}"
+        )
+
+    def add_variant_section(title: str, metrics: dict | None) -> None:
+        lines.extend(["", f"## {title}", ""])
+        if not metrics:
+            lines.append("Not applicable.")
+            return
+        rows = []
+        for horizon in horizons:
+            horizon_metrics = metrics.get(horizon, {})
+            rows.append(
+                {
+                    "horizon_days": horizon,
+                    "rows": horizon_metrics.get("rows", 0),
+                    "avg_return": _format_percent(horizon_metrics.get("avg_return", pd.NA)),
+                    "avg_excess_return": _format_percent(horizon_metrics.get("avg_excess_return", pd.NA)),
+                    "win_rate": _format_percent(horizon_metrics.get("win_rate", pd.NA)),
+                }
+            )
+        lines.append(pd.DataFrame(rows).to_markdown(index=False))
+
+    add_variant_section("Result Excluding Best Single Trade", summary.get("excluding_best_single_trade"))
+    add_variant_section("Result Excluding Worst Single Trade", summary.get("excluding_worst_single_trade"))
+    add_variant_section("Result Excluding SMCI", summary.get("excluding_smci"))
 
     lines.extend(["", "## Initial Judgment", "", summary["worth_continuing"], "", "## Daily Top 5", ""])
     if results.empty:

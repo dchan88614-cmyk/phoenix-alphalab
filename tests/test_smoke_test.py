@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from src.backtest.smoke_test import build_smoke_test, summarize_smoke_test, write_smoke_test_markdown
+from src.main import read_watchlist
 from src.reports.csv_export import write_csv
 
 
@@ -74,7 +75,74 @@ def test_smoke_test_output_files_exist(tmp_path):
     md_path = Path(tmp_path) / "smoke_test.md"
 
     write_csv(result, csv_path)
-    write_smoke_test_markdown(result, summary, md_path, benchmark_ticker="SPY", horizons=[5, 10, 20])
+    write_smoke_test_markdown(
+        result,
+        summary,
+        md_path,
+        benchmark_ticker="SPY",
+        horizons=[5, 10, 20],
+        universe_ticker_count=50,
+    )
 
     assert csv_path.exists()
     assert md_path.exists()
+
+
+def test_watchlist_can_be_read(tmp_path):
+    watchlist = Path(tmp_path) / "watchlist.txt"
+    watchlist.write_text("aapl\nNVDA\n# comment\nsmci # inline comment\n", encoding="utf-8")
+
+    assert read_watchlist(watchlist) == ["AAPL", "NVDA", "SMCI"]
+
+
+def test_universe_count_enters_smoke_report(tmp_path):
+    frame = pd.DataFrame(
+        [
+            _row("2024-01-31", "SPY", 1.0, 0.03, 0.04, 0.05),
+            _row("2024-01-31", "AAA", 10.0, 0.08, 0.01, -0.05),
+        ]
+    )
+    result = build_smoke_test(frame, benchmark_ticker="SPY", horizons=[5, 10, 20], smoke_days=1, top_n=5)
+    summary = summarize_smoke_test(result, horizons=[5, 10, 20])
+    md_path = Path(tmp_path) / "smoke_test.md"
+
+    write_smoke_test_markdown(result, summary, md_path, "SPY", [5, 10, 20], universe_ticker_count=42)
+
+    content = md_path.read_text(encoding="utf-8")
+    assert "Universe ticker count: 42" in content
+
+
+def test_small_universe_warning_enters_smoke_report(tmp_path):
+    frame = pd.DataFrame(
+        [
+            _row("2024-01-31", "SPY", 1.0, 0.03, 0.04, 0.05),
+            _row("2024-01-31", "AAA", 10.0, 0.08, 0.01, -0.05),
+        ]
+    )
+    result = build_smoke_test(frame, benchmark_ticker="SPY", horizons=[5, 10, 20], smoke_days=1, top_n=5)
+    summary = summarize_smoke_test(result, horizons=[5, 10, 20])
+    md_path = Path(tmp_path) / "smoke_test.md"
+
+    write_smoke_test_markdown(result, summary, md_path, "SPY", [5, 10, 20], universe_ticker_count=29)
+
+    content = md_path.read_text(encoding="utf-8")
+    assert "WARNING: Universe too small; smoke test is not representative." in content
+
+
+def test_excluding_best_single_trade_average_outputs(tmp_path):
+    frame = pd.DataFrame(
+        [
+            _row("2024-01-31", "SPY", 1.0, 0.0, 0.0, 0.0),
+            _row("2024-01-31", "AAA", 10.0, 1.0, 1.0, 1.0),
+            _row("2024-01-31", "BBB", 9.0, 0.1, 0.1, 0.1),
+        ]
+    )
+    result = build_smoke_test(frame, benchmark_ticker="SPY", horizons=[5, 10, 20], smoke_days=1, top_n=5)
+    summary = summarize_smoke_test(result, horizons=[5, 10, 20])
+    md_path = Path(tmp_path) / "smoke_test.md"
+
+    write_smoke_test_markdown(result, summary, md_path, "SPY", [5, 10, 20], universe_ticker_count=50)
+
+    content = md_path.read_text(encoding="utf-8")
+    assert "## Result Excluding Best Single Trade" in content
+    assert "10.00%" in content
