@@ -63,8 +63,9 @@ def run(args: argparse.Namespace) -> None:
         tickers = parse_tickers(args.tickers)
     else:
         raise ValueError("Either --tickers or --watchlist is required.")
-    start = parse_date(args.start)
-    end = parse_date(args.end)
+    research_start = parse_date(args.start)
+    research_end = parse_date(args.end)
+    data_start = (pd.Timestamp(research_start) - pd.Timedelta(days=300)).strftime("%Y-%m-%d")
     benchmark = args.benchmark or settings["data"].get("benchmark", "SPY")
     all_download_tickers = sorted(set(tickers + [benchmark]))
 
@@ -82,8 +83,8 @@ def run(args: argparse.Namespace) -> None:
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
     prices = download_many_prices(
         all_download_tickers,
-        start,
-        end,
+        data_start,
+        research_end,
         raw_prices_dir=settings["data"]["raw_prices_dir"],
         auto_adjust=bool(settings["data"].get("auto_adjust", False)),
     )
@@ -100,6 +101,18 @@ def run(args: argparse.Namespace) -> None:
     filtered = apply_price_liquidity_filters(factors, settings)
     horizons = [int(horizon) for horizon in settings["backtest"].get("forward_return_horizons", [5, 10, 20])]
     dataset = add_forward_returns(filtered, horizons)
+    dataset["date"] = pd.to_datetime(dataset["date"])
+    research_dataset = dataset.loc[
+        dataset["date"].between(pd.Timestamp(research_start), pd.Timestamp(research_end))
+    ].copy()
+    warmup_available_start = dataset["date"].min()
+    requested_data_start = pd.Timestamp(data_start)
+    warmup_limitation = ""
+    if pd.isna(warmup_available_start) or warmup_available_start > requested_data_start + pd.Timedelta(days=7):
+        warmup_limitation = (
+            f"Requested warmup from {data_start}, earliest available data is "
+            f"{warmup_available_start.strftime('%Y-%m-%d') if not pd.isna(warmup_available_start) else 'unknown'}."
+        )
 
     processed_dir = Path(settings["data"]["processed_dir"])
     reports_dir = Path(settings["data"]["reports_dir"])
@@ -107,10 +120,10 @@ def run(args: argparse.Namespace) -> None:
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     dataset_path = processed_dir / "factor_dataset.csv"
-    write_csv(dataset, dataset_path)
+    write_csv(research_dataset, dataset_path)
 
     report = build_factor_report(
-        dataset,
+        research_dataset,
         factors=DEFAULT_FACTORS,
         horizons=horizons,
         benchmark_ticker=benchmark,
@@ -123,8 +136,8 @@ def run(args: argparse.Namespace) -> None:
         report,
         md_path,
         passed_tickers,
-        start,
-        end,
+        research_start,
+        research_end,
         benchmark,
         data_source=str(settings["data"].get("provider", "unknown")),
     )
@@ -136,7 +149,7 @@ def run(args: argparse.Namespace) -> None:
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
-            dataset,
+            research_dataset,
             benchmark_ticker=benchmark,
             horizons=horizons,
             smoke_days=int(args.smoke_days),
@@ -189,6 +202,10 @@ def run(args: argparse.Namespace) -> None:
             dataset,
             benchmark_ticker=benchmark,
             horizons=horizons,
+            data_start=data_start,
+            research_start=research_start,
+            research_end=research_end,
+            warmup_limitation=warmup_limitation,
         )
         auto_csv_path = reports_dir / "auto_research_generations.csv"
         auto_md_path = reports_dir / "auto_research_summary.md"
