@@ -1,0 +1,7 @@
+gate_name,status,source_report,evidence,next_action
+phase1n_credential_present,BLOCKED,data/reports/phase1n_credentials_preflight.csv,"format_hint_status counts: MISSING=4; no PRESENT_REDACTED credential rows","Operator must add exactly one local independent vendor credential, preferably TIINGO_API_TOKEN, outside git."
+phase1n_live_smoke,BLOCKED,data/reports/phase1n_live_smoke_tests.csv,"smoke_status counts: CREDENTIAL_MISSING=21; authenticated vendor network calls were skipped","Rerun Phase 1N only after a non-suspicious local credential is present."
+phase1n_phase1m_rerun_allowed,BLOCKED,data/reports/phase1n_phase1m_rerun_readiness.csv,"phase1m_rerun_allowed=False; reason_status=PHASE_1N_WAITING_FOR_CREDENTIAL; reason=no non-suspicious vendor credential present","Do not run Phase 1M until Phase 1N explicitly allows it."
+phase1n_secret_safety,PASS,data/reports/phase1n_no_secret_audit.csv,"status counts: PASS=10; no secret exposure detected in generated Phase 1N reports/docs/code audit rows","Keep credentials only in local environment or untracked .env."
+phase1m_rerun,BLOCKED,data/reports/phase1n_phase1m_rerun_readiness.csv,"Phase 1M was not rerun because Phase 1N did not allow it","Wait for operator credential, then rerun Phase 1N."
+frozen_candidate_retest_review,BLOCKED,data/reports/phase1o_gate_status.csv,"Independent credentialed vendor validation is still unavailable; GPT review of Candidate 34 vs Candidate 35 retest is not justified","After Phase 1N and Phase 1M data-readiness pass, ask GPT for a separate frozen retest authorization."

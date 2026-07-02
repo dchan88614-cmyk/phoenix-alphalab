@@ -9,29 +9,14 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1N - Credential Activation, Adapter Verification, and Retest Authorization Gate.
-- Added `docs/VENDOR_CREDENTIAL_SETUP.md`.
-- Updated `.env.example` with placeholder-only independent vendor credentials.
-- Updated `.gitignore` so local `.env` and local env override files are ignored while `.env.example` remains tracked.
-- Added Phase 1N credential activation gate.
-- Added CLI flag:
-  - `--phase1n-credential-activation-gate`
-- Added fixture-based adapter contract tests for:
-  - Tiingo EOD
-  - Polygon/Massive aggregates
-  - Alpha Vantage daily adjusted
-- Added live smoke test gating that skips network calls when credentials are absent or suspicious.
-- Added no-secret audit.
-- Added Phase 1M rerun readiness gate.
-- Added vendor selection decision report.
-- Created required outputs:
-  - `data/reports/phase1n_vendor_selection_decision.md`
-  - `data/reports/phase1n_credentials_preflight.csv`
-  - `data/reports/phase1n_adapter_contract_tests.csv`
-  - `data/reports/phase1n_live_smoke_tests.csv`
-  - `data/reports/phase1n_phase1m_rerun_readiness.csv`
-  - `data/reports/phase1n_no_secret_audit.csv`
-  - `data/reports/phase1n_data_readiness_summary.md`
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1O - Credential-Gated Phase 1M Rerun Authorization.
+- Pulled latest `origin/main` and fast-forwarded to the new Phase 1O task.
+- Read `README.md`, `BRAIN.md`, `TASKS.md`, `REPORT_TO_GPT.md`, and `git status`.
+- Reran Phase 1N credential activation gate.
+- Inspected Phase 1N credential preflight, live smoke, rerun readiness, no-secret audit, and summary reports.
+- Stopped before Phase 1M because Phase 1N did not allow a Phase 1M rerun.
+- Created Phase 1O gate status report.
+- Created Phase 1O rerun authorization decision report.
 - Did not start Phase 2.
 - Did not start Phase 3.
 - Did not enable paper execution.
@@ -43,161 +28,103 @@
 - Did not run a Candidate 34 vs Candidate 35 retest.
 - Did not run a strategy threshold sweep.
 - Did not produce financial advice or an operational recommendation.
+- Did not print, commit, cache, hash, prefix-log, suffix-log, length-log, or expose any API secret, token, or key.
 
 ## Files Changed
 
-- `.env.example`
-- `.gitignore`
-- `docs/VENDOR_CREDENTIAL_SETUP.md`
-- `src/main.py`
-- `src/research/phase1n_credential_activation.py`
-- `tests/test_phase1n_credential_activation.py`
-- `tests/fixtures/vendor_payloads/tiingo_eod_aapl.json`
-- `tests/fixtures/vendor_payloads/polygon_aggs_aapl.json`
-- `tests/fixtures/vendor_payloads/alpha_vantage_daily_adjusted_ibm.json`
-- `data/reports/phase1n_vendor_selection_decision.md`
-- `data/reports/phase1n_credentials_preflight.csv`
-- `data/reports/phase1n_adapter_contract_tests.csv`
-- `data/reports/phase1n_live_smoke_tests.csv`
-- `data/reports/phase1n_phase1m_rerun_readiness.csv`
-- `data/reports/phase1n_no_secret_audit.csv`
-- `data/reports/phase1n_data_readiness_summary.md`
+- `data/reports/phase1o_gate_status.csv`
+- `data/reports/phase1o_rerun_authorization_decision.md`
 - `REPORT_TO_GPT.md`
 
 ## Commands Run
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1n_credential_activation.py -q
-.venv/bin/python -m pytest -q
+git pull --ff-only
+git status --short --branch
+sed -n '1,220p' README.md
+sed -n '1,240p' BRAIN.md
+sed -n '1,260p' TASKS.md
+sed -n '1,260p' REPORT_TO_GPT.md
 .venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate
+.venv/bin/python -m pytest -q
 ```
 
 ## Test Results
 
-```bash
-.venv/bin/python -m pytest tests/test_phase1n_credential_activation.py -q
-# 8 passed in 0.67s
-```
+No code or test logic was changed in Phase 1O.
+
+The required Phase 1N CLI completed successfully and regenerated Phase 1N gate reports.
+
+Full-suite tests were rerun after writing Phase 1O reports:
 
 ```bash
 .venv/bin/python -m pytest -q
-# 200 passed, 1 warning in 28.44s
+# 200 passed, 1 warning in 28.39s
 ```
 
 Remaining warning:
 
 - macOS LibreSSL / urllib3 warning from the local Python environment.
 
-End-to-end command completed successfully:
-
-```bash
-.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate
-```
-
 ## Credential Status
-
-- `MISSING`: 4
-- `PRESENT_REDACTED`: 0
-
-Credential rows:
 
 - `TIINGO_API_TOKEN`: missing
 - `POLYGON_API_KEY`: missing
 - `MASSIVE_API_KEY`: missing
 - `ALPHAVANTAGE_API_KEY`: missing
 
-No credential value, prefix, suffix, hash, or length was written to any report.
+Aggregate evidence:
 
-## Adapter Contract Tests
+- credential preflight: `MISSING=4`
+- credential present: False
+- no credential value, prefix, suffix, hash, or length was written to reports.
 
-- `PASS`: 3
-- `FAIL`: 0
+## Phase 1N Result
 
-Fixture-based parser/normalizer contracts passed for:
-
-- Tiingo EOD
-- Polygon/Massive aggregates
-- Alpha Vantage daily adjusted
-
-These tests ran without credentials or network access.
-
-## Live Smoke
-
-- `CREDENTIAL_MISSING`: 21
-- `PASS`: 0
-- `AUTH_FAILED`: 0
-- `RATE_LIMITED`: 0
-
-Live smoke did not attempt authenticated network calls because no non-suspicious credential is present.
-
-## Phase 1M Rerun Readiness
-
-- Preferred vendor: none selected
-- Credential ready: False
-- Adapter contract ready: True
-- Live smoke ready: False
-- Secret safety ready: True
+- Latest Phase 1N status: `PHASE_1N_WAITING_FOR_CREDENTIAL`
+- Live smoke passed: False
+- Live smoke evidence: `CREDENTIAL_MISSING=21`
+- No-secret audit: `PASS=10`
 - Phase 1M rerun allowed: False
 - Reason: no non-suspicious vendor credential present
 
-## No-Secret Audit
+## Phase 1M Rerun
 
-- `PASS`: 10
-- `WARN`: 0
-- `FAIL`: 0
+Phase 1M was not rerun.
 
-Checked:
+Reason: Phase 1N reported `phase1m_rerun_allowed=False`.
 
-- `.env`
-- `.env.*`
-- `*.env`
-- `!.env.example`
-- `.env.example`
-- generated Phase 1N reports
-- code redaction behavior
-- ignored cache paths
+## Final Phase 1O Status
 
-## Final Phase 1N Status
+`PHASE_1O_BLOCKED_WAITING_FOR_CREDENTIAL`
 
-- Status: `PHASE_1N_WAITING_FOR_CREDENTIAL`
+## Exact Next Action For GPT / Operator
 
-Meaning:
+Operator should add exactly one local independent vendor credential outside git, preferably `TIINGO_API_TOKEN`, then rerun Phase 1N:
 
-- The credential activation path is safe.
-- Adapter contract tests pass.
-- No-secret audit passes.
-- Phase 1M rerun is not allowed until a non-suspicious local credential is added and live smoke passes.
+```bash
+.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate
+```
 
-## Whether Strategy Research Should Remain Paused
+Only if Phase 1N reports `phase1m_rerun_allowed=True` should Codex rerun Phase 1M.
 
-Yes. Strategy research remains paused.
+## Known Issues
 
-Reasons:
-
-- No independent vendor credential is present.
-- Live smoke tests did not run.
-- Phase 1M rerun is not currently allowed.
-- No independent secondary validation has been added.
-- Phase 1N does not authorize a frozen Candidate 34 vs Candidate 35 retest.
-
-## Problems
-
-- No `TIINGO_API_TOKEN`, `POLYGON_API_KEY`, `MASSIVE_API_KEY`, or `ALPHAVANTAGE_API_KEY` is present.
-- Live vendor smoke cannot run until a local credential is added.
-- Phase 1M cannot be rerun meaningfully until Phase 1N reports readiness.
+- No independent vendor credential is available in the local environment.
+- Authenticated vendor live smoke cannot run.
+- Independent secondary OHLCV validation remains unavailable.
+- GPT review of a frozen Candidate 34 vs Candidate 35 retest is not justified yet.
 
 ## Questions For GPT
 
 - Should the operator add `TIINGO_API_TOKEN` first as recommended?
-- After Tiingo is added and Phase 1N passes, should Codex rerun Phase 1M?
-- If Phase 1M later passes data-readiness gates, should GPT authorize a separate frozen Candidate 34 vs Candidate 35 retest task?
+- After Phase 1N passes with a credential, should Codex rerun Phase 1M immediately?
 
 ## Next Suggested Tasks
 
-- Add a local Tiingo credential using `.env` or an exported environment variable.
-- Rerun:
-  - `.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate`
-- If Phase 1N reports ready, rerun Phase 1M.
+- Add one local credential outside git.
+- Rerun Phase 1N.
+- If Phase 1N allows it, rerun Phase 1M.
 - Do not start Phase 2.
 - Do not start Phase 3.
 - Do not enable paper execution.
