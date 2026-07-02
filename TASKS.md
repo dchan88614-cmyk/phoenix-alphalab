@@ -2,7 +2,7 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1K — Data Remediation, Ticker Lifecycle, and Secondary Vendor Smoke Tests
+## Current Task: Phoenix Nano Phase 1L — Secondary Data Adapter Hardening and Vendor Decision Gate
 
 This task is **historical research and data-readiness remediation only**.
 
@@ -15,398 +15,424 @@ Do not loosen Candidate 34 thresholds.
 Do not adopt Candidate 35, Phase 1H overlays, or any universe variant as active policy.
 Do not create Candidate 36 entry rules.
 Do not run a strategy threshold sweep.
-Do not run a Candidate 34 vs Candidate 35 retest yet.
+Do not run a Candidate 34 vs Candidate 35 retest in this task.
 Do not produce financial advice or an operational recommendation.
 
 ## Why This Task
 
-Phase 1J completed the symbol master / secondary validation / data readiness gate, but it ended as:
+Phase 1K completed implementation but ended as:
 
-`PHASE_1J_DATA_BLOCKED`
+`PHASE_1K_DATA_BLOCKED`
 
-Latest Phase 1J evidence:
+Latest Phase 1K evidence:
 
-- total symbols: 119
-- active listed equities: 115
-- ETF/index proxies: 2
-- unknown symbols: 2
-- quarantined symbols: 19
-- research warnings: 2
-- clean research candidates: 98
-- secondary OHLCV matches: 0
-- secondary OHLCV warnings: 0
-- secondary OHLCV failures: 0
-- no usable secondary OHLCV source: 119 of 119
-- taxonomy HIGH confidence: 98
-- taxonomy MEDIUM confidence: 17
-- taxonomy LOW confidence: 4
-- final status: `PHASE_1J_DATA_BLOCKED`
+- tests passed: `170 passed, 1 warning`
+- secondary vendor smoke test: `GLOBAL_SOURCE_UNAVAILABLE`: 4, `PASS`: 0
+- secondary OHLCV validation: `GLOBAL_SOURCE_UNAVAILABLE`: 119, `MATCH`: 0
+- active trade candidate count: 99
+- unresolved alias count: 0
+- unresolved low taxonomy count: 0
+- Stooq smoke-test rows returned HTTP 200 and 796 bytes for AAPL/MSFT/SPY/QQQ but parsed 0 rows with `_fetch_status=PARSE_ERROR`
+- clean watchlist v2 is research-only and contains dynamic-date comments, but `SQ # earliest_safe_replay_date=` is blank and needs alias/watchlist normalization
+- final status: `PHASE_1K_DATA_BLOCKED`
 
-The most important blockers are now data-readiness blockers, not strategy-rule blockers:
+This means the next optimized step is **not strategy testing**. The highest-priority issue is to harden the data adapter layer enough to answer:
 
-1. Secondary OHLCV validation was globally unavailable, so every symbol is still effectively yfinance-only.
-2. 19 symbols are quarantined, mostly from lookback / forward-window / unknown symbol status issues.
-3. Some taxonomy rows are still LOW confidence, including SPY/QQQ proxies and renamed or problematic tickers.
-4. Some medium-confidence taxonomy rows were mechanically inferred from company names and are likely wrong, especially crypto miners, biotech names, AI/software names, and recent listings.
-5. The repo needs time-varying ticker lifecycle / alias handling before another historical replay. Example: Block changed from `SQ` to `XYZ` in 2025, so replay code must not treat a renamed ticker as a simple permanent data failure or leak future ticker knowledge into old replay dates.
+1. Is Stooq truly globally unavailable, or is the adapter/parser mishandling a nonstandard response?
+2. Can any no-secret independent OHLCV source provide usable secondary validation?
+3. If no independent source works, can the project at least separate:
+   - execution-grade independent vendor validation,
+   - same-vendor transport fallback,
+   - cache-only research evidence,
+   - and no-source blockers?
+4. Can the clean watchlist candidate be made alias-safe and date-gated without blank or misleading comments?
 
-Therefore the next optimized task is **not** another trading-rule redesign. The next task is to repair the data layer enough to know whether a frozen Candidate 34 vs Candidate 35 retest is even legitimate.
+Do not use realized future returns, realized PnL, holdout performance, prior winning/losing status, or strategy outcomes to make data-source, alias, or watchlist inclusion decisions.
 
 ## Goal
 
-Create Phase 1K research code that answers:
+Build Phase 1L data adapter diagnostics and a formal vendor decision gate.
 
-- Is secondary OHLCV unavailable because Stooq/network access is globally blocked, or because individual symbols are missing?
-- Can Stooq or another no-secret source validate at least known liquid test symbols such as AAPL, MSFT, SPY, and QQQ?
-- Which quarantined symbols are true permanent drops, which are recent listings that need dynamic `earliest_safe_replay_date`, and which are ticker alias / rename problems?
-- Can low-confidence and obviously wrong medium-confidence taxonomy rows be fixed with deterministic static overrides?
-- Can the clean watchlist candidate be upgraded to a **research-only v2** list with explicit dynamic replay eligibility?
-- Is the project ready for a frozen Candidate 34 vs Candidate 35 retest, or must data work continue?
+The goal is to produce a clear answer:
 
-Do not use realized future returns, realized PnL, holdout performance, or prior winning/losing status to decide symbol inclusion, taxonomy, aliases, or quarantine status.
+- `PHASE_1L_SECONDARY_VENDOR_BLOCKED`
+- `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
+- or `PHASE_1L_READY_FOR_FROZEN_RETEST_GPT_REVIEW`
+
+Even if Phase 1L passes, do **not** run the frozen Candidate 34 vs Candidate 35 retest in this task. Passing Phase 1L may only recommend that GPT review and separately authorize a frozen retest.
 
 ## CLI
 
 Add or update:
 
 ```bash
---phase1k-data-remediation-gate
+--phase1l-secondary-data-adapter-gate
 ```
 
 Preferred command:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1k-data-remediation-gate
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1l-secondary-data-adapter-gate
 ```
 
-If network access to public OHLCV sources is unavailable, the run must still complete with explicit global and per-symbol statuses. Do not fake validation.
+The command must complete even if all public network sources fail. Do not fake validation. Report explicit statuses.
 
 ## Required Outputs
 
 Create or update:
 
-- `data/reports/phase1k_secondary_vendor_smoke_test.csv`
-- `data/reports/phase1k_secondary_ohlcv_validation.csv`
-- `data/reports/phase1k_symbol_lifecycle_alias_map.csv`
-- `data/reports/phase1k_quarantine_remediation_audit.csv`
-- `data/reports/phase1k_taxonomy_static_overrides.csv`
-- `data/reports/phase1k_taxonomy_resolution_v2.csv`
-- `data/reports/phase1k_clean_watchlist_v2_candidate.txt`
-- `data/reports/phase1k_data_readiness_scorecard.csv`
-- `data/reports/phase1k_data_readiness_summary.md`
+- `data/reports/phase1l_secondary_source_capability_matrix.csv`
+- `data/reports/phase1l_raw_response_diagnostics.csv`
+- `data/reports/phase1l_secondary_vendor_smoke_test_v2.csv`
+- `data/reports/phase1l_secondary_ohlcv_validation_v3.csv`
+- `data/reports/phase1l_yahoo_chart_transport_fallback_audit.csv`
+- `data/reports/phase1l_alias_clean_watchlist_audit.csv`
+- `data/reports/phase1l_clean_watchlist_v3_candidate.txt`
+- `data/reports/phase1l_data_readiness_scorecard.csv`
+- `data/reports/phase1l_data_readiness_summary.md`
 - `REPORT_TO_GPT.md`
 
 Optional but preferred if useful:
 
-- `data/cache/secondary_ohlcv/stooq/`
-- `data/cache/symbol_lifecycle/`
+- `data/cache/secondary_ohlcv/stooq/raw/`
+- `data/cache/secondary_ohlcv/yahoo_chart/raw/`
+- `data/cache/secondary_ohlcv/diagnostics/`
 
 Keep earlier Phase 1 reports intact unless regeneration is required.
 
 The summary must start with:
 
 ```text
-PHOENIX NANO PHASE 1K — DATA REMEDIATION, TICKER LIFECYCLE, AND SECONDARY VENDOR SMOKE TESTS
+PHOENIX NANO PHASE 1L — SECONDARY DATA ADAPTER HARDENING AND VENDOR DECISION GATE
 ```
 
 ## Inputs
 
-Reuse these Phase 1J outputs:
+Reuse these Phase 1K outputs:
+
+- `data/reports/phase1k_secondary_vendor_smoke_test.csv`
+- `data/reports/phase1k_secondary_ohlcv_validation.csv`
+- `data/reports/phase1k_symbol_lifecycle_alias_map.csv`
+- `data/reports/phase1k_quarantine_remediation_audit.csv`
+- `data/reports/phase1k_taxonomy_resolution_v2.csv`
+- `data/reports/phase1k_clean_watchlist_v2_candidate.txt`
+- `data/reports/phase1k_data_readiness_scorecard.csv`
+- `data/reports/phase1k_data_readiness_summary.md`
+
+Also reuse Phase 1J / Phase 1I incident reports where helpful:
 
 - `data/reports/phase1j_symbol_master.csv`
-- `data/reports/phase1j_listing_validation_matrix.csv`
-- `data/reports/phase1j_secondary_ohlcv_validation.csv`
-- `data/reports/phase1j_data_readiness_scorecard.csv`
 - `data/reports/phase1j_quarantine_list.csv`
-- `data/reports/phase1j_taxonomy_resolution.csv`
-- `data/reports/phase1j_clean_watchlist_candidate.txt`
-- `data/reports/phase1j_data_readiness_summary.md`
-
-Also reuse Phase 1I incident reports where helpful:
-
 - `data/reports/phase1i_data_gap_incident_log.csv`
 - `data/reports/phase1i_symbol_data_quality_audit.csv`
-- `data/reports/phase1i_rejected_symbol_audit.csv`
 
-## Part 1: Secondary Vendor Smoke Test
+## Part 1: Secondary Source Capability Matrix
 
-Create `phase1k_secondary_vendor_smoke_test.csv`.
+Create `phase1l_secondary_source_capability_matrix.csv`.
 
-Before validating all symbols, run a small explicit smoke test on known high-liquidity symbols:
+For each candidate source/adapter, report:
+
+- `source_name`
+- `source_family`
+- `adapter_name`
+- `requires_secret`
+- `is_independent_of_primary_vendor`
+- `allowed_for_execution_grade_secondary_validation`
+- `allowed_for_transport_fallback_only`
+- `network_fetch_attempted`
+- `cache_supported`
+- `expected_format`
+- `known_limitations`
+- `capability_status`: `CANDIDATE`, `SMOKE_PASS`, `SMOKE_FAIL`, `GLOBAL_UNAVAILABLE`, `NOT_ALLOWED_REQUIRES_SECRET`, `TRANSPORT_FALLBACK_ONLY`
+- `decision_reason`
+
+At minimum include:
+
+1. `stooq_daily_csv`
+   - no secret
+   - independent of yfinance
+   - can count as secondary vendor only if smoke test and overlap validation pass
+2. `yahoo_chart_api`
+   - no secret
+   - same vendor family as yfinance / Yahoo-derived primary data
+   - may be used only as a transport fallback / extraction sanity check
+   - must **not** count as independent secondary vendor validation
+3. Any other no-secret source only if it can be implemented without credentials and without scraping terms-unsafe pages.
+
+Do not add key-required vendors unless they are clearly marked `NOT_ALLOWED_REQUIRES_SECRET` and not used.
+
+## Part 2: Raw Response Diagnostics
+
+Create `phase1l_raw_response_diagnostics.csv`.
+
+The Phase 1K Stooq result is suspicious because AAPL/MSFT/SPY/QQQ returned HTTP 200 and 796 bytes but parsed 0 rows. Diagnose this before declaring the source globally unavailable.
+
+For each smoke-test fetch attempt, report:
+
+- `source_name`
+- `ticker`
+- `lookup_symbol`
+- `url_or_cache_key`
+- `http_status_if_available`
+- `final_url_if_available`
+- `content_type_if_available`
+- `response_bytes`
+- `response_sha256`
+- `first_200_chars_sanitized`
+- `detected_payload_type`: `CSV_OHLCV`, `CSV_NO_DATA`, `HTML_BLOCK`, `HTML_ERROR`, `TEXT_ERROR`, `EMPTY`, `UNKNOWN`
+- `detected_columns`
+- `parser_status`: `PASS`, `NO_DATA_FOR_SYMBOL`, `PARSE_ERROR`, `HTML_OR_BLOCKED`, `EMPTY`
+- `parser_reason`
+
+Parser hardening requirements:
+
+- Support BOM-prefixed CSV.
+- Support comma or semicolon delimiter if detected.
+- Support case-insensitive column names for date/open/high/low/close/volume.
+- Detect HTML responses explicitly instead of treating them as generic CSV parse errors.
+- Detect explicit no-data responses.
+- Store successful raw CSV snapshots in cache.
+- Do not store credentials or secrets.
+
+## Part 3: Stooq Smoke Test v2
+
+Create `phase1l_secondary_vendor_smoke_test_v2.csv`.
+
+Smoke-test these tickers:
 
 - `AAPL`
 - `MSFT`
 - `SPY`
 - `QQQ`
 
-For each candidate secondary source / symbol pair, report:
+For Stooq, try a small deterministic lookup-symbol matrix before declaring failure:
 
-- source_name
-- ticker
-- lookup_symbol
-- url_or_cache_key
-- attempted_network_fetch
-- used_cache_fallback
-- http_status_if_available
-- exception_class_if_any
-- response_bytes
-- parsed_rows
-- first_date
-- last_date
-- required_start_date
-- required_end_date
-- smoke_status: `PASS`, `NO_DATA_FOR_SYMBOL`, `GLOBAL_SOURCE_UNAVAILABLE`, `PARSE_ERROR`, `CACHE_ONLY_PASS`, `FAIL`
-- smoke_reason
+- `{ticker_lower}.us`
+- `{ticker_upper}.US`
+- `{ticker_lower}`
 
-For Stooq specifically:
+For each attempt, report:
 
-- try the `.us` format currently used by Phase 1J;
-- include a reasonable User-Agent header;
-- use short retry/backoff;
-- preserve raw snapshots in cache when successful;
-- distinguish a global network/source failure from a legitimate symbol-level no-data response.
+- `source_name`
+- `ticker`
+- `lookup_symbol`
+- `url_or_cache_key`
+- `attempted_network_fetch`
+- `used_cache_fallback`
+- `http_status_if_available`
+- `response_bytes`
+- `parsed_rows`
+- `first_date`
+- `last_date`
+- `required_start_date`
+- `required_end_date`
+- `overlap_days_with_required_window`
+- `smoke_status`: `PASS`, `CACHE_ONLY_PASS`, `NO_DATA_FOR_SYMBOL`, `GLOBAL_SOURCE_UNAVAILABLE`, `PARSE_ERROR`, `HTML_OR_BLOCKED`, `FAIL`
+- `smoke_reason`
+- `payload_type`
+- `selected_attempt_for_ticker`
 
-If AAPL/MSFT/SPY/QQQ cannot be fetched from the source and no cache exists, mark the source as `GLOBAL_SOURCE_UNAVAILABLE` for this run. Do not mark every ticker as if the individual ticker has no second source.
+Source-level Stooq decision rules:
 
-## Part 2: Secondary OHLCV Validation v2
+- `SMOKE_PASS` if at least 3 of 4 smoke tickers parse with positive rows and positive overlap.
+- `CACHE_ONLY_PASS` if at least 3 of 4 smoke tickers only pass through cache.
+- `GLOBAL_SOURCE_UNAVAILABLE` only if network/cache cannot produce usable data and diagnostics show network/source/blocking problems.
+- `PARSER_BUG_SUSPECTED` if HTTP 200 responses exist but parser cannot classify payloads clearly.
+- `SMOKE_FAIL` if payloads are valid but the source does not provide required symbols/data.
 
-Create `phase1k_secondary_ohlcv_validation.csv`.
+## Part 4: Yahoo Chart Transport Fallback Audit
 
-Only run full per-symbol secondary comparison if the smoke test shows at least one source is available or cached.
+Create `phase1l_yahoo_chart_transport_fallback_audit.csv`.
 
-For each symbol, report:
+Implement a no-secret Yahoo Chart adapter only as a **same-vendor transport fallback audit**, not as independent secondary validation.
 
-- ticker
-- primary_vendor
-- secondary_vendor
-- lookup_symbol
-- source_global_status
-- primary_start_date
-- primary_end_date
-- secondary_start_date
-- secondary_end_date
-- overlap_trading_days
-- close_price_median_abs_diff_pct
-- close_price_p95_abs_diff_pct
-- close_price_max_abs_diff_pct
-- volume_median_abs_diff_pct
-- volume_p95_abs_diff_pct
-- volume_max_abs_diff_pct
-- adjusted_close_available_primary
-- adjusted_close_available_secondary
-- adjusted_price_mismatch_flag
-- split_or_corporate_action_mismatch_flag
-- validation_status: `MATCH`, `WARN`, `FAIL`, `NO_DATA_FOR_SYMBOL`, `GLOBAL_SOURCE_UNAVAILABLE`, `CACHE_ONLY_MATCH`, `CACHE_ONLY_WARN`
-- validation_reason
+For AAPL/MSFT/SPY/QQQ and a sample of at least 20 active clean-watchlist symbols, report:
+
+- `ticker`
+- `source_name`: `yahoo_chart_api`
+- `source_family`: `yahoo`
+- `is_independent_of_primary_vendor`: `False`
+- `network_fetch_attempted`
+- `used_cache_fallback`
+- `parsed_rows`
+- `first_date`
+- `last_date`
+- `overlap_days_with_primary`
+- `close_price_median_abs_diff_pct_vs_primary`
+- `volume_median_abs_diff_pct_vs_primary`
+- `transport_status`: `TRANSPORT_MATCH`, `TRANSPORT_WARN`, `TRANSPORT_FAIL`, `GLOBAL_SOURCE_UNAVAILABLE`, `NO_DATA_FOR_SYMBOL`
+- `reason`
+
+This can help diagnose yfinance extraction/cache problems, but it must never satisfy the independent secondary vendor gate.
+
+## Part 5: Secondary OHLCV Validation v3
+
+Create `phase1l_secondary_ohlcv_validation_v3.csv`.
+
+Run full per-symbol comparison only for sources whose smoke test passes or cache-only passes.
+
+For every watchlist symbol plus SPY/QQQ, report:
+
+- `ticker`
+- `primary_vendor`
+- `secondary_vendor`
+- `secondary_source_family`
+- `is_independent_secondary`
+- `lookup_symbol`
+- `source_global_status`
+- `primary_start_date`
+- `primary_end_date`
+- `secondary_start_date`
+- `secondary_end_date`
+- `overlap_trading_days`
+- `close_price_median_abs_diff_pct`
+- `close_price_p95_abs_diff_pct`
+- `close_price_max_abs_diff_pct`
+- `volume_median_abs_diff_pct`
+- `volume_p95_abs_diff_pct`
+- `volume_max_abs_diff_pct`
+- `adjusted_close_available_primary`
+- `adjusted_close_available_secondary`
+- `adjusted_price_mismatch_flag`
+- `split_or_corporate_action_mismatch_flag`
+- `validation_status`: `MATCH`, `WARN`, `FAIL`, `NO_DATA_FOR_SYMBOL`, `GLOBAL_SOURCE_UNAVAILABLE`, `CACHE_ONLY_MATCH`, `CACHE_ONLY_WARN`, `TRANSPORT_ONLY_MATCH`, `TRANSPORT_ONLY_WARN`
+- `validation_reason`
 
 Rules:
 
 - Never mark `MATCH` without positive overlap days and computed differences.
-- If the source is globally unavailable, report `GLOBAL_SOURCE_UNAVAILABLE` consistently.
-- If cache is used, label it explicitly as cache-based.
-- A missing secondary source is a research-readiness warning/blocker, never an execution-grade validation.
+- Same-vendor Yahoo Chart checks must be labeled `TRANSPORT_ONLY_*` and must not count as independent validation.
+- If Stooq or another independent source is unavailable, mark independent validation blocker clearly.
+- Cache-only results must be labeled cache-only and cannot be execution-grade unless GPT later explicitly accepts cache-only research evidence.
 
-## Part 3: Ticker Lifecycle and Alias Map
+## Part 6: Alias and Clean Watchlist v3 Audit
 
-Create `phase1k_symbol_lifecycle_alias_map.csv`.
+Create:
 
-For every watchlist ticker plus SPY/QQQ, report:
+- `phase1l_alias_clean_watchlist_audit.csv`
+- `phase1l_clean_watchlist_v3_candidate.txt`
 
-- original_watchlist_ticker
-- canonical_current_ticker
-- historical_ticker
-- effective_start_date
-- effective_end_date
-- alias_status: `UNCHANGED`, `RENAMED`, `POSSIBLE_RENAME`, `DELISTED_OR_INACTIVE`, `UNKNOWN`, `ETF_OR_INDEX_PROXY`
-- replay_handling: `USE_AS_IS`, `USE_HISTORICAL_THEN_CURRENT_ALIAS`, `ALLOW_AFTER_DATE`, `DROP_FROM_RESEARCH`, `MANUAL_REVIEW`
-- evidence_source
-- evidence_notes
+Audit `phase1k_clean_watchlist_v2_candidate.txt` for alias/date bugs.
 
-Special investigations:
+At minimum, verify and fix these issues:
 
-- `SQ` / `XYZ` ticker lifecycle for Block.
-- `BITF` yfinance 404 / metadata incomplete behavior.
-- Any symbol with `symbol_master_status:UNKNOWN` from Phase 1J.
-- SPY and QQQ as regime/index proxies, not trade candidates.
+1. `SQ # earliest_safe_replay_date=` must not remain blank.
+2. SQ/XYZ lifecycle must preserve:
+   - historical ticker `SQ` through `2025-01-20`
+   - current canonical ticker `XYZ` effective `2025-01-21`
+   - no replay eligibility leakage before the ticker-change date
+3. SPY/QQQ must remain proxy-only and excluded from trade candidates.
+4. Dynamic-date-gated recent listings such as RDDT and GEV must retain explicit dates.
+5. Comments must be machine-parseable.
 
-Important anti-leak rule:
+For each watchlist line, report:
 
-Historical replay must not use future ticker knowledge to create an investable candidate before the relevant ticker/listing actually existed. Alias mapping is for data continuity and replay eligibility, not for leaking future symbols into old replay dates.
+- `line_number`
+- `raw_line`
+- `ticker`
+- `canonical_current_ticker`
+- `historical_ticker`
+- `is_trade_candidate`
+- `is_proxy_only`
+- `dynamic_earliest_safe_replay_date`
+- `alias_status`
+- `comment_parse_status`: `PASS`, `WARN`, `FAIL`
+- `audit_status`: `PASS`, `WARN`, `FAIL`
+- `audit_reason`
 
-## Part 4: Quarantine Remediation Audit
+The v3 watchlist file remains research-only and must start with comments saying:
 
-Create `phase1k_quarantine_remediation_audit.csv`.
+```text
+# Phase 1L research-only clean watchlist v3 candidate.
+# Not approved for daily scan, paper execution, or real-money execution.
+# Alias/date-gated symbols are research-only and must be handled by replay eligibility logic.
+```
 
-Start with all 19 Phase 1J quarantined symbols and the 2 research-warn symbols.
+## Part 7: Data Readiness Scorecard
 
-For each, report:
+Create `phase1l_data_readiness_scorecard.csv` and `phase1l_data_readiness_summary.md`.
 
-- ticker
-- phase1j_quarantine_status
-- phase1j_quarantine_reason
-- phase1j_suggested_action
-- phase1j_earliest_safe_replay_date
-- phase1k_listing_status
-- phase1k_ohlcv_status
-- phase1k_alias_status
-- phase1k_taxonomy_confidence
-- factor_lookback_available_days_at_requested_start
-- forward_window_available_days_at_requested_end
-- dynamic_earliest_safe_replay_date
-- remediation_class: `PERMANENT_DROP`, `DYNAMIC_ALLOW_AFTER_DATE`, `ALIASED_OR_RENAMED`, `DATA_DOWNLOAD_RETRY_NEEDED`, `KEEP_WITH_WARNING`, `MANUAL_REVIEW_REQUIRED`
-- phase1k_recommended_research_action: `DROP`, `ALLOW_DYNAMIC_DATE_GATED`, `ALLOW_WITH_WARNING`, `KEEP_PROXY_ONLY`, `MANUAL_REVIEW`
-- rationale
+Scorecard columns:
 
-Rules:
+- `total_symbols`
+- `active_trade_candidate_count`
+- `proxy_count`
+- `stooq_smoke_pass_count`
+- `stooq_smoke_cache_only_pass_count`
+- `stooq_payload_parse_error_count`
+- `stooq_html_or_blocked_count`
+- `independent_secondary_match_count`
+- `independent_secondary_warn_count`
+- `independent_secondary_fail_count`
+- `independent_secondary_coverage_pct`
+- `transport_fallback_match_count`
+- `transport_fallback_warn_count`
+- `alias_audit_fail_count`
+- `blank_date_gate_comment_count`
+- `unresolved_alias_count`
+- `unresolved_low_taxonomy_count`
+- `clean_watchlist_v3_candidate_count`
+- `data_readiness_status`
 
-- Do not permanently drop a symbol merely because it lacks enough lookback at 2024-01-01 if it has usable later data. Prefer dynamic replay-date gating where appropriate.
-- Do not keep a symbol merely because it was profitable in prior research.
-- Do not drop a symbol merely because it was unprofitable in prior research.
-- If a symbol has a ticker rename, handle via alias map instead of treating it as a normal missing-data ticker.
+Status rules:
 
-## Part 5: Taxonomy Static Overrides and v2 Taxonomy
+### `PHASE_1L_SECONDARY_VENDOR_BLOCKED`
 
-Create `phase1k_taxonomy_static_overrides.csv` and `phase1k_taxonomy_resolution_v2.csv`.
+Use this if:
 
-Fix LOW-confidence taxonomy rows and obviously wrong MEDIUM name-keyword rows with deterministic static overrides.
+- no independent secondary source smoke test passes, or
+- independent secondary coverage is below 80%, or
+- Stooq/source diagnostics are still ambiguous, or
+- alias/watchlist audit has FAIL rows.
 
-At minimum, review and override these symbols if supported by static business/listing evidence:
+### `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
 
-- `BITF`: crypto-adjacent / high beta; bitcoin mining
-- `SPY`: ETF / index proxy; broad U.S. equity proxy
-- `QQQ`: ETF / index proxy; Nasdaq-100 / growth equity proxy
-- `SQ` and/or `XYZ`: fintech; payments / Cash App / merchant services
-- `ASTS`: space / communications; satellite broadband
-- `CELH`: consumer growth; beverages
-- `CLSK`: crypto-adjacent / high beta; bitcoin mining
-- `CRSP`: biotech; gene editing
-- `IOVA`: biotech; oncology cell therapy
-- `MARA`: crypto-adjacent / high beta; bitcoin mining
-- `MDB`: software; database platform
-- `MIRM`: biotech; rare disease therapeutics
-- `NNE`: space / defense / nuclear; advanced nuclear
-- `NTLA`: biotech; gene editing
-- `RIOT`: crypto-adjacent / high beta; bitcoin mining
-- `SOUN`: AI / software; voice AI
-- `SYM`: robotics / automation; warehouse automation
-- `TGTX`: biotech; therapeutics
-- `TTD`: software / adtech; demand-side platform
-- `U`: software; game engine / real-time 3D platform
-- `VKTX`: biotech; metabolic disease therapeutics
+Use this if:
 
-Columns for override file:
+- adapter diagnostics are clear,
+- alias/watchlist audit passes,
+- Yahoo Chart transport fallback works as a same-vendor sanity check,
+- but no independent secondary source is available.
 
-- ticker
-- resolved_theme
-- resolved_subtheme
-- confidence
-- evidence_source
-- notes
+This means the project is cleaner but still not ready for execution-grade validation.
 
-Columns for v2 taxonomy:
+### `PHASE_1L_READY_FOR_FROZEN_RETEST_GPT_REVIEW`
 
-- ticker
-- prior_theme
-- phase1j_resolved_theme
-- phase1k_resolved_theme
-- phase1k_resolved_subtheme
-- confidence
-- evidence_source
-- notes
+Use this only if all are true:
 
-Goal:
+- independent secondary source smoke passes for at least 3 of 4 smoke symbols;
+- independent secondary validation has `MATCH` or `WARN` coverage for at least 90% of active trade candidates;
+- independent secondary `FAIL` rate is <= 5%;
+- alias audit has 0 FAIL rows;
+- blank date-gate comments = 0;
+- unresolved alias count = 0;
+- unresolved LOW taxonomy count = 0.
 
-- 0 LOW-confidence rows for active research candidates and SPY/QQQ proxies.
-- Any remaining LOW-confidence row must be `DROP` or `MANUAL_REVIEW_REQUIRED` and excluded from clean research retesting.
-
-## Part 6: Research-Only Clean Watchlist v2 Candidate
-
-Create `phase1k_clean_watchlist_v2_candidate.txt`.
-
-This is not approved for daily scan, paper execution, or real-money execution.
-
-Rules:
-
-- Include only symbols with `ALLOW_WITH_WARNING` or `ALLOW_DYNAMIC_DATE_GATED` research action.
-- Exclude permanent drops.
-- Exclude unresolved aliases.
-- Exclude unresolved LOW-confidence active taxonomy rows.
-- Exclude SPY and QQQ as trade candidates; keep them only as regime/index proxies in metadata/reports.
-- If a symbol is dynamic-date-gated, include a comment or sidecar record documenting earliest safe replay date.
-- Keep one trade-candidate ticker per line.
-- Add a header comment explaining that this file is research-only and not approved for paper/live execution.
-
-## Part 7: Phase 1K Data Readiness Scorecard
-
-Create `phase1k_data_readiness_scorecard.csv`.
-
-Report:
-
-- total_symbols
-- phase1j_quarantined_count
-- phase1k_permanent_drop_count
-- phase1k_dynamic_allow_after_date_count
-- phase1k_allow_with_warning_count
-- unresolved_alias_count
-- unresolved_low_taxonomy_count
-- active_trade_candidate_count
-- proxy_count
-- secondary_smoke_pass_count
-- secondary_global_unavailable_count
-- secondary_ohlcv_match_count
-- secondary_ohlcv_warn_count
-- secondary_ohlcv_fail_count
-- secondary_no_data_for_symbol_count
-- secondary_global_source_unavailable_count
-- data_readiness_status
-
-Allowed statuses:
-
-- `PHASE_1K_DATA_BLOCKED`
-- `PHASE_1K_SYMBOL_MASTER_READY_SECONDARY_VENDOR_MISSING`
-- `PHASE_1K_RESEARCH_DATA_READY_FOR_FROZEN_RETEST`
-
-Mark `PHASE_1K_RESEARCH_DATA_READY_FOR_FROZEN_RETEST` only if all are true:
-
-1. Permanent/unresolved drops are <= 5% of watchlist trade candidates.
-2. No unresolved alias remains among active research candidates.
-3. No LOW-confidence taxonomy remains among active research candidates or SPY/QQQ proxies.
-4. SPY and QQQ are explicitly valid regime/index proxies with usable OHLCV.
-5. Recent listings or renamed symbols have explicit dynamic replay eligibility handling.
-6. All active research candidates have usable OHLCV for the replay dates on which they are eligible.
-7. At least 80% of active research candidates have secondary OHLCV `MATCH`, `WARN`, `CACHE_ONLY_MATCH`, or `CACHE_ONLY_WARN`.
-
-If gates 1-6 pass but gate 7 fails only because no no-secret secondary OHLCV vendor is globally available, mark:
-
-`PHASE_1K_SYMBOL_MASTER_READY_SECONDARY_VENDOR_MISSING`
-
-If any of gates 1-6 fail, mark:
-
-`PHASE_1K_DATA_BLOCKED`
-
-Even if Phase 1K passes, do not start Phase 2, paper execution, live execution, daily-scan production changes, or automatic strategy adoption. The only allowed next step after GPT review is a frozen Candidate 34 vs Candidate 35 retest on the Phase 1K cleaned research universe.
+Even with this status, do not run any strategy retest until GPT reviews the report and explicitly requests it in a future task.
 
 ## Tests
 
 Add tests for:
 
-1. Secondary vendor smoke test distinguishes `GLOBAL_SOURCE_UNAVAILABLE` from symbol-level no data.
-2. Secondary validation never marks `MATCH` without overlap days and computed differences.
-3. Cached secondary data is labeled as cache-based and never hidden as fresh network validation.
-4. `SQ` / `XYZ` style ticker lifecycle alias mapping is represented without leaking future ticker eligibility into old replay dates.
-5. SPY and QQQ taxonomy are resolved as ETF/index proxies and excluded as trade candidates.
-6. Static taxonomy overrides fix the targeted LOW and incorrect MEDIUM rows.
-7. Recent listings can be represented as `DYNAMIC_ALLOW_AFTER_DATE` instead of permanent quarantine when OHLCV is usable later.
-8. Permanent drops and unresolved aliases do not appear in `phase1k_clean_watchlist_v2_candidate.txt`.
-9. Phase 1K readiness statuses follow the gates above.
-10. The CLI writes all required Phase 1K outputs.
-11. Full pytest suite passes.
+1. Stooq parser successfully parses a normal OHLCV CSV.
+2. Stooq parser detects HTML/block/error payloads instead of generic parse failure.
+3. Stooq parser supports case-insensitive columns and BOM-prefixed CSV.
+4. Smoke-test v2 does not mark global unavailable without diagnostics.
+5. Yahoo Chart adapter is always labeled same-vendor / transport-only and never counts as independent secondary validation.
+6. Secondary validation v3 cannot emit `MATCH` without positive overlap days.
+7. Readiness gate fails when independent secondary coverage is 0%.
+8. Readiness gate can produce `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING` when diagnostics and alias audit pass but independent vendor is absent.
+9. Alias clean watchlist audit fails on a blank `earliest_safe_replay_date=` comment.
+10. SQ/XYZ lifecycle handling preserves the 2025-01-21 effective current-ticker date and prevents pre-change leakage.
+11. SPY/QQQ remain proxy-only and excluded from trade candidates.
+12. All required Phase 1L reports are written.
+13. Full pytest suite passes.
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1k-data-remediation-gate
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1l-secondary-data-adapter-gate
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -417,17 +443,15 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1K Data Remediation Summary
-- Secondary vendor smoke test result
-- Secondary OHLCV validation coverage
-- Ticker lifecycle / alias findings
-- SQ / XYZ handling decision
-- BITF handling decision
-- SPY/QQQ proxy handling
-- Phase 1J quarantine remediation results
-- Taxonomy v2 confidence counts
-- Clean watchlist v2 candidate count
-- Phase 1K data readiness status
+- Phase 1L Summary
+- Stooq raw response diagnostics
+- Secondary source capability matrix summary
+- Secondary vendor smoke test v2 result
+- Independent secondary OHLCV validation coverage
+- Yahoo Chart transport fallback audit summary
+- Alias / clean watchlist v3 audit result
+- Data readiness scorecard
+- Final Phase 1L status
 - Whether strategy research should remain paused
 - Problems
 - Questions For GPT
@@ -435,4 +459,4 @@ When done, update `REPORT_TO_GPT.md` with:
 
 ## Stop Condition
 
-Commit, push, and stop. Do not start Phase 2, Phase 3, paper execution, live execution, production daily-scan changes, Candidate 36, or any strategy retest.
+Commit, push, and stop. Do not start Phase 2 or Phase 3. Do not run a frozen Candidate 34 vs Candidate 35 retest. Do not enable paper execution or live trading.
