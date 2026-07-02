@@ -55,6 +55,7 @@ from src.research.phase1g_redesign_sandbox import build_phase1g_redesign_sandbox
 from src.research.phase1h_risk_overlay import build_phase1h_risk_overlay_sandbox, write_phase1h_reports
 from src.research.phase1i_data_universe_audit import build_phase1i_data_universe_audit, write_phase1i_reports
 from src.research.phase1j_data_readiness import build_phase1j_data_readiness_gate, write_phase1j_reports
+from src.research.phase1k_data_remediation import build_phase1k_data_remediation_gate, write_phase1k_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -111,7 +112,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate:
+    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -709,6 +710,59 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1J clean watchlist candidate TXT: %s", phase1j_paths["clean_watchlist"])
         logger.info("Wrote Phase 1J data readiness summary Markdown: %s", phase1j_paths["summary"])
 
+    if args.phase1k_data_remediation_gate:
+        (
+            phase1k_smoke,
+            phase1k_secondary,
+            phase1k_lifecycle,
+            phase1k_remediation,
+            phase1k_overrides,
+            phase1k_taxonomy,
+            phase1k_clean_watchlist,
+            phase1k_scorecard,
+            phase1k_summary_md,
+            _,
+        ) = build_phase1k_data_remediation_gate(
+            research_dataset,
+            watchlist_path=args.watchlist,
+            watchlist_tickers=tickers,
+            requested_start_date=research_start,
+            requested_end_date=research_end,
+            reports_dir=reports_dir,
+        )
+        phase1k_paths = {
+            "smoke": reports_dir / "phase1k_secondary_vendor_smoke_test.csv",
+            "secondary": reports_dir / "phase1k_secondary_ohlcv_validation.csv",
+            "lifecycle": reports_dir / "phase1k_symbol_lifecycle_alias_map.csv",
+            "remediation": reports_dir / "phase1k_quarantine_remediation_audit.csv",
+            "overrides": reports_dir / "phase1k_taxonomy_static_overrides.csv",
+            "taxonomy": reports_dir / "phase1k_taxonomy_resolution_v2.csv",
+            "clean_watchlist": reports_dir / "phase1k_clean_watchlist_v2_candidate.txt",
+            "scorecard": reports_dir / "phase1k_data_readiness_scorecard.csv",
+            "summary": reports_dir / "phase1k_data_readiness_summary.md",
+        }
+        write_phase1k_reports(
+            phase1k_smoke,
+            phase1k_secondary,
+            phase1k_lifecycle,
+            phase1k_remediation,
+            phase1k_overrides,
+            phase1k_taxonomy,
+            phase1k_clean_watchlist,
+            phase1k_scorecard,
+            phase1k_summary_md,
+            phase1k_paths,
+        )
+        logger.info("Wrote Phase 1K secondary vendor smoke test CSV: %s", phase1k_paths["smoke"])
+        logger.info("Wrote Phase 1K secondary OHLCV validation CSV: %s", phase1k_paths["secondary"])
+        logger.info("Wrote Phase 1K symbol lifecycle alias map CSV: %s", phase1k_paths["lifecycle"])
+        logger.info("Wrote Phase 1K quarantine remediation audit CSV: %s", phase1k_paths["remediation"])
+        logger.info("Wrote Phase 1K taxonomy static overrides CSV: %s", phase1k_paths["overrides"])
+        logger.info("Wrote Phase 1K taxonomy resolution v2 CSV: %s", phase1k_paths["taxonomy"])
+        logger.info("Wrote Phase 1K clean watchlist v2 candidate TXT: %s", phase1k_paths["clean_watchlist"])
+        logger.info("Wrote Phase 1K data readiness scorecard CSV: %s", phase1k_paths["scorecard"])
+        logger.info("Wrote Phase 1K data readiness summary Markdown: %s", phase1k_paths["summary"])
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -897,6 +951,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1j-data-readiness-gate",
         action="store_true",
         help="Run Phoenix Nano Phase 1J symbol master and data readiness gate",
+    )
+    parser.add_argument(
+        "--phase1k-data-remediation-gate",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1K data remediation and secondary vendor smoke tests",
     )
     return parser
 

@@ -1,0 +1,121 @@
+ticker,prior_theme,phase1j_resolved_theme,phase1k_resolved_theme,phase1k_resolved_subtheme,confidence,evidence_source,notes
+AAPL,mega-cap platform,mega-cap platform,mega-cap platform,consumer devices / services,HIGH,static_taxonomy,
+ABNB,consumer internet,consumer internet,consumer internet,travel marketplace,HIGH,static_taxonomy,
+ACHR,EV / mobility,EV / mobility,EV / mobility,eVTOL,HIGH,static_taxonomy,
+ADBE,software,software,software,creative software,HIGH,static_taxonomy,
+AFRM,fintech,fintech,fintech,consumer credit,HIGH,static_taxonomy,
+AI,AI / software,AI / software,AI / software,enterprise AI,HIGH,static_taxonomy,
+AMAT,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,semicap equipment,HIGH,static_taxonomy,
+AMD,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,accelerators / CPU,HIGH,static_taxonomy,
+ANET,AI infrastructure,AI infrastructure,AI infrastructure,networking,HIGH,static_taxonomy,
+APP,software,software,software,adtech,HIGH,static_taxonomy,
+ARM,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,IP / architecture,HIGH,static_taxonomy,
+ASML,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,lithography,HIGH,static_taxonomy,
+ASTS,UNMAPPED_LOW_CONFIDENCE,consumer internet,space / communications,satellite broadband,HIGH,phase1k_static_override,AST SpaceMobile satellite broadband business.
+AVAV,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,drones,HIGH,static_taxonomy,
+AVGO,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,networking silicon,HIGH,static_taxonomy,
+BA,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,aerospace,HIGH,static_taxonomy,
+BBAI,AI / software,AI / software,AI / software,defense AI,HIGH,static_taxonomy,
+BEAM,biotech,biotech,biotech,gene editing,HIGH,static_taxonomy,
+BITF,UNMAPPED_LOW_CONFIDENCE,UNMAPPED_LOW_CONFIDENCE,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,Bitfarms bitcoin mining.
+BWXT,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,nuclear services,HIGH,static_taxonomy,
+CAVA,consumer growth,consumer growth,consumer growth,restaurants,HIGH,static_taxonomy,
+CCJ,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,uranium,HIGH,static_taxonomy,
+CEG,power / electrification,power / electrification,power / electrification,nuclear utility,HIGH,static_taxonomy,
+CELH,UNMAPPED_LOW_CONFIDENCE,consumer internet,consumer growth,beverages,HIGH,phase1k_static_override,Celsius energy drink / beverages.
+CLSK,UNMAPPED_LOW_CONFIDENCE,consumer internet,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,CleanSpark bitcoin mining.
+COIN,crypto-adjacent / high beta,crypto-adjacent / high beta,crypto-adjacent / high beta,crypto exchange,HIGH,static_taxonomy,
+CORZ,crypto-adjacent / high beta,crypto-adjacent / high beta,crypto-adjacent / high beta,bitcoin mining / AI compute,HIGH,static_taxonomy,
+CRM,software,software,software,enterprise SaaS,HIGH,static_taxonomy,
+CRSP,UNMAPPED_LOW_CONFIDENCE,biotech,biotech,gene editing,HIGH,phase1k_static_override,CRISPR Therapeutics gene editing.
+CRWD,software,software,software,cybersecurity,HIGH,static_taxonomy,
+DASH,consumer internet,consumer internet,consumer internet,delivery marketplace,HIGH,static_taxonomy,
+DDOG,software,software,software,observability,HIGH,static_taxonomy,
+DELL,AI infrastructure,AI infrastructure,AI infrastructure,servers,HIGH,static_taxonomy,
+DNA,biotech,biotech,biotech,synthetic biology,HIGH,static_taxonomy,
+DUOL,consumer internet,consumer internet,consumer internet,education app,HIGH,static_taxonomy,
+EDIT,biotech,biotech,biotech,gene editing,HIGH,static_taxonomy,
+ELF,consumer growth,consumer growth,consumer growth,beauty,HIGH,static_taxonomy,
+ESTC,software,software,software,search / observability,HIGH,static_taxonomy,
+ETN,power / electrification,power / electrification,power / electrification,electrical equipment,HIGH,static_taxonomy,
+F,EV / mobility,EV / mobility,EV / mobility,auto OEM,HIGH,static_taxonomy,
+GD,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,defense prime,HIGH,static_taxonomy,
+GEV,power / electrification,power / electrification,power / electrification,grid / turbines,HIGH,static_taxonomy,
+GM,EV / mobility,EV / mobility,EV / mobility,auto OEM,HIGH,static_taxonomy,
+HOOD,fintech,fintech,fintech,brokerage,HIGH,static_taxonomy,
+HPE,AI infrastructure,AI infrastructure,AI infrastructure,servers / networking,HIGH,static_taxonomy,
+HUT,crypto-adjacent / high beta,crypto-adjacent / high beta,crypto-adjacent / high beta,bitcoin mining,HIGH,static_taxonomy,
+INTC,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,CPU / foundry,HIGH,static_taxonomy,
+IOVA,UNMAPPED_LOW_CONFIDENCE,biotech,biotech,oncology cell therapy,HIGH,phase1k_static_override,Iovance oncology cell therapy.
+IREN,crypto-adjacent / high beta,crypto-adjacent / high beta,crypto-adjacent / high beta,bitcoin mining / AI compute,HIGH,static_taxonomy,
+ISRG,robotics / automation,robotics / automation,robotics / automation,surgical robotics,HIGH,static_taxonomy,
+JOBY,EV / mobility,EV / mobility,EV / mobility,eVTOL,HIGH,static_taxonomy,
+KLAC,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,semicap equipment,HIGH,static_taxonomy,
+KTOS,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,defense systems,HIGH,static_taxonomy,
+LCID,EV / mobility,EV / mobility,EV / mobility,EV OEM,HIGH,static_taxonomy,
+LEU,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,nuclear fuel,HIGH,static_taxonomy,
+LI,EV / mobility,EV / mobility,EV / mobility,China EV,HIGH,static_taxonomy,
+LMT,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,defense prime,HIGH,static_taxonomy,
+LRCX,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,semicap equipment,HIGH,static_taxonomy,
+MARA,UNMAPPED_LOW_CONFIDENCE,consumer internet,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,MARA bitcoin mining.
+MDB,UNMAPPED_LOW_CONFIDENCE,consumer internet,software,database platform,HIGH,phase1k_static_override,MongoDB database platform.
+MIRM,UNMAPPED_LOW_CONFIDENCE,biotech,biotech,rare disease therapeutics,HIGH,phase1k_static_override,Mirum rare disease therapeutics.
+MRNA,biotech,biotech,biotech,mRNA therapeutics,HIGH,static_taxonomy,
+MRVL,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,data-center silicon,HIGH,static_taxonomy,
+MSFT,mega-cap platform,mega-cap platform,mega-cap platform,cloud / AI platform,HIGH,static_taxonomy,
+MSTR,crypto-adjacent / high beta,crypto-adjacent / high beta,crypto-adjacent / high beta,bitcoin treasury,HIGH,static_taxonomy,
+MU,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,memory,HIGH,static_taxonomy,
+NEE,power / electrification,power / electrification,power / electrification,utility / renewables,HIGH,static_taxonomy,
+NET,software,software,software,edge cloud,HIGH,static_taxonomy,
+NIO,EV / mobility,EV / mobility,EV / mobility,China EV,HIGH,static_taxonomy,
+NNE,UNMAPPED_LOW_CONFIDENCE,consumer internet,space / defense / nuclear,advanced nuclear,HIGH,phase1k_static_override,Nano Nuclear advanced nuclear.
+NOC,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,defense prime,HIGH,static_taxonomy,
+NOW,software,software,software,workflow SaaS,HIGH,static_taxonomy,
+NTLA,UNMAPPED_LOW_CONFIDENCE,biotech,biotech,gene editing,HIGH,phase1k_static_override,Intellia gene editing.
+NVAX,biotech,biotech,biotech,vaccines,HIGH,static_taxonomy,
+NVDA,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,AI accelerators,HIGH,static_taxonomy,
+OKLO,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,advanced nuclear,HIGH,static_taxonomy,
+OKTA,software,software,software,identity,HIGH,static_taxonomy,
+PANW,software,software,software,cybersecurity,HIGH,static_taxonomy,
+PATH,AI / software,AI / software,AI / software,automation software,HIGH,static_taxonomy,
+PLTR,AI / software,AI / software,AI / software,analytics / defense AI,HIGH,static_taxonomy,
+PWR,power / electrification,power / electrification,power / electrification,grid services,HIGH,static_taxonomy,
+PYPL,fintech,fintech,fintech,payments,HIGH,static_taxonomy,
+QCOM,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,mobile / edge chips,HIGH,static_taxonomy,
+QQQ,UNMAPPED_LOW_CONFIDENCE,UNMAPPED_LOW_CONFIDENCE,ETF / index proxy,Nasdaq-100 / growth equity proxy,HIGH,phase1k_static_override,"Regime/index proxy only, not a trade candidate."
+RBLX,consumer internet,consumer internet,consumer internet,gaming platform,HIGH,static_taxonomy,
+RDDT,consumer internet,consumer internet,consumer internet,social platform,HIGH,static_taxonomy,
+RIOT,UNMAPPED_LOW_CONFIDENCE,consumer internet,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,Riot bitcoin mining.
+RIVN,EV / mobility,EV / mobility,EV / mobility,EV OEM,HIGH,static_taxonomy,
+RKLB,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,space launch,HIGH,static_taxonomy,
+ROKU,consumer internet,consumer internet,consumer internet,streaming platform,HIGH,static_taxonomy,
+RTX,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,defense prime,HIGH,static_taxonomy,
+RXRX,biotech,biotech,biotech,AI drug discovery,HIGH,static_taxonomy,
+S,software,software,software,cybersecurity,HIGH,static_taxonomy,
+SDGR,biotech,biotech,biotech,computational drug discovery,HIGH,static_taxonomy,
+SHOP,software,software,software,commerce platform,HIGH,static_taxonomy,
+SMCI,AI infrastructure,AI infrastructure,AI infrastructure,servers,HIGH,static_taxonomy,
+SMR,space / defense / nuclear,space / defense / nuclear,space / defense / nuclear,small modular nuclear,HIGH,static_taxonomy,
+SNOW,software,software,software,data cloud,HIGH,static_taxonomy,
+SO,power / electrification,power / electrification,power / electrification,utility,HIGH,static_taxonomy,
+SOFI,fintech,fintech,fintech,consumer finance,HIGH,static_taxonomy,
+SOUN,UNMAPPED_LOW_CONFIDENCE,consumer internet,AI / software,voice AI,HIGH,phase1k_static_override,SoundHound voice AI.
+SPOT,consumer internet,consumer internet,consumer internet,audio streaming,HIGH,static_taxonomy,
+SPY,UNMAPPED_LOW_CONFIDENCE,UNMAPPED_LOW_CONFIDENCE,ETF / index proxy,broad U.S. equity proxy,HIGH,phase1k_static_override,"Regime/index proxy only, not a trade candidate."
+SQ,UNMAPPED_LOW_CONFIDENCE,UNMAPPED_LOW_CONFIDENCE,fintech,payments / Cash App / merchant services,HIGH,phase1k_static_override,Block historical ticker before XYZ ticker change.
+SYM,UNMAPPED_LOW_CONFIDENCE,consumer internet,robotics / automation,warehouse automation,HIGH,phase1k_static_override,Symbotic warehouse automation.
+TEAM,software,software,software,collaboration SaaS,HIGH,static_taxonomy,
+TER,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,test equipment / robotics,HIGH,static_taxonomy,
+TGTX,UNMAPPED_LOW_CONFIDENCE,biotech,biotech,therapeutics,HIGH,phase1k_static_override,TG Therapeutics.
+TLN,power / electrification,power / electrification,power / electrification,power producer,HIGH,static_taxonomy,
+TSLA,EV / mobility,EV / mobility,EV / mobility,EV / autonomy,HIGH,static_taxonomy,
+TSM,semiconductor / hardware,semiconductor / hardware,semiconductor / hardware,foundry,HIGH,static_taxonomy,
+TTD,UNMAPPED_LOW_CONFIDENCE,consumer internet,software / adtech,demand-side platform,HIGH,phase1k_static_override,The Trade Desk adtech demand-side platform.
+U,UNMAPPED_LOW_CONFIDENCE,software,software,game engine / real-time 3D platform,HIGH,phase1k_static_override,Unity real-time 3D platform.
+UBER,consumer internet,consumer internet,consumer internet,mobility marketplace,HIGH,static_taxonomy,
+UPST,fintech,fintech,fintech,AI lending,HIGH,static_taxonomy,
+VKTX,UNMAPPED_LOW_CONFIDENCE,biotech,biotech,metabolic disease therapeutics,HIGH,phase1k_static_override,Viking metabolic disease therapeutics.
+VST,power / electrification,power / electrification,power / electrification,power producer,HIGH,static_taxonomy,
+XPEV,EV / mobility,EV / mobility,EV / mobility,China EV,HIGH,static_taxonomy,
+XYZ,UNMAPPED_LOW_CONFIDENCE,,fintech,payments / Cash App / merchant services,HIGH,phase1k_static_override,Block current ticker after SQ changed to XYZ.
+ZS,software,software,software,cybersecurity,HIGH,static_taxonomy,

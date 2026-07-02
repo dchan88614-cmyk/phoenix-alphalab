@@ -1,0 +1,23 @@
+ticker,resolved_theme,resolved_subtheme,confidence,evidence_source,notes
+ASTS,space / communications,satellite broadband,HIGH,phase1k_static_override,AST SpaceMobile satellite broadband business.
+BITF,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,Bitfarms bitcoin mining.
+CELH,consumer growth,beverages,HIGH,phase1k_static_override,Celsius energy drink / beverages.
+CLSK,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,CleanSpark bitcoin mining.
+CRSP,biotech,gene editing,HIGH,phase1k_static_override,CRISPR Therapeutics gene editing.
+IOVA,biotech,oncology cell therapy,HIGH,phase1k_static_override,Iovance oncology cell therapy.
+MARA,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,MARA bitcoin mining.
+MDB,software,database platform,HIGH,phase1k_static_override,MongoDB database platform.
+MIRM,biotech,rare disease therapeutics,HIGH,phase1k_static_override,Mirum rare disease therapeutics.
+NNE,space / defense / nuclear,advanced nuclear,HIGH,phase1k_static_override,Nano Nuclear advanced nuclear.
+NTLA,biotech,gene editing,HIGH,phase1k_static_override,Intellia gene editing.
+QQQ,ETF / index proxy,Nasdaq-100 / growth equity proxy,HIGH,phase1k_static_override,"Regime/index proxy only, not a trade candidate."
+RIOT,crypto-adjacent / high beta,bitcoin mining,HIGH,phase1k_static_override,Riot bitcoin mining.
+SOUN,AI / software,voice AI,HIGH,phase1k_static_override,SoundHound voice AI.
+SPY,ETF / index proxy,broad U.S. equity proxy,HIGH,phase1k_static_override,"Regime/index proxy only, not a trade candidate."
+SQ,fintech,payments / Cash App / merchant services,HIGH,phase1k_static_override,Block historical ticker before XYZ ticker change.
+SYM,robotics / automation,warehouse automation,HIGH,phase1k_static_override,Symbotic warehouse automation.
+TGTX,biotech,therapeutics,HIGH,phase1k_static_override,TG Therapeutics.
+TTD,software / adtech,demand-side platform,HIGH,phase1k_static_override,The Trade Desk adtech demand-side platform.
+U,software,game engine / real-time 3D platform,HIGH,phase1k_static_override,Unity real-time 3D platform.
+VKTX,biotech,metabolic disease therapeutics,HIGH,phase1k_static_override,Viking metabolic disease therapeutics.
+XYZ,fintech,payments / Cash App / merchant services,HIGH,phase1k_static_override,Block current ticker after SQ changed to XYZ.
