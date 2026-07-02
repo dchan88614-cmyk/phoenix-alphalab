@@ -47,6 +47,7 @@ from src.research.concentration import (
 )
 from src.research.historical_replay import build_phase1_historical_replay, write_phase1_historical_replay_reports
 from src.research.execution_diagnostics import build_phase1b_execution_diagnostics, write_phase1b_reports
+from src.research.phase1c_robustness import build_phase1c_robustness_analysis, write_phase1c_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -281,6 +282,46 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1B exit policy comparison CSV: %s", phase1b_comparison_path)
         logger.info("Wrote Phase 1B ticker risk attribution CSV: %s", phase1b_attribution_path)
 
+    if args.phase1c_robustness_analysis:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        phase1c_matrix, phase1c_failures, phase1c_realism, phase1c_regime, phase1c_summary = (
+            build_phase1c_robustness_analysis(
+                research_dataset,
+                account_settings=account_settings,
+                rule=candidate_rule,
+                replay_rounds=int(args.replay_rounds),
+                replay_sample_count=int(args.replay_sample_count),
+                replay_sample_offset=int(args.replay_sample_offset),
+                benchmark_ticker=benchmark,
+            )
+        )
+        phase1c_matrix_path = reports_dir / "phase1c_policy_robustness_matrix.csv"
+        phase1c_failures_path = reports_dir / "phase1c_sample_failure_trades.csv"
+        phase1c_realism_path = reports_dir / "phase1c_close_stop_realism.csv"
+        phase1c_regime_path = reports_dir / "phase1c_regime_attribution.csv"
+        phase1c_summary_path = reports_dir / "phase1c_robustness_summary.md"
+        write_phase1c_reports(
+            phase1c_matrix,
+            phase1c_failures,
+            phase1c_realism,
+            phase1c_regime,
+            phase1c_summary,
+            phase1c_matrix_path,
+            phase1c_failures_path,
+            phase1c_realism_path,
+            phase1c_regime_path,
+            phase1c_summary_path,
+        )
+        logger.info("Wrote Phase 1C policy robustness matrix CSV: %s", phase1c_matrix_path)
+        logger.info("Wrote Phase 1C sample failure trades CSV: %s", phase1c_failures_path)
+        logger.info("Wrote Phase 1C close-stop realism CSV: %s", phase1c_realism_path)
+        logger.info("Wrote Phase 1C regime attribution CSV: %s", phase1c_regime_path)
+        logger.info("Wrote Phase 1C robustness summary Markdown: %s", phase1c_summary_path)
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -430,6 +471,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--replay-sample-offset", type=int, default=0, help="Deterministic Phase 1 replay sample offset")
     parser.add_argument("--replay-sample-count", type=int, default=1, help="Number of deterministic replay samples for Phase 1B")
+    parser.add_argument(
+        "--phase1c-robustness-analysis",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1C robustness failure and close-stop realism analysis",
+    )
     return parser
 
 
