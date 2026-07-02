@@ -49,6 +49,7 @@ from src.research.historical_replay import build_phase1_historical_replay, write
 from src.research.execution_diagnostics import build_phase1b_execution_diagnostics, write_phase1b_reports
 from src.research.phase1c_robustness import build_phase1c_robustness_analysis, write_phase1c_reports
 from src.research.phase1d_entry_rules import build_phase1d_entry_rule_analysis, write_phase1d_reports
+from src.research.phase1e_filter_validation import build_phase1e_filter_validation, write_phase1e_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -372,6 +373,46 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1D candidate filter Markdown: %s", phase1d_candidate_filter_path)
         logger.info("Wrote Phase 1D entry rule summary Markdown: %s", phase1d_summary_path)
 
+    if args.phase1e_filter_validation:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        phase1e_threshold_sweep, phase1e_validation_matrix, phase1e_holdout_results, phase1e_excluded, phase1e_summary_md, _ = (
+            build_phase1e_filter_validation(
+                research_dataset,
+                account_settings=account_settings,
+                rule=candidate_rule,
+                replay_rounds=int(args.replay_rounds),
+                replay_sample_count=int(args.replay_sample_count),
+                replay_sample_offset=int(args.replay_sample_offset),
+                benchmark_ticker=benchmark,
+            )
+        )
+        phase1e_threshold_path = reports_dir / "phase1e_threshold_sweep.csv"
+        phase1e_validation_path = reports_dir / "phase1e_filter_validation_matrix.csv"
+        phase1e_holdout_path = reports_dir / "phase1e_holdout_results.csv"
+        phase1e_excluded_path = reports_dir / "phase1e_excluded_decision_audit.csv"
+        phase1e_summary_path = reports_dir / "phase1e_filter_summary.md"
+        write_phase1e_reports(
+            phase1e_threshold_sweep,
+            phase1e_validation_matrix,
+            phase1e_holdout_results,
+            phase1e_excluded,
+            phase1e_summary_md,
+            phase1e_threshold_path,
+            phase1e_validation_path,
+            phase1e_holdout_path,
+            phase1e_excluded_path,
+            phase1e_summary_path,
+        )
+        logger.info("Wrote Phase 1E threshold sweep CSV: %s", phase1e_threshold_path)
+        logger.info("Wrote Phase 1E filter validation matrix CSV: %s", phase1e_validation_path)
+        logger.info("Wrote Phase 1E holdout results CSV: %s", phase1e_holdout_path)
+        logger.info("Wrote Phase 1E excluded decision audit CSV: %s", phase1e_excluded_path)
+        logger.info("Wrote Phase 1E filter summary Markdown: %s", phase1e_summary_path)
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -530,6 +571,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1d-entry-rule-analysis",
         action="store_true",
         help="Run Phoenix Nano Phase 1D entry-rule failure diagnostics",
+    )
+    parser.add_argument(
+        "--phase1e-filter-validation",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1E cross-validated conservative filter validation",
     )
     return parser
 
