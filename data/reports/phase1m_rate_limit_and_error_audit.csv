@@ -1,0 +1,123 @@
+source_name,ticker,error_type,http_status_if_available,retry_after_if_available,safe_to_retry_later,counts_against_vendor_readiness,reason
+tiingo_eod,AAPL,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+tiingo_eod,MSFT,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+tiingo_eod,SPY,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+tiingo_eod,QQQ,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+tiingo_eod,SQ,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+tiingo_eod,GEV,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+tiingo_eod,RDDT,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,AAPL,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,MSFT,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,SPY,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,QQQ,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,SQ,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,GEV,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+polygon_aggs,RDDT,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,AAPL,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,MSFT,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,SPY,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,QQQ,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,SQ,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,GEV,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+alpha_vantage_daily_adjusted,RDDT,CREDENTIAL_MISSING,,,False,True,Required credential missing.
+,AAPL,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ABNB,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ACHR,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ADBE,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,AFRM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,AI,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,AMAT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,AMD,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ANET,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,APP,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ARM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ASML,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,AVAV,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,AVGO,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,BA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,BBAI,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,BEAM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,BWXT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,CAVA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,CCJ,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,CEG,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,COIN,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,CORZ,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,CRM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,CRWD,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,DASH,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,DDOG,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,DELL,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,DNA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,DUOL,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,EDIT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ELF,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ESTC,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ETN,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,F,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,GD,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,GEV,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,GM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,HOOD,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,HPE,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,HUT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,INTC,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,IREN,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ISRG,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,JOBY,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,KLAC,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,KTOS,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,LCID,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,LEU,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,LI,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,LMT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,LRCX,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,MRNA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,MRVL,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,MSFT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,MSTR,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,MU,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NEE,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NET,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NIO,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NOC,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NOW,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NVAX,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,NVDA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,OKLO,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,OKTA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,PANW,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,PATH,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,PLTR,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,PWR,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,PYPL,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,QCOM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,QQQ,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,RBLX,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,RDDT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,RIVN,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,RKLB,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ROKU,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,RTX,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,RXRX,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,S,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SDGR,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SHOP,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SMCI,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SMR,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SNOW,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SO,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SOFI,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SPOT,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SPY,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,SQ,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,TEAM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,TER,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,TLN,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,TSLA,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,TSM,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,UBER,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,UPST,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,VST,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,XPEV,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.
+,ZS,CREDENTIAL_MISSING,,,False,True,No credentialed independent vendor passed smoke.

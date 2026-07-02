@@ -9,42 +9,36 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1L - Secondary Data Adapter Hardening and Vendor Decision Gate.
-- Added historical research-only Phase 1L secondary data adapter diagnostics.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1M - Credentialed Independent Vendor Integration and Data Readiness Gate.
+- Added historical research-only Phase 1M credentialed vendor integration scaffolding.
 - Added CLI flag:
-  - `--phase1l-secondary-data-adapter-gate`
-- Added Stooq raw response diagnostics with payload classification.
-- Added hardened Stooq OHLCV parser:
-  - BOM-prefixed CSV support
-  - comma / semicolon delimiter support
-  - case-insensitive OHLCV column support
-  - explicit HTML / browser-block detection
-  - explicit no-data detection
-- Added Stooq smoke test v2 with lookup matrix:
-  - `{ticker_lower}.us`
-  - `{ticker_upper}.US`
-  - `{ticker_lower}`
-- Added secondary source capability matrix.
-- Added Yahoo Chart same-vendor transport fallback audit.
-- Added secondary OHLCV validation v3.
-- Added alias / clean watchlist v3 audit.
-- Fixed the blank `SQ # earliest_safe_replay_date=` issue in the v3 clean watchlist candidate.
-- Preserved SQ / XYZ lifecycle handling:
-  - historical ticker `SQ`
-  - canonical current ticker `XYZ`
-  - current ticker effective date `2025-01-21`
-  - no pre-change replay eligibility leakage
-- Preserved SPY/QQQ as proxy-only and excluded them from trade candidates.
+  - `--phase1m-credentialed-vendor-gate`
+- Added pluggable independent vendor capability entries:
+  - `tiingo_eod`
+  - `polygon_aggs`
+  - `alpha_vantage_daily_adjusted`
+- Carried forward non-credentialed source classifications:
+  - `stooq_daily_csv`: globally unavailable from Phase 1L
+  - `yahoo_chart_api`: transport fallback only, not independent validation
+- Added credential status reporting with redaction and no secret values.
+- Added vendor smoke-test scaffolding for credentialed vendors.
+- Added independent secondary validation scaffolding.
+- Added coverage-by-symbol output.
+- Added adjustment consistency audit.
+- Added rate-limit and error audit.
+- Added research-only clean watchlist v4 candidate generation.
+- Added Phase 1M data readiness scorecard and summary.
 - Created required outputs:
-  - `data/reports/phase1l_secondary_source_capability_matrix.csv`
-  - `data/reports/phase1l_raw_response_diagnostics.csv`
-  - `data/reports/phase1l_secondary_vendor_smoke_test_v2.csv`
-  - `data/reports/phase1l_secondary_ohlcv_validation_v3.csv`
-  - `data/reports/phase1l_yahoo_chart_transport_fallback_audit.csv`
-  - `data/reports/phase1l_alias_clean_watchlist_audit.csv`
-  - `data/reports/phase1l_clean_watchlist_v3_candidate.txt`
-  - `data/reports/phase1l_data_readiness_scorecard.csv`
-  - `data/reports/phase1l_data_readiness_summary.md`
+  - `data/reports/phase1m_vendor_capability_matrix.csv`
+  - `data/reports/phase1m_credentials_status.csv`
+  - `data/reports/phase1m_vendor_smoke_tests.csv`
+  - `data/reports/phase1m_secondary_ohlcv_validation.csv`
+  - `data/reports/phase1m_coverage_by_symbol.csv`
+  - `data/reports/phase1m_adjustment_consistency_audit.csv`
+  - `data/reports/phase1m_rate_limit_and_error_audit.csv`
+  - `data/reports/phase1m_clean_watchlist_v4_candidate.txt`
+  - `data/reports/phase1m_data_readiness_scorecard.csv`
+  - `data/reports/phase1m_data_readiness_summary.md`
 - Did not start Phase 2.
 - Did not start Phase 3.
 - Did not enable paper execution.
@@ -60,36 +54,38 @@
 ## Files Changed
 
 - `src/main.py`
-- `src/research/phase1l_secondary_adapter.py`
-- `tests/test_phase1l_secondary_adapter.py`
-- `data/reports/phase1l_secondary_source_capability_matrix.csv`
-- `data/reports/phase1l_raw_response_diagnostics.csv`
-- `data/reports/phase1l_secondary_vendor_smoke_test_v2.csv`
-- `data/reports/phase1l_secondary_ohlcv_validation_v3.csv`
-- `data/reports/phase1l_yahoo_chart_transport_fallback_audit.csv`
-- `data/reports/phase1l_alias_clean_watchlist_audit.csv`
-- `data/reports/phase1l_clean_watchlist_v3_candidate.txt`
-- `data/reports/phase1l_data_readiness_scorecard.csv`
-- `data/reports/phase1l_data_readiness_summary.md`
+- `src/research/phase1m_credentialed_vendor.py`
+- `tests/test_phase1m_credentialed_vendor.py`
+- `data/reports/phase1m_vendor_capability_matrix.csv`
+- `data/reports/phase1m_credentials_status.csv`
+- `data/reports/phase1m_vendor_smoke_tests.csv`
+- `data/reports/phase1m_secondary_ohlcv_validation.csv`
+- `data/reports/phase1m_coverage_by_symbol.csv`
+- `data/reports/phase1m_adjustment_consistency_audit.csv`
+- `data/reports/phase1m_rate_limit_and_error_audit.csv`
+- `data/reports/phase1m_clean_watchlist_v4_candidate.txt`
+- `data/reports/phase1m_data_readiness_scorecard.csv`
+- `data/reports/phase1m_data_readiness_summary.md`
 - `REPORT_TO_GPT.md`
 
-## How To Run
+## Commands Run
 
 ```bash
+.venv/bin/python -m pytest tests/test_phase1m_credentialed_vendor.py -q
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1l-secondary-data-adapter-gate
+.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1m-credentialed-vendor-gate
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1l_secondary_adapter.py -q
-# 12 passed in 0.38s
+.venv/bin/python -m pytest tests/test_phase1m_credentialed_vendor.py -q
+# 10 passed in 0.21s
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 182 passed, 1 warning in 28.25s
+# 192 passed, 1 warning in 28.18s
 ```
 
 Remaining warning:
@@ -99,129 +95,102 @@ Remaining warning:
 End-to-end command completed successfully:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1l-secondary-data-adapter-gate
+.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1m-credentialed-vendor-gate
 ```
 
-## Phase 1L Summary
+## Phase 1M Summary
 
 - Summary file starts with the required heading:
-  - `PHOENIX NANO PHASE 1L — SECONDARY DATA ADAPTER HARDENING AND VENDOR DECISION GATE`
-- Final status: `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
-- Phase 1L did not approve any strategy, universe, data source, daily scan change, paper execution, or real-money execution.
-- Strategy research should remain paused until GPT reviews the result and explicitly requests a future frozen retest.
+  - `PHOENIX NANO PHASE 1M — CREDENTIALED INDEPENDENT VENDOR INTEGRATION AND DATA READINESS GATE`
+- Final status: `PHASE_1M_CREDENTIAL_MISSING`
+- Phase 1M did not approve any strategy, universe, data source, daily scan change, paper execution, or real-money execution.
+- Strategy research should remain paused.
 
-## Stooq Raw Response Diagnostics
+## Credential Status
 
-- `HTML_BLOCK`: 12
-- `HTML_OR_BLOCKED` parser status: 12
-- `PARSE_ERROR`: 0
+- `MISSING`: 4
+- `PRESENT_REDACTED`: 0
+- No credential values, prefixes, suffixes, or lengths were written to reports.
+- Authenticated vendor network calls were skipped because credentials were missing.
+
+Credential rows:
+
+- `TIINGO_API_TOKEN`: missing
+- `POLYGON_API_KEY`: missing
+- `MASSIVE_API_KEY`: missing
+- `ALPHAVANTAGE_API_KEY`: missing
+
+## Vendor Capability Summary
+
+- `CREDENTIAL_MISSING`: 3
+- `GLOBAL_UNAVAILABLE`: 1
+- `TRANSPORT_FALLBACK_ONLY`: 1
 
 Interpretation:
 
-- Phase 1K's suspicious HTTP 200 / 796-byte responses are now classified as HTML / browser-verification blocks.
-- This is not an OHLCV CSV parser bug.
-- Stooq is unavailable from the current environment as an independent no-secret secondary OHLCV source.
+- `tiingo_eod`, `polygon_aggs`, and `alpha_vantage_daily_adjusted` are implemented as credentialed independent vendor candidates, but no credentials are currently present.
+- `stooq_daily_csv` remains blocked from Phase 1L.
+- `yahoo_chart_api` remains same-vendor transport fallback only and does not count as independent validation.
 
-## Secondary Source Capability Matrix Summary
+## Smoke-Test Summary
 
-- `stooq_daily_csv`: `GLOBAL_UNAVAILABLE`
-- `yahoo_chart_api`: `TRANSPORT_FALLBACK_ONLY`
+- `CREDENTIAL_MISSING`: 21
+- `PASS`: 0
+- `CACHE_ONLY_PASS`: 0
+- `AUTH_FAILED`: 0
+- `RATE_LIMITED`: 0
 
 Interpretation:
 
-- Stooq remains the only independent no-secret candidate in this task, but it is blocked.
-- Yahoo Chart is same-vendor / Yahoo-family and cannot count as independent secondary validation.
+- Seven smoke tickers were represented for each of three credentialed vendors.
+- No authenticated smoke request was attempted because required credentials were missing.
 
-## Secondary Vendor Smoke Test V2 Result
+## Independent Secondary Coverage Summary
 
-- `HTML_OR_BLOCKED`: 4 selected ticker rows
-- Stooq smoke pass count: 0
-- Stooq cache-only pass count: 0
-
-Lookup matrix attempted:
-
-- `{ticker_lower}.us`
-- `{ticker_upper}.US`
-- `{ticker_lower}`
-
-Result:
-
-- AAPL, MSFT, SPY, and QQQ all failed Stooq smoke due to HTML/block payloads.
-
-## Independent Secondary OHLCV Validation Coverage
-
-- `GLOBAL_SOURCE_UNAVAILABLE`: 119
+- Validation rows: 101
+- `CREDENTIAL_MISSING`: 101
 - Independent secondary `MATCH`: 0
 - Independent secondary `WARN`: 0
 - Independent secondary `FAIL`: 0
 - Independent secondary coverage: 0.0%
+- Active trade candidate coverage: 0.0%
+- Proxy coverage: 0.0%
 
 Interpretation:
 
-- Full independent validation was skipped because Stooq smoke did not pass.
-- Phoenix still lacks independent secondary OHLCV validation.
+- No independent secondary OHLCV validation is available until credentials are supplied and a vendor passes smoke.
 
-## Yahoo Chart Transport Fallback Audit Summary
+## Adjustment Consistency Summary
 
-- `TRANSPORT_MATCH`: 23
-- `TRANSPORT_WARN`: 0
-- `GLOBAL_SOURCE_UNAVAILABLE`: 0
-- `NO_DATA_FOR_SYMBOL`: 0
+- Adjustment mismatch count: 0
+- Recommended handling counts:
+  - `OK`: 4
+  - `DATE_GATE`: 4
 
 Interpretation:
 
-- Yahoo Chart transport works as a same-vendor sanity check for the sampled tickers.
-- This improves extraction diagnostics only.
-- It must not be counted as independent secondary vendor validation.
+- There were no independent vendor rows to confirm adjustment consistency.
+- Date-gated / alias-sensitive symbols remain conservative.
 
-## Alias / Clean Watchlist V3 Audit Result
+## Clean Watchlist V4 Candidate Count
 
-- Alias audit `PASS`: 99
-- Alias audit `WARN`: 0
-- Alias audit `FAIL`: 0
-- Blank date-gate comments: 0
-- Unresolved alias count: 0
-- Clean watchlist v3 candidate count: 99
+- Research-only clean watchlist v4 candidate count: 0
 
-Fixes:
+Reason:
 
-- `SQ # earliest_safe_replay_date=` is normalized to:
-  - `SQ # canonical_current_ticker=XYZ;historical_ticker=SQ;earliest_safe_replay_date=2025-01-21`
-- GEV and RDDT retain explicit earliest safe replay dates.
-- SPY/QQQ remain proxy-only and are excluded from trade candidates.
+- v4 only includes symbols with independent vendor `MATCH` or `WARN` coverage.
+- No credentialed independent vendor was available in this run.
 
-## Data Readiness Scorecard
+## Final Phase 1M Status
 
-- `total_symbols`: 119
-- `active_trade_candidate_count`: 99
-- `proxy_count`: 2
-- `stooq_smoke_pass_count`: 0
-- `stooq_smoke_cache_only_pass_count`: 0
-- `stooq_payload_parse_error_count`: 0
-- `stooq_html_or_blocked_count`: 12
-- `independent_secondary_match_count`: 0
-- `independent_secondary_warn_count`: 0
-- `independent_secondary_fail_count`: 0
-- `independent_secondary_coverage_pct`: 0.0
-- `transport_fallback_match_count`: 23
-- `transport_fallback_warn_count`: 0
-- `alias_audit_fail_count`: 0
-- `blank_date_gate_comment_count`: 0
-- `unresolved_alias_count`: 0
-- `unresolved_low_taxonomy_count`: 0
-- `clean_watchlist_v3_candidate_count`: 99
-- Final status: `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
-
-## Final Phase 1L Status
-
-- Status: `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
+- Status: `PHASE_1M_CREDENTIAL_MISSING`
 
 Meaning:
 
-- Adapter diagnostics are now clear.
-- Alias/watchlist v3 audit passes.
-- Yahoo Chart transport fallback works as same-vendor sanity check.
-- Independent secondary vendor validation is still missing.
+- The credentialed vendor layer is scaffolded.
+- Missing credentials are reported cleanly.
+- No secrets were exposed.
+- No independent secondary validation has been achieved.
 
 ## Whether Strategy Research Should Remain Paused
 
@@ -229,33 +198,33 @@ Yes. Strategy research should remain paused.
 
 Reasons:
 
+- No credentialed independent vendor was configured.
 - Independent secondary OHLCV coverage is 0.0%.
-- Stooq is blocked by HTML/browser-verification payloads in this environment.
-- Yahoo Chart is same-vendor transport fallback only.
-- Phase 1L does not authorize a frozen Candidate 34 vs Candidate 35 retest.
+- Clean watchlist v4 has 0 symbols because no independent vendor validation exists.
+- Phase 1M does not authorize a frozen Candidate 34 vs Candidate 35 retest.
 
 ## Problems
 
-- No independent no-secret secondary OHLCV vendor is available from this environment.
-- Stooq returns HTML/browser-verification responses for all smoke lookup variants.
-- Independent secondary validation remains at 0% coverage.
-- Yahoo Chart can sanity-check transport but cannot validate yfinance independently.
+- No `TIINGO_API_TOKEN`, `POLYGON_API_KEY`, `MASSIVE_API_KEY`, or `ALPHAVANTAGE_API_KEY` is present.
+- Tiingo, Polygon/Massive, and Alpha Vantage smoke tests cannot run without credentials.
+- Stooq remains unavailable from Phase 1L.
+- Yahoo Chart remains same-vendor transport fallback only.
 
 ## Questions For GPT
 
-- Should Phoenix Nano add a credentialed secondary OHLCV vendor next?
-- Should GPT accept Yahoo Chart only as a transport fallback while keeping research blocked for independent validation?
-- Should Stooq be abandoned in this environment, or retried from a different network/runtime?
-- Should the Phase 1L v3 clean watchlist become the research-only input for a future frozen retest after GPT review?
-- Should the next task be vendor integration rather than strategy testing?
+- Which independent vendor credential should be added first: Tiingo, Polygon/Massive, or Alpha Vantage?
+- Should GPT prefer Tiingo because it exposes explicit adjusted OHLCV fields?
+- After credentials are added, should Codex rerun Phase 1M before any strategy retest?
+- If credentials cannot be added, should Phoenix stay blocked at data-readiness rather than continue strategy work?
 
 ## Next Suggested Tasks
 
+- Add one credentialed independent OHLCV vendor key to the local environment.
+- Rerun:
+  - `.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1m-credentialed-vendor-gate`
 - Do not start Phase 2.
 - Do not start Phase 3.
 - Do not enable paper execution.
 - Do not enable real-money execution.
 - Do not run Candidate 34 vs Candidate 35 retest yet.
-- Keep Phoenix Nano historical research-only.
-- Add or configure a true independent secondary OHLCV vendor.
-- Preserve Phase 1L clean watchlist v3 and alias/date-gate audit for future GPT review.
+- Keep Phoenix Nano historical research-only until GPT reviews a passing vendor gate.

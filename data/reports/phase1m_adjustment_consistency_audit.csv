@@ -1,0 +1,9 @@
+ticker,event_or_reason_checked,primary_adjusted_close_behavior,secondary_adjusted_close_behavior,detected_mismatch,recommended_replay_handling,reason
+AVGO,split_or_corporate_action_or_date_gated_focus,adj_close_available,not_validated,False,OK,No independent validation row; retain conservative handling.
+CORZ,split_or_corporate_action_or_date_gated_focus,adj_close_available,not_validated,False,OK,No independent validation row; retain conservative handling.
+GEV,split_or_corporate_action_or_date_gated_focus,adj_close_available,not_validated,False,DATE_GATE,No independent validation row; retain conservative handling.
+NVDA,split_or_corporate_action_or_date_gated_focus,adj_close_available,not_validated,False,OK,No independent validation row; retain conservative handling.
+RDDT,split_or_corporate_action_or_date_gated_focus,adj_close_available,not_validated,False,DATE_GATE,No independent validation row; retain conservative handling.
+SMCI,split_or_corporate_action_or_date_gated_focus,adj_close_available,not_validated,False,OK,No independent validation row; retain conservative handling.
+SQ,split_or_corporate_action_or_date_gated_focus,not_available,not_validated,False,DATE_GATE,No independent validation row; retain conservative handling.
+XYZ,split_or_corporate_action_or_date_gated_focus,not_available,not_validated,False,DATE_GATE,No independent validation row; retain conservative handling.

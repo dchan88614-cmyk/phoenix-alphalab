@@ -57,6 +57,7 @@ from src.research.phase1i_data_universe_audit import build_phase1i_data_universe
 from src.research.phase1j_data_readiness import build_phase1j_data_readiness_gate, write_phase1j_reports
 from src.research.phase1k_data_remediation import build_phase1k_data_remediation_gate, write_phase1k_reports
 from src.research.phase1l_secondary_adapter import build_phase1l_secondary_data_adapter_gate, write_phase1l_reports
+from src.research.phase1m_credentialed_vendor import build_phase1m_credentialed_vendor_gate, write_phase1m_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -113,7 +114,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate or args.phase1l_secondary_data_adapter_gate:
+    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate or args.phase1l_secondary_data_adapter_gate or args.phase1m_credentialed_vendor_gate:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -817,6 +818,63 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1L data readiness scorecard CSV: %s", phase1l_paths["scorecard"])
         logger.info("Wrote Phase 1L data readiness summary Markdown: %s", phase1l_paths["summary"])
 
+    if args.phase1m_credentialed_vendor_gate:
+        (
+            phase1m_capability,
+            phase1m_credentials,
+            phase1m_smoke,
+            phase1m_secondary,
+            phase1m_coverage,
+            phase1m_adjustment,
+            phase1m_errors,
+            phase1m_scorecard,
+            phase1m_clean_watchlist,
+            phase1m_summary_md,
+            _,
+        ) = build_phase1m_credentialed_vendor_gate(
+            research_dataset,
+            watchlist_path=args.watchlist,
+            watchlist_tickers=tickers,
+            requested_start_date=research_start,
+            requested_end_date=research_end,
+            reports_dir=reports_dir,
+        )
+        phase1m_paths = {
+            "capability": reports_dir / "phase1m_vendor_capability_matrix.csv",
+            "credentials": reports_dir / "phase1m_credentials_status.csv",
+            "smoke": reports_dir / "phase1m_vendor_smoke_tests.csv",
+            "secondary": reports_dir / "phase1m_secondary_ohlcv_validation.csv",
+            "coverage": reports_dir / "phase1m_coverage_by_symbol.csv",
+            "adjustment": reports_dir / "phase1m_adjustment_consistency_audit.csv",
+            "errors": reports_dir / "phase1m_rate_limit_and_error_audit.csv",
+            "clean_watchlist": reports_dir / "phase1m_clean_watchlist_v4_candidate.txt",
+            "scorecard": reports_dir / "phase1m_data_readiness_scorecard.csv",
+            "summary": reports_dir / "phase1m_data_readiness_summary.md",
+        }
+        write_phase1m_reports(
+            phase1m_capability,
+            phase1m_credentials,
+            phase1m_smoke,
+            phase1m_secondary,
+            phase1m_coverage,
+            phase1m_adjustment,
+            phase1m_errors,
+            phase1m_clean_watchlist,
+            phase1m_scorecard,
+            phase1m_summary_md,
+            phase1m_paths,
+        )
+        logger.info("Wrote Phase 1M vendor capability matrix CSV: %s", phase1m_paths["capability"])
+        logger.info("Wrote Phase 1M credentials status CSV: %s", phase1m_paths["credentials"])
+        logger.info("Wrote Phase 1M vendor smoke tests CSV: %s", phase1m_paths["smoke"])
+        logger.info("Wrote Phase 1M secondary OHLCV validation CSV: %s", phase1m_paths["secondary"])
+        logger.info("Wrote Phase 1M coverage by symbol CSV: %s", phase1m_paths["coverage"])
+        logger.info("Wrote Phase 1M adjustment consistency audit CSV: %s", phase1m_paths["adjustment"])
+        logger.info("Wrote Phase 1M rate limit and error audit CSV: %s", phase1m_paths["errors"])
+        logger.info("Wrote Phase 1M clean watchlist v4 candidate TXT: %s", phase1m_paths["clean_watchlist"])
+        logger.info("Wrote Phase 1M data readiness scorecard CSV: %s", phase1m_paths["scorecard"])
+        logger.info("Wrote Phase 1M data readiness summary Markdown: %s", phase1m_paths["summary"])
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -1015,6 +1073,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1l-secondary-data-adapter-gate",
         action="store_true",
         help="Run Phoenix Nano Phase 1L secondary data adapter hardening and vendor decision gate",
+    )
+    parser.add_argument(
+        "--phase1m-credentialed-vendor-gate",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1M credentialed independent vendor integration gate",
     )
     return parser
 

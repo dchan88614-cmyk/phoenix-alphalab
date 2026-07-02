@@ -1,0 +1,3 @@
+# Phase 1M research-only clean watchlist v4 candidate.
+# Not approved for daily scan, paper execution, or real-money execution.
+# Requires GPT review; generated from symbols with independent vendor MATCH/WARN coverage only.
