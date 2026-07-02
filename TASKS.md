@@ -2,54 +2,57 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1E — Cross-Validated Conservative Filter Validation
+## Current Task: Phoenix Nano Phase 1F — Failure Attribution, Taxonomy, and Data Quality Audit
 
 This task is historical research only.
 
 Do not start Phase 2.
 Do not start Phase 3.
-Do not enable paper execution.
-Do not enable real-money execution.
-Do not loosen Candidate 34 thresholds.
 Do not change daily scan production behavior.
-Do not adopt close-based stops as the active policy.
+Do not loosen Candidate 34 thresholds.
+Do not adopt any new filter as active policy.
+Do not produce financial advice or an operational recommendation.
 
 ## Why This Task
 
-Phase 1D found promising but unapproved filter hypotheses:
+Phase 1E completed cross-validated conservative filter validation. The result was not strong enough for advancement:
 
-- 10 deterministic samples were analyzed.
-- 344 historical BUY decisions were diagnosed.
-- No filter cleared all robustness gates.
-- `weak_distance_from_high` had the best median ending value but failed worst-sample and drawdown gates.
-- `volatility_plus_smoke_score` had the best worst-sample ending value and best drawdown profile, but still failed the required worst-sample gate.
-- Winner/loser feature separation was useful but modest.
+- 20 deterministic samples were run.
+- 100 replay rounds per sample were used.
+- Samples 0-9 were used for calibration.
+- Samples 10-19 were used for holdout.
+- No calibration filter passed all gates.
+- No holdout filter passed all gates.
+- The best holdout reference improved drawdown but failed minimum sample activity, simulated win-rate, and concentration checks.
+- The Phase 1D fixed volatility/smoke filter did not survive holdout.
+- Remaining losses were concentrated around repeated failure samples and themes, but the largest losing theme bucket was still `UNMAPPED`.
 
 Highest-priority question:
 
-Can a narrow conservative filter family around `volatility_20d` plus `smoke_score` survive holdout validation without overfitting?
+Are the remaining failures caused by identifiable historical regimes, themes, tickers, or data-quality problems, or is the current Candidate 34 family too unstable to continue without redesign?
+
+This task must answer that question before any additional tuning.
 
 ## Goal
 
-Create Phase 1E validation for conservative entry filters.
+Create a Phase 1F audit layer that explains the Phase 1E failures without changing the trading logic.
 
 The task must:
 
-1. Reuse Phase 1D pre-entry feature snapshots where possible.
-2. Generate deterministic replay samples.
-3. Split samples into calibration and holdout sets.
-4. Tune only on calibration samples.
-5. Validate frozen filters on holdout samples.
-6. Report whether any filter is robust enough for GPT review.
+1. Build a complete historical failure ledger for all accepted historical candidates across the 20 deterministic samples.
+2. Clean up ticker/theme taxonomy so `UNMAPPED` losses are explainable.
+3. Attribute losses and drawdowns by ticker, theme, time period, market regime, and pre-entry features.
+4. Identify data-quality issues that may distort the replay results.
+5. Decide whether the next research step should be redesign, pause, or one narrow hypothesis test.
 
-This task may recommend a filter for future review, but must not activate it in the daily scan.
+This task is diagnostic only. It must not activate any policy in daily scan.
 
 ## CLI
 
 Add or update:
 
 ```bash
---phase1e-filter-validation
+--phase1f-failure-audit
 --replay-rounds 100
 --replay-sample-count 20
 ```
@@ -57,7 +60,7 @@ Add or update:
 Preferred command:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1e-filter-validation --replay-rounds 100 --replay-sample-count 20
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1f-failure-audit --replay-rounds 100 --replay-sample-count 20
 ```
 
 If runtime is too high, support 10 samples as a fallback and clearly mark it as insufficient for approval.
@@ -66,188 +69,230 @@ If runtime is too high, support 10 samples as a fallback and clearly mark it as 
 
 Create or update:
 
-- `data/reports/phase1e_threshold_sweep.csv`
-- `data/reports/phase1e_filter_validation_matrix.csv`
-- `data/reports/phase1e_holdout_results.csv`
-- `data/reports/phase1e_excluded_decision_audit.csv`
-- `data/reports/phase1e_filter_summary.md`
+- `data/reports/phase1f_failure_trade_ledger.csv`
+- `data/reports/phase1f_theme_taxonomy.csv`
+- `data/reports/phase1f_drawdown_attribution.csv`
+- `data/reports/phase1f_regime_attribution.csv`
+- `data/reports/phase1f_data_quality_audit.csv`
+- `data/reports/phase1f_viability_summary.md`
 - `REPORT_TO_GPT.md`
 
 Keep earlier Phase 1 reports intact unless regeneration is required.
 
-## Part 1: Deterministic Sample Split
+## Inputs
 
-Generate 20 deterministic samples if possible.
+Reuse existing Phase 1 research code and outputs where possible:
 
-Each sample has 100 replay rounds across 2024-01-01 through 2026-06-30.
+- Phase 1A historical replay mechanics
+- Phase 1B execution diagnostics
+- Phase 1C robustness samples
+- Phase 1D pre-entry feature snapshots
+- Phase 1E calibration/holdout reports
 
-Use only data available on or before each replay date for selection and filtering.
+Do not use future data for decision-side diagnostics.
 
-Split:
+## Part 1: Historical Failure Trade Ledger
 
-- calibration: sample IDs 0-9
-- holdout: sample IDs 10-19
+Build a ledger of all accepted historical candidates across the 20 deterministic Phase 1E-style samples.
 
-Fallback split for 10 samples:
+Required columns:
 
-- calibration: sample IDs 0-4
-- holdout: sample IDs 5-9
+- `sample_id`
+- `replay_date`
+- `ticker`
+- `theme`
+- `subtheme`
+- `reference_price`
+- `entry_price`
+- `entry_gap_pct`
+- `shares_with_100`
+- `estimated_total_cost`
+- `decision_strength`
+- `smoke_score`
+- `volatility_20d`
+- `atr_pct`
+- `distance_from_52w_high`
+- `relative_volume_prev20`
+- `pre_entry_return_5d`
+- `pre_entry_return_10d`
+- `market_regime_label`
+- `spy_trend_label`
+- `qqq_trend_label`
+- `market_volatility_label`
+- `simulated_exit_reason`
+- `simulated_pnl_dollars`
+- `simulated_return_pct`
+- `forward_return_20d`
+- `stopped_out_but_20d_positive`
+- `running_equity_before_trade`
+- `running_equity_after_trade`
+- `drawdown_after_trade`
+- `drawdown_contribution_dollars`
+- `is_worst_drawdown_trade_for_sample`
 
-Holdout data must never influence threshold selection.
+Focus especially on failure samples:
 
-## Part 2: Filter Family
+- sample 3
+- sample 4
+- sample 10
+- sample 16
 
-Test these filters only.
+But still generate the ledger for every sample.
 
-### Baseline
+## Part 2: Theme Taxonomy Cleanup
 
-`no_filter_baseline_current`
+Create `phase1f_theme_taxonomy.csv`.
 
-Candidate 34 unchanged, baseline current exit policy.
+Requirements:
 
-### Phase 1D fixed candidate
+1. Build a deterministic mapping for every ticker that appears in Phase 1E accepted historical candidates or excluded audit rows.
+2. Include:
+   - `ticker`
+   - `company_name_if_available`
+   - `theme`
+   - `subtheme`
+   - `mapping_source`
+   - `mapping_confidence`
+   - `notes`
+3. Use available project metadata, watchlist names, existing code mappings, or conservative static mappings.
+4. If a ticker cannot be confidently mapped, label it `UNMAPPED_LOW_CONFIDENCE` and explain why.
+5. Report how much loss contribution remains unmapped after cleanup.
 
-`phase1d_volatility_plus_smoke_score`
+## Part 3: Drawdown Attribution
 
-- Require `volatility_20d <= 0.0697`
-- Require `smoke_score >= 0.8839`
+Create `phase1f_drawdown_attribution.csv`.
 
-### Small threshold grid
+Group historical losses and drawdown contribution by:
 
-Test all combinations:
+- sample_id
+- ticker
+- theme
+- subtheme
+- calendar month / quarter
+- entry_gap_pct bucket
+- volatility_20d bucket
+- atr_pct bucket
+- smoke_score bucket
+- decision_strength bucket
+- exit reason
 
-- `volatility_20d_max`: 0.055, 0.060, 0.065, 0.070, 0.075
-- `smoke_score_min`: 0.880, 0.900, 0.920, 0.940
+Metrics required:
 
-Filter passes only when both conditions pass.
+- candidate count
+- win count
+- loss count
+- simulated win rate
+- total pnl dollars
+- average pnl dollars
+- median pnl dollars
+- average 20d forward return
+- median 20d forward return
+- max single-candidate loss dollars
+- max drawdown contribution dollars
 
-### Limited overlays
+The report must say whether failures are concentrated or broad.
 
-For only the top 3 calibration filters, test:
+## Part 4: Market Regime Attribution
 
-1. `theme_cap_3_overlay`: at most 3 accepted BUY decisions per deterministic theme per sample.
-2. `repeated_loser_ticker_cooldown_overlay`: after a ticker has a prior accepted losing simulated result inside a sample, skip that ticker for 60 calendar days.
+Create `phase1f_regime_attribution.csv`.
 
-The cooldown must use only prior simulated outcomes within chronological replay order. If that cannot be implemented without lookahead, skip it and explain why.
+Use only market data available on or before each replay date.
 
-## Part 3: Calibration Rules
+Compute simple, auditable labels:
 
-For each filter on calibration samples, compute:
+- SPY above/below 20-day moving average
+- SPY above/below 50-day moving average
+- QQQ above/below 20-day moving average
+- QQQ above/below 50-day moving average
+- SPY 20-day realized volatility bucket
+- SPY drawdown-from-50-day-high bucket
+- broad risk-on / risk-off / mixed label derived only from the above
 
-- median ending account value
-- worst-sample ending account value
-- median max drawdown
-- worst-sample max drawdown
-- median simulated win rate
-- worst-sample simulated win rate
-- median BUY count
-- minimum BUY count
-- median 20d average return
-- median profit factor
-- excluded loser count
-- excluded winner count
+Do not introduce complex black-box regime models.
 
-A filter is eligible for holdout only if calibration meets:
+## Part 5: Data Quality Audit
 
-1. median ending account value > 120
-2. worst-sample ending account value > 100
-3. median max drawdown better than -35%
-4. worst-sample max drawdown better than -45%
-5. median simulated win rate >= 50%
-6. minimum BUY count >= 15
-7. excluded loser count > excluded winner count
-8. median 20d average return > 0
-9. median profit factor > 1.2
+Create `phase1f_data_quality_audit.csv`.
 
-If no filter passes, still send the top 3 diagnostic filters to holdout, but mark them as `CALIBRATION_NOT_PASSED_DIAGNOSTIC_ONLY`.
+Audit for:
 
-Rank top 3 by:
+- missing OHLCV bars
+- stale symbol metadata
+- delisted or renamed symbols
+- split or adjustment anomalies
+- zero-volume or abnormal-volume days
+- incomplete 20-trading-day forward windows
+- symbols rejected by metadata lookup
+- repeated yfinance warnings or 404s
 
-1. best worst-sample ending account value
-2. best worst-sample max drawdown
-3. best median simulated win rate
-4. best median ending account value
-5. fewer excluded winners
+The summary must explain whether data issues materially affect Phase 1E conclusions.
 
-## Part 4: Holdout Rules
+## Part 6: Viability Decision
 
-Run selected filters on holdout samples with frozen thresholds.
+Mark exactly one final Phase 1F status:
 
-A filter may be marked `PHASE_1E_FILTER_ROBUSTNESS_IMPROVED_REQUIRES_GPT_REVIEW` only if holdout meets:
+- `PHASE_1F_DATA_QUALITY_BLOCKER`
+- `PHASE_1F_FAILURES_CONCENTRATED_RESEARCH_ONLY`
+- `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN`
 
-1. median ending account value > 120
-2. worst-sample ending account value > 100
-3. median max drawdown better than -35%
-4. worst-sample max drawdown better than -45%
-5. median simulated win rate >= 50%
-6. every holdout sample has at least 15 accepted BUY decisions
-7. median 20d average return > 0
-8. median profit factor > 1.2
-9. no single ticker contributes more than 50% of total profit in any passing holdout sample
-10. no single ticker contributes more than 50% of total loss in any passing holdout sample
-11. excluded loser count > excluded winner count
+Use these rules:
 
-Even if this passes, do not activate the filter. GPT review is required.
+### Data Quality Blocker
 
-## Part 5: Report Requirements
+Use `PHASE_1F_DATA_QUALITY_BLOCKER` if replay conclusions are materially unreliable because of missing data, symbol issues, adjustment anomalies, or stale metadata.
 
-`phase1e_filter_summary.md` must start with:
+### Failures Concentrated Research Only
+
+Use `PHASE_1F_FAILURES_CONCENTRATED_RESEARCH_ONLY` if failures are clearly concentrated by explainable theme, ticker, or market regime, but no operational change is approved.
+
+### Failures Broad Recommend Redesign
+
+Use `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN` if failures are broad across themes, tickers, and regimes, or if the evidence suggests Candidate 34 entry logic needs redesign rather than more threshold filtering.
+
+## Part 7: Report Requirements
+
+`phase1f_viability_summary.md` must start with:
 
 ```text
-PHOENIX NANO PHASE 1E — CROSS-VALIDATED CONSERVATIVE FILTER VALIDATION
+PHOENIX NANO PHASE 1F — FAILURE ATTRIBUTION, TAXONOMY, AND DATA QUALITY AUDIT
 ```
 
 It must include:
 
 - research-only statement
-- Phase 1D recap
-- sample split used
-- filters tested
-- calibration results
-- selected holdout filters
-- holdout results
-- whether `volatility_plus_smoke_score` survived holdout
-- whether overlays helped or overfit
-- excluded winner vs loser summary
-- top remaining failure samples
-- top remaining failure tickers/themes
-- final Phase 1E status
+- Phase 1E recap
+- failure sample summary
+- theme taxonomy cleanup results
+- remaining unmapped loss contribution
+- drawdown attribution summary
+- market regime attribution summary
+- data quality audit summary
+- whether failures are concentrated or broad
+- final Phase 1F status
 - explicit statement: `Do not start paper execution or real-money execution.`
 - concrete recommendation for the next research task
 
-CSV files must contain enough columns to audit every threshold, sample, selected holdout filter, excluded decision, and gate failure.
+CSV files must contain enough columns to audit every sample, historical candidate, attribution group, and data-quality issue.
 
-## Part 6: Phase 1E Status
-
-Mark one of:
-
-- `PHASE_1E_FAILED`
-- `PHASE_1E_FILTER_OVERFIT_NOT_APPROVED`
-- `PHASE_1E_FILTER_NEEDS_MORE_WORK`
-- `PHASE_1E_FILTER_ROBUSTNESS_IMPROVED_REQUIRES_GPT_REVIEW`
-
-Never mark Phase 2 ready from this task.
-
-## Part 7: Tests
+## Part 8: Tests
 
 Add or update tests for:
 
-1. deterministic sample split
-2. holdout samples are not used for threshold selection
-3. filters use only pre-entry features
-4. holdout filters use frozen thresholds
-5. filtered replay is chronological and one-position-at-a-time
-6. calibration and holdout gates
-7. excluded decision audit records excluded winners and losers
-8. Phase 1E status never approves Phase 2 or execution
-9. reports are written
-10. full pytest suite passes
+1. failure ledger contains all accepted historical candidates across requested samples
+2. failure ledger uses only pre-entry features for decision-side diagnostics
+3. theme taxonomy eliminates avoidable `UNMAPPED` values or explains low-confidence mappings
+4. market regime labels use only data available on or before replay_date
+5. data quality audit catches missing and abnormal data cases
+6. no active scan behavior is changed
+7. Phase 1F status never approves Phase 2 or deployment
+8. reports are written
+9. full pytest suite passes
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1e-filter-validation --replay-rounds 100 --replay-sample-count 20
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1f-failure-audit --replay-rounds 100 --replay-sample-count 20
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -258,18 +303,13 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1E Filter Validation Summary
-- Sample split used
-- Filters tested
-- Calibration results
-- Holdout results
-- Best calibration filter
-- Best holdout filter
-- Whether `volatility_plus_smoke_score` survived holdout
-- Excluded winner vs loser summary
-- Top remaining failure samples
-- Top remaining failure tickers/themes
-- Phase 1E status
+- Phase 1F Viability Summary
+- Failure sample summary
+- Theme taxonomy cleanup results
+- Drawdown attribution summary
+- Market regime attribution summary
+- Data quality audit summary
+- Phase 1F status
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
