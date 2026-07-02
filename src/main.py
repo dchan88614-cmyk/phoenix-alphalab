@@ -52,6 +52,7 @@ from src.research.phase1d_entry_rules import build_phase1d_entry_rule_analysis, 
 from src.research.phase1e_filter_validation import build_phase1e_filter_validation, write_phase1e_reports
 from src.research.phase1f_failure_audit import build_phase1f_failure_audit, write_phase1f_reports
 from src.research.phase1g_redesign_sandbox import build_phase1g_redesign_sandbox, write_phase1g_reports
+from src.research.phase1h_risk_overlay import build_phase1h_risk_overlay_sandbox, write_phase1h_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -108,7 +109,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox:
+    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -524,6 +525,73 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1G rejected decision audit CSV: %s", phase1g_rejected_path)
         logger.info("Wrote Phase 1G redesign summary Markdown: %s", phase1g_summary_path)
 
+    if args.phase1h_risk_overlay_sandbox:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        (
+            phase1h_definitions,
+            phase1h_calibration,
+            phase1h_validation,
+            phase1h_holdout,
+            phase1h_comparison,
+            phase1h_drawdown,
+            phase1h_theme,
+            phase1h_counterfactual,
+            _,
+            phase1h_summary_md,
+            _,
+        ) = build_phase1h_risk_overlay_sandbox(
+            research_dataset,
+            account_settings=account_settings,
+            rule=candidate_rule,
+            replay_rounds=int(args.replay_rounds),
+            replay_sample_count=int(args.replay_sample_count),
+            replay_sample_offset=int(args.replay_sample_offset),
+            benchmark_ticker=benchmark,
+            rejected_metadata=rejected,
+        )
+        phase1h_definitions_path = reports_dir / "phase1h_overlay_definitions.md"
+        phase1h_calibration_path = reports_dir / "phase1h_overlay_calibration_matrix.csv"
+        phase1h_validation_path = reports_dir / "phase1h_overlay_validation_matrix.csv"
+        phase1h_holdout_path = reports_dir / "phase1h_overlay_holdout_results.csv"
+        phase1h_comparison_path = reports_dir / "phase1h_candidate34_vs_35_vs_overlay.csv"
+        phase1h_drawdown_path = reports_dir / "phase1h_drawdown_compression_attribution.csv"
+        phase1h_theme_path = reports_dir / "phase1h_theme_concentration_audit.csv"
+        phase1h_counterfactual_path = reports_dir / "phase1h_excluded_trade_counterfactual.csv"
+        phase1h_summary_path = reports_dir / "phase1h_risk_overlay_summary.md"
+        write_phase1h_reports(
+            phase1h_definitions,
+            phase1h_calibration,
+            phase1h_validation,
+            phase1h_holdout,
+            phase1h_comparison,
+            phase1h_drawdown,
+            phase1h_theme,
+            phase1h_counterfactual,
+            phase1h_summary_md,
+            phase1h_definitions_path,
+            phase1h_calibration_path,
+            phase1h_validation_path,
+            phase1h_holdout_path,
+            phase1h_comparison_path,
+            phase1h_drawdown_path,
+            phase1h_theme_path,
+            phase1h_counterfactual_path,
+            phase1h_summary_path,
+        )
+        logger.info("Wrote Phase 1H overlay definitions Markdown: %s", phase1h_definitions_path)
+        logger.info("Wrote Phase 1H calibration matrix CSV: %s", phase1h_calibration_path)
+        logger.info("Wrote Phase 1H validation matrix CSV: %s", phase1h_validation_path)
+        logger.info("Wrote Phase 1H holdout results CSV: %s", phase1h_holdout_path)
+        logger.info("Wrote Phase 1H Candidate 34 vs 35 vs overlay CSV: %s", phase1h_comparison_path)
+        logger.info("Wrote Phase 1H drawdown compression CSV: %s", phase1h_drawdown_path)
+        logger.info("Wrote Phase 1H theme concentration audit CSV: %s", phase1h_theme_path)
+        logger.info("Wrote Phase 1H excluded trade counterfactual CSV: %s", phase1h_counterfactual_path)
+        logger.info("Wrote Phase 1H risk overlay summary Markdown: %s", phase1h_summary_path)
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -697,6 +765,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1g-redesign-sandbox",
         action="store_true",
         help="Run Phoenix Nano Phase 1G Candidate 35 redesign sandbox",
+    )
+    parser.add_argument(
+        "--phase1h-risk-overlay-sandbox",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1H trend-quality risk overlay sandbox",
     )
     return parser
 
