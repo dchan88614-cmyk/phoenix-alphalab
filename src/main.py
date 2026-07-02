@@ -53,6 +53,7 @@ from src.research.phase1e_filter_validation import build_phase1e_filter_validati
 from src.research.phase1f_failure_audit import build_phase1f_failure_audit, write_phase1f_reports
 from src.research.phase1g_redesign_sandbox import build_phase1g_redesign_sandbox, write_phase1g_reports
 from src.research.phase1h_risk_overlay import build_phase1h_risk_overlay_sandbox, write_phase1h_reports
+from src.research.phase1i_data_universe_audit import build_phase1i_data_universe_audit, write_phase1i_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -109,7 +110,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox:
+    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -592,6 +593,70 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1H excluded trade counterfactual CSV: %s", phase1h_counterfactual_path)
         logger.info("Wrote Phase 1H risk overlay summary Markdown: %s", phase1h_summary_path)
 
+    if args.phase1i_data_universe_audit:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        (
+            phase1i_quality,
+            phase1i_vendor,
+            phase1i_composition,
+            phase1i_matrix,
+            phase1i_holdout,
+            phase1i_incidents,
+            phase1i_rejected,
+            phase1i_attribution,
+            phase1i_summary_md,
+            _,
+        ) = build_phase1i_data_universe_audit(
+            research_dataset,
+            account_settings=account_settings,
+            rule=candidate_rule,
+            watchlist_tickers=tickers,
+            universe=universe,
+            rejected_metadata=rejected,
+            requested_start_date=research_start,
+            requested_end_date=research_end,
+            replay_rounds=int(args.replay_rounds),
+            replay_sample_count=int(args.replay_sample_count),
+            replay_sample_offset=int(args.replay_sample_offset),
+            benchmark_ticker=benchmark,
+        )
+        phase1i_paths = {
+            "quality": reports_dir / "phase1i_symbol_data_quality_audit.csv",
+            "vendor": reports_dir / "phase1i_vendor_validation_matrix.csv",
+            "composition": reports_dir / "phase1i_universe_composition_audit.csv",
+            "matrix": reports_dir / "phase1i_universe_variant_backtest_matrix.csv",
+            "holdout": reports_dir / "phase1i_universe_variant_holdout_results.csv",
+            "incidents": reports_dir / "phase1i_data_gap_incident_log.csv",
+            "rejected": reports_dir / "phase1i_rejected_symbol_audit.csv",
+            "attribution": reports_dir / "phase1i_strategy_vs_universe_attribution.csv",
+            "summary": reports_dir / "phase1i_data_universe_summary.md",
+        }
+        write_phase1i_reports(
+            phase1i_quality,
+            phase1i_vendor,
+            phase1i_composition,
+            phase1i_matrix,
+            phase1i_holdout,
+            phase1i_incidents,
+            phase1i_rejected,
+            phase1i_attribution,
+            phase1i_summary_md,
+            phase1i_paths,
+        )
+        logger.info("Wrote Phase 1I symbol data quality audit CSV: %s", phase1i_paths["quality"])
+        logger.info("Wrote Phase 1I vendor validation matrix CSV: %s", phase1i_paths["vendor"])
+        logger.info("Wrote Phase 1I universe composition audit CSV: %s", phase1i_paths["composition"])
+        logger.info("Wrote Phase 1I universe variant backtest matrix CSV: %s", phase1i_paths["matrix"])
+        logger.info("Wrote Phase 1I universe variant holdout results CSV: %s", phase1i_paths["holdout"])
+        logger.info("Wrote Phase 1I data gap incident log CSV: %s", phase1i_paths["incidents"])
+        logger.info("Wrote Phase 1I rejected symbol audit CSV: %s", phase1i_paths["rejected"])
+        logger.info("Wrote Phase 1I strategy-vs-universe attribution CSV: %s", phase1i_paths["attribution"])
+        logger.info("Wrote Phase 1I data universe summary Markdown: %s", phase1i_paths["summary"])
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -770,6 +835,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1h-risk-overlay-sandbox",
         action="store_true",
         help="Run Phoenix Nano Phase 1H trend-quality risk overlay sandbox",
+    )
+    parser.add_argument(
+        "--phase1i-data-universe-audit",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1I data quality and universe design audit",
     )
     return parser
 

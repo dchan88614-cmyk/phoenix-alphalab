@@ -9,33 +9,30 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1H - Trend-Quality Risk Overlay and Drawdown Compression.
-- Added a historical research-only Phase 1H risk overlay sandbox.
-- Froze Candidate 34 as `candidate34_frozen_baseline`.
-- Froze Phase 1G Candidate 35 trend-quality as `candidate35_trend_quality_frozen`.
-- Added the requested CLI flag:
-  - `--phase1h-risk-overlay-sandbox`
-- Added pre-declared overlay families only:
-  - `overlay_market_regime_risk_off_skip`
-  - `overlay_high_volatility_tail_skip`
-  - `overlay_theme_loss_cooldown`
-  - `overlay_ticker_loss_cooldown`
-  - `overlay_combined_conservative`
-- Used deterministic 30-sample split:
-  - calibration: samples 0-9
-  - validation: samples 10-19
-  - holdout: samples 20-29
-- Added excluded-trade counterfactuals, drawdown compression attribution, and theme concentration audit.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1I - Data Quality, Vendor Validation, and Universe Design Audit.
+- Added historical research-only Phase 1I data/universe audit code.
+- Added CLI flag:
+  - `--phase1i-data-universe-audit`
+- Audited watchlist symbols plus SPY/QQQ.
+- Added symbol-level data quality grading.
+- Added vendor validation matrix with explicit `NO_SECOND_SOURCE` handling.
+- Added data gap incident log.
+- Added universe composition audit.
+- Added pre-declared universe variants.
+- Re-ran only frozen strategies:
+  - `candidate34_frozen_baseline`
+  - `candidate35_trend_quality_frozen`
+- Added strategy-vs-universe attribution.
 - Created required outputs:
-  - `data/reports/phase1h_overlay_definitions.md`
-  - `data/reports/phase1h_overlay_calibration_matrix.csv`
-  - `data/reports/phase1h_overlay_validation_matrix.csv`
-  - `data/reports/phase1h_overlay_holdout_results.csv`
-  - `data/reports/phase1h_candidate34_vs_35_vs_overlay.csv`
-  - `data/reports/phase1h_drawdown_compression_attribution.csv`
-  - `data/reports/phase1h_theme_concentration_audit.csv`
-  - `data/reports/phase1h_excluded_trade_counterfactual.csv`
-  - `data/reports/phase1h_risk_overlay_summary.md`
+  - `data/reports/phase1i_symbol_data_quality_audit.csv`
+  - `data/reports/phase1i_vendor_validation_matrix.csv`
+  - `data/reports/phase1i_universe_composition_audit.csv`
+  - `data/reports/phase1i_universe_variant_backtest_matrix.csv`
+  - `data/reports/phase1i_universe_variant_holdout_results.csv`
+  - `data/reports/phase1i_data_gap_incident_log.csv`
+  - `data/reports/phase1i_rejected_symbol_audit.csv`
+  - `data/reports/phase1i_strategy_vs_universe_attribution.csv`
+  - `data/reports/phase1i_data_universe_summary.md`
 - Did not start Phase 2.
 - Did not start Phase 3.
 - Did not enable paper execution.
@@ -43,41 +40,43 @@
 - Did not change daily scan production behavior.
 - Did not loosen Candidate 34 thresholds.
 - Did not adopt Candidate 35 or any overlay as active policy.
+- Did not create Candidate 36 entry rules.
+- Did not perform another threshold sweep.
 - Did not produce financial advice or an operational recommendation.
 
 ## Files Changed
 
 - `src/main.py`
-- `src/research/phase1h_risk_overlay.py`
-- `tests/test_phase1h_risk_overlay.py`
-- `data/reports/phase1h_overlay_definitions.md`
-- `data/reports/phase1h_overlay_calibration_matrix.csv`
-- `data/reports/phase1h_overlay_validation_matrix.csv`
-- `data/reports/phase1h_overlay_holdout_results.csv`
-- `data/reports/phase1h_candidate34_vs_35_vs_overlay.csv`
-- `data/reports/phase1h_drawdown_compression_attribution.csv`
-- `data/reports/phase1h_theme_concentration_audit.csv`
-- `data/reports/phase1h_excluded_trade_counterfactual.csv`
-- `data/reports/phase1h_risk_overlay_summary.md`
+- `src/research/phase1i_data_universe_audit.py`
+- `tests/test_phase1i_data_universe_audit.py`
+- `data/reports/phase1i_symbol_data_quality_audit.csv`
+- `data/reports/phase1i_vendor_validation_matrix.csv`
+- `data/reports/phase1i_universe_composition_audit.csv`
+- `data/reports/phase1i_universe_variant_backtest_matrix.csv`
+- `data/reports/phase1i_universe_variant_holdout_results.csv`
+- `data/reports/phase1i_data_gap_incident_log.csv`
+- `data/reports/phase1i_rejected_symbol_audit.csv`
+- `data/reports/phase1i_strategy_vs_universe_attribution.csv`
+- `data/reports/phase1i_data_universe_summary.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1h-risk-overlay-sandbox --replay-rounds 100 --replay-sample-count 30
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1i-data-universe-audit --replay-rounds 100 --replay-sample-count 30
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1h_risk_overlay.py -q
-# 8 passed
+.venv/bin/python -m pytest tests/test_phase1i_data_universe_audit.py -q
+# 9 passed, 1 warning
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 141 passed, 1 warning in 23.14s
+# 150 passed, 1 warning in 29.21s
 ```
 
 Remaining warning:
@@ -87,212 +86,132 @@ Remaining warning:
 End-to-end command completed successfully:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1h-risk-overlay-sandbox --replay-rounds 100 --replay-sample-count 30
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1i-data-universe-audit --replay-rounds 100 --replay-sample-count 30
 ```
 
-## Phase 1H Risk Overlay Summary
+## Phase 1I Data / Universe Summary
 
 - Summary file starts with the required heading:
-  - `PHOENIX NANO PHASE 1H — TREND-QUALITY RISK OVERLAY AND DRAWDOWN COMPRESSION`
-- Final status: `PHASE_1H_HOLDOUT_FAILED`
-- The best overlay promoted to holdout was `overlay_ticker_loss_cooldown_8pct_15`.
-- No overlay was adopted as active policy.
-- No overlay is approved for paper execution or real-money execution.
+  - `PHOENIX NANO PHASE 1I — DATA QUALITY, VENDOR VALIDATION, AND UNIVERSE DESIGN AUDIT`
+- Final status: `PHASE_1I_DATA_BLOCKER_PAUSE_RESEARCH`
+- Phase 1I did not approve any strategy, universe, data source, daily scan change, paper execution, or real-money execution.
 
-## Baseline Reproducibility Check
+## Data Quality PASS / WARN / FAIL Counts
 
-- Candidate 34 was re-run as `candidate34_frozen_baseline`.
-- Candidate 35 trend-quality was re-run as `candidate35_trend_quality_frozen`.
-- Candidate 35 trend-quality core entry rules, ranking, and baseline exit policy were not changed.
-- QQQ was downloaded for Phase 1H market regime context.
+Symbol audit rows: 119.
 
-## Candidate 34 Baseline Results
-
-Holdout:
-
-- sample count: 10
-- minimum BUY count: 29
-- median BUY count: 32.0
-- worst ending account value: 59.30
-- median ending account value: 136.88
-- worst max drawdown: -59.92%
-- median simulated win rate: 39.92%
-- median 20d accuracy: 50.00%
-- median profit factor: 1.18
-- status: FAIL
-
-Candidate 34 remains unstable and not suitable for execution.
-
-## Candidate 35 Trend-Quality Baseline Results
-
-Holdout:
-
-- sample count: 10
-- minimum BUY count: 88
-- median BUY count: 89.5
-- worst ending account value: 191.39
-- median ending account value: 237.40
-- worst max drawdown: -49.09%
-- median simulated win rate: 51.55%
-- median 20d accuracy: 63.07%
-- median profit factor: 1.51
-- failed gates:
-  - worst drawdown <= -35%
-  - median win rate < 52%
-  - top theme loss share > 45%
-
-Trend-quality remains directionally better than Candidate 34, but it still fails risk gates.
-
-## Overlay Calibration Results
-
-- Calibration matrix rows: 230.
-- Calibration evaluated Candidate 34, Candidate 35 trend-quality, standalone overlays, cooldown parameter grids, and combined conservative overlay.
-- The strongest calibration behavior came from volatility/ticker cooldown variants that compressed drawdown in some samples.
-- Calibration did not approve any policy; it only selected candidates for validation.
-
-## Overlay Validation Results
-
-- Validation matrix rows: 50.
-- Validation evaluated frozen baselines plus promoted overlays.
-- At most one final overlay policy was promoted to holdout.
-- Final promoted overlay: `overlay_ticker_loss_cooldown_8pct_15`.
-
-## Overlay Holdout Results
-
-Holdout rows: 3.
-
-| policy | gate | min BUY | median BUY | worst ending | median ending | worst drawdown | median win rate | median 20d accuracy | median PF | failed gates |
-|:--|:--|--:|--:|--:|--:|--:|--:|--:|--:|:--|
-| `candidate34_frozen_baseline` | FAIL | 29 | 32.0 | 59.30 | 136.88 | -59.92% | 39.92% | 50.00% | 1.18 | overfilter/min BUY, ending, drawdown, win rate, accuracy, PF, worst trade, ticker concentration, ex-best |
-| `candidate35_trend_quality_frozen` | FAIL | 88 | 89.5 | 191.39 | 237.40 | -49.09% | 51.55% | 63.07% | 1.51 | drawdown, win rate, theme concentration |
-| `overlay_ticker_loss_cooldown_8pct_15` | FAIL | 78 | 83.0 | 197.65 | 237.30 | -46.04% | 51.17% | 63.82% | 1.64 | drawdown, win rate, theme concentration, missed winners >= avoided losers |
+- PASS: 0
+- WARN: 98
+- FAIL: 21
 
 Interpretation:
 
-- The overlay improved some risk/accuracy metrics versus frozen trend-quality.
-- It did not reduce drawdown enough.
-- It did not improve win rate enough.
-- It did not reduce top-theme loss concentration enough.
-- Excluded-trade counterfactuals show winner dollars missed were greater than loser dollars avoided.
+- Most usable rows are still WARN because they rely on yfinance as a single retail-grade vendor.
+- FAIL count is above the 10% Phase 1I data-blocker threshold.
+- This supports pausing strategy iteration until data/vendor and universe hygiene improve.
 
-## Drawdown Compression Attribution
+## Vendor Validation Coverage
 
-- Drawdown attribution rows: 690.
-- The best holdout overlay reduced worst holdout drawdown from -49.09% to -46.04%.
-- This is not enough to pass the -35% drawdown gate.
-- Drawdown compression appears partial and sample-path dependent, not a sufficient risk fix.
+- `NO_SECOND_SOURCE`: 119
+- No stable secondary OHLCV source is configured without secrets.
+- Phoenix Nano remains dependent on a single retail-grade data source.
+- The current research should not be treated as execution-grade.
 
-## Theme Concentration Audit
+## Data Gap Incidents
 
-- Theme concentration audit rows: 5,601.
-- Candidate 35 trend-quality still failed top-theme loss concentration.
-- The promoted ticker cooldown overlay also failed the top-theme loss concentration gate.
-- Phase 1H did not prove top-theme loss concentration can be reduced below the required 45% level without missing too many winners.
+- Incident rows: 32.
+- Severity counts:
+  - HIGH: 1
+  - MEDIUM: 25
+  - LOW: 6
+- Key incidents:
+  - `BITF` yfinance 404.
+  - `BITF` metadata incomplete.
+  - multiple metadata rejections from exchange/keyword filters.
+  - split/adjustment anomaly flags on APP, ARM, EDIT, NVAX, OKLO, and UPST.
+  - abnormal volume flags on AVAV, DASH, DDOG, DUOL, EDIT, and NVAX.
 
-## Excluded Trade Counterfactual Summary
+## Universe Composition Findings
 
-- Excluded trade counterfactual rows: 8,571.
-- For the promoted holdout overlay, excluded winner dollars missed were greater than excluded loser dollars avoided.
-- This means the overlay did not pass the required true-loss-avoidance test.
-- Skipped trades are diagnostic only and are not an instruction to loosen or activate filters.
+- Watchlist tickers audited: 117.
+- Data-quality WARN: 96.
+- Data-quality FAIL: 21.
+- Price under $50 count: 27.
+- Price under $20 count: 19.
+- Avg dollar volume pass count: 98.
+- Theme count: 15.
+- Top theme ticker share: 16.24%.
+- High-beta or speculative theme share: 29.91%.
+- Crypto-adjacent count: 5.
+- Biotech count: 7.
+- EV/mobility count: 10.
+- AI/software count: 4.
+- Semiconductor/hardware count: 14.
+- Universe quality assessment: `DATA_QUALITY_BLOCKER`.
 
-## BUY Count / NO_TRADE Count / BUY Rate
+## Universe Variant Holdout Results
 
-Holdout:
+No universe variant passed holdout gates.
 
-- Candidate 34:
-  - median BUY count: 32.0
-  - median NO_TRADE count: 68.0
-  - median BUY rate: 32.0%
-- Candidate 35 trend-quality:
-  - median BUY count: 89.5
-  - median NO_TRADE count: 10.5
-  - median BUY rate: 89.5%
-- Promoted overlay:
-  - median BUY count: 83.0
-  - median NO_TRADE count: 17.0
-  - median BUY rate: 83.0%
+Candidate 35 trend-quality holdout:
 
-## Accuracy: 1d / 3d / 5d / 10d / 20d
+| universe variant | median size | worst ending | median ending | worst drawdown | median win rate | median 20d accuracy | median PF | status |
+|:--|--:|--:|--:|--:|--:|--:|--:|:--|
+| current_watchlist_full | 98 | 196.23 | 245.77 | -49.09% | 51.55% | 63.48% | 1.51 | FAIL |
+| data_quality_pass_only | 96 | 196.23 | 245.77 | -49.09% | 51.55% | 63.48% | 1.51 | FAIL |
+| theme_balanced_clean | 90 | 204.90 | 245.77 | -49.09% | 52.38% | 64.24% | 1.55 | FAIL |
+| metadata_and_price_clean | 27 | 104.74 | 159.54 | -63.41% | 47.21% | 58.05% | 1.26 | FAIL |
+| liquidity_and_price_clean | 27 | 104.74 | 159.54 | -63.41% | 47.21% | 58.05% | 1.26 | FAIL |
+| conservative_research_universe | 26 | 104.74 | 159.54 | -63.41% | 47.21% | 58.05% | 1.26 | FAIL |
 
-The output matrices include all requested accuracy columns:
+Main failure modes:
 
-- `accuracy_1d`
-- `accuracy_3d`
-- `accuracy_5d`
-- `accuracy_10d`
-- `accuracy_20d`
+- Current full universe still fails drawdown, win rate, and theme loss concentration.
+- Theme-balanced universe slightly improves win rate and 20d accuracy but still fails drawdown and theme concentration.
+- Price/liquidity/metadata-clean variants reduce universe size sharply and worsen performance.
 
-Promoted overlay holdout median 20d accuracy: 63.82%.
+## Candidate 34 vs Candidate 35 Across Universe Variants
 
-## Trade-Simulation Accuracy
+- Candidate 34 failed every universe variant.
+- Candidate 35 trend-quality remained stronger than Candidate 34 on the full and theme-balanced universes.
+- Candidate 35 still failed required holdout gates across every variant.
+- No clean universe result justifies promotion or paper execution.
 
-- Candidate 34 holdout median simulated win rate: 39.92%.
-- Candidate 35 trend-quality holdout median simulated win rate: 51.55%.
-- Promoted overlay holdout median simulated win rate: 51.17%.
-- The promoted overlay did not pass the 52% win-rate gate.
+## Strategy-vs-Universe Attribution
 
-## Account Ending Value
+- Attribution rows: 10.
+- Most universe variants removed more winner dollars than loser dollars.
+- `data_quality_pass_only` removed only 2 symbols and did not change Candidate 35 results.
+- `theme_balanced_clean` improved Candidate 35 win rate and 20d accuracy slightly, but did not reduce drawdown or theme concentration enough.
+- Diagnosis rows classify as `STRATEGY_BLOCKER`, but the final status is data-blocked because the symbol audit exceeds the data-quality failure threshold and vendor validation has no secondary source.
 
-- Candidate 34 holdout median ending account value: 136.88.
-- Candidate 35 trend-quality holdout median ending account value: 237.40.
-- Promoted overlay holdout median ending account value: 237.30.
-- The overlay did not materially improve median ending value versus trend-quality.
+## Final Phase 1I Status
 
-## Max Drawdown
-
-- Candidate 34 worst holdout drawdown: -59.92%.
-- Candidate 35 trend-quality worst holdout drawdown: -49.09%.
-- Promoted overlay worst holdout drawdown: -46.04%.
-- The promoted overlay still failed the -35% gate.
-
-## Profit Factor
-
-- Candidate 34 holdout median profit factor: 1.18.
-- Candidate 35 trend-quality holdout median profit factor: 1.51.
-- Promoted overlay holdout median profit factor: 1.64.
-- Profit factor improved but did not override drawdown, win-rate, concentration, and counterfactual failures.
-
-## Worst Trade Loss
-
-- Candidate 34 failed the worst-trade loss gate.
-- Candidate 35 trend-quality and the promoted overlay did not make the system execution-ready because other risk gates failed.
-- Worst trade loss remains tracked in `phase1h_overlay_holdout_results.csv`.
-
-## Top Ticker/Theme Contribution Shares
-
-- Candidate 34 failed ticker concentration.
-- Candidate 35 trend-quality failed theme concentration.
-- Promoted overlay failed theme concentration.
-- The overlay did not solve concentration risk.
-
-## Phase 1H Status
-
-- Status: `PHASE_1H_HOLDOUT_FAILED`
+- Status: `PHASE_1I_DATA_BLOCKER_PAUSE_RESEARCH`
 - Do not start Phase 2.
 - Do not start Phase 3.
 - Do not enable paper execution.
 - Do not enable real-money execution.
 - Do not mark Phoenix Nano as live-tradable.
-- Do not adopt Candidate 35 or any overlay as active policy.
-- Reason: the best overlay still failed holdout risk gates and failed the excluded-trade counterfactual requirement.
+- Do not adopt Candidate 35, Phase 1H overlays, or any universe variant as active policy.
+- Reason: the watchlist has too many FAIL-grade data/universe rows and no secondary vendor validation, while clean universe variants do not pass holdout.
 
 ## Problems
 
-- Full 30-sample Phase 1H completed, but no overlay passed holdout.
-- The promoted overlay reduced drawdown only modestly.
-- Excluded-trade counterfactuals showed too many missed winners relative to avoided losers.
-- yfinance metadata rejected several watchlist tickers.
-- `BITF` emitted a yfinance 404 and was rejected as metadata incomplete.
-- `HUT` had a yfinance download error in this run, so no HUT price data was included in the generated dataset.
-- yfinance data remains retail-grade research data, not an execution feed.
+- 21 of 119 audited symbols are FAIL-grade.
+- 119 of 119 vendor validation rows are `NO_SECOND_SOURCE`.
+- yfinance remains a single retail-grade data dependency.
+- `BITF` continues to produce yfinance 404 / metadata incomplete behavior.
+- Several symbols have split/adjustment or abnormal-volume warnings that need secondary validation.
+- Current taxonomy still has 19 `UNMAPPED_LOW_CONFIDENCE` symbols.
+- Universe cleaning did not solve Candidate 35 drawdown or theme concentration.
 
 ## Questions For GPT
 
-- Should Phoenix Nano pause after Phase 1H instead of continuing rule/overlay iteration?
-- Should the next task focus on data quality, vendor validation, and universe design before any more candidate logic?
-- Should GPT retire the current Nano direction if trend-quality plus risk overlays cannot pass drawdown and concentration gates?
-- Should future overlays require a stronger excluded-loss-dollars test before validation promotion?
+- Should Phoenix Nano pause strategy iteration until a secondary data source is added?
+- Should the watchlist be rebuilt from a cleaner listing/universe process instead of hand-curated high-beta names?
+- Should unmapped taxonomy rows be resolved before any further strategy tests?
+- Should Phase 1J focus on data vendor integration and symbol-master hygiene rather than factor/rule changes?
 
 ## Next Suggested Tasks
 
@@ -300,5 +219,5 @@ Promoted overlay holdout median 20d accuracy: 63.82%.
 - Do not start Phase 3.
 - Do not enable paper execution.
 - Do not enable real-money execution.
-- Ask GPT whether to pause Phoenix Nano research.
-- If GPT continues research, prioritize data/universe quality over another threshold or overlay sweep.
+- Pause candidate-rule iteration.
+- Add secondary vendor validation or a symbol-master/listing-validation process before more Phoenix Nano strategy work.

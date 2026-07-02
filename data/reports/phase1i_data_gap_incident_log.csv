@@ -1,0 +1,33 @@
+incident_id,ticker,incident_type,first_seen_run_phase,affected_replay_dates,affected_samples,severity,likely_effect_on_results,recommended_action
+PHASE1I-0001,APP,SPLIT_OR_ADJUSTMENT_ANOMALY,Phase 1I,,,MEDIUM,Large single-day adjusted close move.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0002,ARM,SPLIT_OR_ADJUSTMENT_ANOMALY,Phase 1I,,,MEDIUM,Large single-day adjusted close move.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0003,ASTS,METADATA_REJECTED,Phase 1I,,,MEDIUM,keyword_excluded:SPAC,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0004,AVAV,ABNORMAL_VOLUME,Phase 1I,,,LOW,Volume spike above 20x median.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0005,BITF,YFINANCE_404,Phase 1I,,,HIGH,Symbol could not be validated or downloaded from yfinance.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0006,BITF,METADATA_REJECTED,Phase 1I,,,MEDIUM,metadata_incomplete,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0007,CELH,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0008,CLSK,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0009,CRSP,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0010,DASH,ABNORMAL_VOLUME,Phase 1I,,,LOW,Volume spike above 20x median.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0011,DDOG,ABNORMAL_VOLUME,Phase 1I,,,LOW,Volume spike above 20x median.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0012,DUOL,ABNORMAL_VOLUME,Phase 1I,,,LOW,Volume spike above 20x median.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0013,EDIT,SPLIT_OR_ADJUSTMENT_ANOMALY,Phase 1I,,,MEDIUM,Large single-day adjusted close move.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0014,EDIT,ABNORMAL_VOLUME,Phase 1I,,,LOW,Volume spike above 20x median.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0015,IOVA,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0016,MARA,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0017,MDB,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0018,MIRM,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0019,NNE,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0020,NTLA,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0021,NVAX,SPLIT_OR_ADJUSTMENT_ANOMALY,Phase 1I,,,MEDIUM,Large single-day adjusted close move.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0022,NVAX,ABNORMAL_VOLUME,Phase 1I,,,LOW,Volume spike above 20x median.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0023,OKLO,SPLIT_OR_ADJUSTMENT_ANOMALY,Phase 1I,,,MEDIUM,Large single-day adjusted close move.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0024,RIOT,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0025,SOUN,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0026,SQ,METADATA_REJECTED,Phase 1I,,,MEDIUM,metadata_incomplete,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0027,SYM,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0028,TGTX,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0029,TTD,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0030,U,METADATA_REJECTED,Phase 1I,,,MEDIUM,keyword_excluded:UNIT,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0031,UPST,SPLIT_OR_ADJUSTMENT_ANOMALY,Phase 1I,,,MEDIUM,Large single-day adjusted close move.,Validate with a secondary vendor or exclude from research until resolved.
+PHASE1I-0032,VKTX,METADATA_REJECTED,Phase 1I,,,MEDIUM,exchange_excluded,Validate with a secondary vendor or exclude from research until resolved.
