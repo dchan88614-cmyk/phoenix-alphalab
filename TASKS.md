@@ -2,331 +2,252 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1D — Entry-Rule Failure Diagnostics
+## Current Task: Phoenix Nano Phase 1E — Cross-Validated Conservative Filter Validation
 
-This task is **Phase 1D research only**.
+This task is historical research only.
 
 Do not start Phase 2.
 Do not start Phase 3.
-Do not start paper trading.
-Do not start live trading.
+Do not enable paper execution.
+Do not enable real-money execution.
 Do not loosen Candidate 34 thresholds.
+Do not change daily scan production behavior.
 Do not adopt close-based stops as the active policy.
-Keep every output historical/simulated/manual-review only.
 
 ## Why This Task
 
-Phase 1C showed that exit-policy tuning is not enough.
+Phase 1D found promising but unapproved filter hypotheses:
 
-Latest evidence:
-
-- 10 deterministic 100-round samples were tested.
-- No policy was robust across all samples.
-- `baseline_current` had the best median ending account value but only 2 passing samples.
-- `close_based_stop_2_0x` had too many intraday-breach and next-open slippage realism warnings.
-- Worst-sample ending values were below $100 for every policy.
-- Worst-sample max drawdowns were worse than -45% for every policy.
-- Failing samples were concentrated in repeated high-volatility names/themes including SMR, BBAI, F, INTC, CCJ, AFRM, HPE, HOOD, EV/mobility, AI/software, semiconductor/hardware, crypto-adjacent/high beta, and space/defense/nuclear.
-- Average entry gap among captured failures was about 0.50%, so entry gaps alone do not explain the failures.
+- 10 deterministic samples were analyzed.
+- 344 historical BUY decisions were diagnosed.
+- No filter cleared all robustness gates.
+- `weak_distance_from_high` had the best median ending value but failed worst-sample and drawdown gates.
+- `volatility_plus_smoke_score` had the best worst-sample ending value and best drawdown profile, but still failed the required worst-sample gate.
+- Winner/loser feature separation was useful but modest.
 
 Highest-priority question:
 
-**Which pre-entry features identify losing historical BUY candidates before entry, and can a conservative simulated filter reduce drawdown without destroying the edge?**
+Can a narrow conservative filter family around `volatility_20d` plus `smoke_score` survive holdout validation without overfitting?
 
 ## Goal
 
-Build a Phase 1D diagnostic layer that compares historical winners versus losers across deterministic replay samples, proposes conservative entry-filter hypotheses, and backtests those filters only as offline research.
+Create Phase 1E validation for conservative entry filters.
 
-This task may evaluate hypothetical filters, but it must not change the daily scan production behavior.
+The task must:
+
+1. Reuse Phase 1D pre-entry feature snapshots where possible.
+2. Generate deterministic replay samples.
+3. Split samples into calibration and holdout sets.
+4. Tune only on calibration samples.
+5. Validate frozen filters on holdout samples.
+6. Report whether any filter is robust enough for GPT review.
+
+This task may recommend a filter for future review, but must not activate it in the daily scan.
 
 ## CLI
 
-Add or update CLI support:
+Add or update:
 
 ```bash
---phase1d-entry-rule-analysis
+--phase1e-filter-validation
 --replay-rounds 100
---replay-sample-count 10
+--replay-sample-count 20
 ```
 
 Preferred command:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1d-entry-rule-analysis --replay-rounds 100 --replay-sample-count 10
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1e-filter-validation --replay-rounds 100 --replay-sample-count 20
 ```
+
+If runtime is too high, support 10 samples as a fallback and clearly mark it as insufficient for approval.
 
 ## Required Outputs
 
 Create or update:
 
-- `data/reports/phase1d_entry_rule_diagnostics.csv`
-- `data/reports/phase1d_loser_feature_attribution.csv`
-- `data/reports/phase1d_filter_backtest_matrix.csv`
-- `data/reports/phase1d_filter_excluded_decisions.csv`
-- `data/reports/phase1d_candidate_filter_summary.md`
-- `data/reports/phase1d_entry_rule_summary.md`
+- `data/reports/phase1e_threshold_sweep.csv`
+- `data/reports/phase1e_filter_validation_matrix.csv`
+- `data/reports/phase1e_holdout_results.csv`
+- `data/reports/phase1e_excluded_decision_audit.csv`
+- `data/reports/phase1e_filter_summary.md`
 - `REPORT_TO_GPT.md`
 
-Keep Phase 1A, 1B, and 1C reports intact unless regeneration is required.
+Keep earlier Phase 1 reports intact unless regeneration is required.
 
-## Part 1: Reconstruct Pre-Entry Feature Snapshots
+## Part 1: Deterministic Sample Split
 
-For every historical BUY decision in each deterministic sample, reconstruct only information available on or before the replay date / entry date.
+Generate 20 deterministic samples if possible.
 
-`phase1d_entry_rule_diagnostics.csv` must include:
+Each sample has 100 replay rounds across 2024-01-01 through 2026-06-30.
 
-- sample_id
-- replay_date
-- ticker
-- entry_date
-- reference_price
-- entry_price
-- entry_gap_pct
-- shares_with_100
-- estimated_total_cost
-- estimated_cash_remaining
-- stop_loss
-- target_1
-- target_2
-- stop_distance_pct
-- target_1_distance_pct
-- target_2_distance_pct
-- max_dollar_risk
-- decision_strength
-- smoke_score
-- failed_checks_at_selection if available
-- sector_or_theme using the deterministic local mapping from Phase 1C when available
-- latest_volume
-- dollar_volume if available
-- relative_volume_prev20 if available
-- atr_14 if available
-- atr_pct if available
-- close_vs_sma20_pct if available
-- close_vs_sma50_pct if available
-- distance_from_20d_high_pct if available
-- distance_from_52w_high_pct if available
-- return_1d_prior if available
-- return_5d_prior if available
-- return_10d_prior if available
-- return_20d_prior if available
-- volatility_20d if available
-- max_single_day_loss_20d if available
-- forward_return_1d
-- forward_return_3d
-- forward_return_5d
-- forward_return_10d
-- forward_return_20d
-- baseline_exit_reason
-- baseline_pnl_dollars
-- baseline_trade_return_pct
-- baseline_account_return_pct
-- stopped_out_then_20d_positive
-- intraday_stop_breached
-- winner_20d flag
-- winner_baseline_simulation flag
+Use only data available on or before each replay date for selection and filtering.
 
-If a feature is unavailable, leave it blank and explain why in the markdown summary.
+Split:
 
-## Part 2: Winner vs Loser Attribution
+- calibration: sample IDs 0-9
+- holdout: sample IDs 10-19
 
-Create `phase1d_loser_feature_attribution.csv`.
+Fallback split for 10 samples:
 
-Compare historical losing BUY decisions versus winning BUY decisions using only pre-entry features.
+- calibration: sample IDs 0-4
+- holdout: sample IDs 5-9
 
-For each feature, compute all-sample and per-sample rows:
+Holdout data must never influence threshold selection.
 
-- feature_name
-- sample_id or `ALL`
-- winner_count
-- loser_count
-- winner_mean
-- loser_mean
-- winner_median
-- loser_median
-- loser_minus_winner_mean
-- loser_minus_winner_median
-- simple_separation_score
-- missing_rate
-- notes
+## Part 2: Filter Family
 
-Focus on:
+Test these filters only.
 
-- `atr_pct`
-- `volatility_20d`
-- `entry_gap_pct`
-- `decision_strength`
-- `smoke_score`
-- `relative_volume_prev20`
-- distance from 20d / 52w high
-- short-term run-up before entry
-- price near the max-entry limit
-- repeated high-volatility themes
-- repeated losing tickers
+### Baseline
 
-The summary must identify the top 5 suspicious pre-entry loser signals.
+`no_filter_baseline_current`
 
-## Part 3: Candidate Filter Hypotheses
+Candidate 34 unchanged, baseline current exit policy.
 
-Create `phase1d_candidate_filter_summary.md`.
+### Phase 1D fixed candidate
 
-List conservative filters as offline diagnostics only. Include at least:
+`phase1d_volatility_plus_smoke_score`
 
-1. High `atr_pct` filter.
-2. High `volatility_20d` filter.
-3. Extreme `entry_gap_pct` filter.
-4. Minimum `decision_strength` filter.
-5. Minimum `smoke_score` filter.
-6. Low `relative_volume_prev20` filter if the feature exists.
-7. Weak distance-from-high filter if weakness predicts losers.
-8. Extreme short-term run-up filter if chasing predicts losers.
-9. Theme concentration cap.
-10. Repeated-loser ticker cooldown inside a replay sample.
+- Require `volatility_20d <= 0.0697`
+- Require `smoke_score >= 0.8839`
 
-Every filter must be based only on information available at the replay date / entry date.
+### Small threshold grid
 
-## Part 4: Simulated Filter Backtest Matrix
+Test all combinations:
 
-Create `phase1d_filter_backtest_matrix.csv`.
+- `volatility_20d_max`: 0.055, 0.060, 0.065, 0.070, 0.075
+- `smoke_score_min`: 0.880, 0.900, 0.920, 0.940
 
-For each deterministic sample and each candidate filter, re-run the simulated account replay with `baseline_current` exits while skipping historical BUY decisions that the filter would have excluded using only pre-entry information.
+Filter passes only when both conditions pass.
 
-Also test combinations of the best 2-3 simple filters when they are not redundant.
+### Limited overlays
 
-Required columns:
+For only the top 3 calibration filters, test:
 
-- sample_id
-- filter_name
-- filter_description
-- replay_rounds
-- original_buy_count
-- filtered_buy_count
-- excluded_decision_count
-- excluded_loser_count
-- excluded_winner_count
-- excluded_stopped_out_then_20d_positive_count
-- no_trade_count_after_filter
-- trade_simulation_accuracy
-- accuracy_1d
-- accuracy_3d
-- accuracy_5d
-- accuracy_10d
-- accuracy_20d
-- average_return_20d
-- median_return_20d
-- average_win
-- average_loss
-- profit_factor
-- ending_account_value
-- max_drawdown
-- worst_trade_account_loss
-- ending_value_excluding_best_decision
-- top_ticker_profit_share
-- top_ticker_loss_share
-- passes_phase1d_diagnostic_gate
+1. `theme_cap_3_overlay`: at most 3 accepted BUY decisions per deterministic theme per sample.
+2. `repeated_loser_ticker_cooldown_overlay`: after a ticker has a prior accepted losing simulated result inside a sample, skip that ticker for 60 calendar days.
 
-Replay must remain chronological and must respect one open simulated position at a time.
+The cooldown must use only prior simulated outcomes within chronological replay order. If that cannot be implemented without lookahead, skip it and explain why.
 
-## Part 5: Excluded Decision Audit
+## Part 3: Calibration Rules
 
-Create `phase1d_filter_excluded_decisions.csv`.
+For each filter on calibration samples, compute:
 
-For every skipped historical BUY decision, record:
+- median ending account value
+- worst-sample ending account value
+- median max drawdown
+- worst-sample max drawdown
+- median simulated win rate
+- worst-sample simulated win rate
+- median BUY count
+- minimum BUY count
+- median 20d average return
+- median profit factor
+- excluded loser count
+- excluded winner count
 
-- sample_id
-- filter_name
-- replay_date
-- ticker
-- entry_date
-- entry_price
-- reference_price
-- sector_or_theme
-- reason_excluded
-- decision_strength
-- smoke_score
-- atr_pct
-- volatility_20d
-- entry_gap_pct
-- relative_volume_prev20
-- baseline_exit_reason
-- baseline_pnl_dollars
-- forward_return_20d
-- stopped_out_then_20d_positive
-- would_have_been_winner_baseline_simulation
-- would_have_been_winner_20d
+A filter is eligible for holdout only if calibration meets:
 
-The summary must call out filters that exclude too many winners.
+1. median ending account value > 120
+2. worst-sample ending account value > 100
+3. median max drawdown better than -35%
+4. worst-sample max drawdown better than -45%
+5. median simulated win rate >= 50%
+6. minimum BUY count >= 15
+7. excluded loser count > excluded winner count
+8. median 20d average return > 0
+9. median profit factor > 1.2
 
-## Part 6: Phase 1D Diagnostic Status
+If no filter passes, still send the top 3 diagnostic filters to holdout, but mark them as `CALIBRATION_NOT_PASSED_DIAGNOSTIC_ONLY`.
 
-Mark Phase 1D status as one of:
+Rank top 3 by:
 
-- `PHASE_1D_FAILED`
-- `PHASE_1D_ENTRY_FILTER_NEEDS_MORE_WORK`
-- `PHASE_1D_FILTER_HYPOTHESIS_PROMISING_NOT_APPROVED`
-- `PHASE_1D_ROBUSTNESS_IMPROVED_BUT_REQUIRES_GPT_REVIEW`
+1. best worst-sample ending account value
+2. best worst-sample max drawdown
+3. best median simulated win rate
+4. best median ending account value
+5. fewer excluded winners
 
-Do not mark Phase 2 ready from this task.
+## Part 4: Holdout Rules
 
-Suggested promising-filter diagnostic gate:
+Run selected filters on holdout samples with frozen thresholds.
 
-- median ending account value > $120 across samples
-- worst-sample ending account value > $100
-- median max drawdown better than -35%
-- worst-sample max drawdown better than -45%
-- median simulation accuracy >= 50%
-- at least 15 BUY decisions in every sample after filtering
-- ending value excluding best decision > $105 in the median sample
-- no single ticker contributes more than 50% of total profit in any passing sample
-- excluded loser count > excluded winner count
-- median 20d average return remains above zero
+A filter may be marked `PHASE_1E_FILTER_ROBUSTNESS_IMPROVED_REQUIRES_GPT_REVIEW` only if holdout meets:
 
-If no filter passes, state exactly which gates failed.
+1. median ending account value > 120
+2. worst-sample ending account value > 100
+3. median max drawdown better than -35%
+4. worst-sample max drawdown better than -45%
+5. median simulated win rate >= 50%
+6. every holdout sample has at least 15 accepted BUY decisions
+7. median 20d average return > 0
+8. median profit factor > 1.2
+9. no single ticker contributes more than 50% of total profit in any passing holdout sample
+10. no single ticker contributes more than 50% of total loss in any passing holdout sample
+11. excluded loser count > excluded winner count
 
-## Part 7: Markdown Summary Requirements
+Even if this passes, do not activate the filter. GPT review is required.
 
-`phase1d_entry_rule_summary.md` must start with:
+## Part 5: Report Requirements
+
+`phase1e_filter_summary.md` must start with:
 
 ```text
-PHOENIX NANO PHASE 1D — ENTRY-RULE FAILURE DIAGNOSTICS
+PHOENIX NANO PHASE 1E — CROSS-VALIDATED CONSERVATIVE FILTER VALIDATION
 ```
 
 It must include:
 
-- research/manual-review only statement
-- Phase 1C recap
-- total samples and BUY decisions analyzed
-- winner vs loser feature findings
-- top 5 suspicious loser signals
+- research-only statement
+- Phase 1D recap
+- sample split used
 - filters tested
-- best filter by median ending account value
-- best filter by worst-sample ending account value
-- best filter by drawdown reduction
-- filters that excluded too many winners
-- whether high-volatility themes/tickers explain the failures
-- whether failures look fixable by conservative entry filters
-- Phase 1D status
-- explicit statement: `Do not start paper trading or live trading.`
+- calibration results
+- selected holdout filters
+- holdout results
+- whether `volatility_plus_smoke_score` survived holdout
+- whether overlays helped or overfit
+- excluded winner vs loser summary
+- top remaining failure samples
+- top remaining failure tickers/themes
+- final Phase 1E status
+- explicit statement: `Do not start paper execution or real-money execution.`
 - concrete recommendation for the next research task
 
-## Part 8: Tests
+CSV files must contain enough columns to audit every threshold, sample, selected holdout filter, excluded decision, and gate failure.
+
+## Part 6: Phase 1E Status
+
+Mark one of:
+
+- `PHASE_1E_FAILED`
+- `PHASE_1E_FILTER_OVERFIT_NOT_APPROVED`
+- `PHASE_1E_FILTER_NEEDS_MORE_WORK`
+- `PHASE_1E_FILTER_ROBUSTNESS_IMPROVED_REQUIRES_GPT_REVIEW`
+
+Never mark Phase 2 ready from this task.
+
+## Part 7: Tests
 
 Add or update tests for:
 
-1. Phase 1D feature snapshots do not use future data.
-2. Winner/loser attribution computes expected separation metrics.
-3. Candidate filters use only pre-entry features.
-4. Filtered replay is chronological and respects one open simulated position at a time.
-5. Filter backtest matrix contains every sample-filter combination.
-6. Excluded decision audit records excluded winners and losers.
-7. Phase 1D status logic never approves Phase 2.
-8. Reports are written.
-9. Full pytest suite passes.
+1. deterministic sample split
+2. holdout samples are not used for threshold selection
+3. filters use only pre-entry features
+4. holdout filters use frozen thresholds
+5. filtered replay is chronological and one-position-at-a-time
+6. calibration and holdout gates
+7. excluded decision audit records excluded winners and losers
+8. Phase 1E status never approves Phase 2 or execution
+9. reports are written
+10. full pytest suite passes
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1d-entry-rule-analysis --replay-rounds 100 --replay-sample-count 10
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1e-filter-validation --replay-rounds 100 --replay-sample-count 20
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -337,21 +258,22 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1D Entry-Rule Summary
-- Samples analyzed
-- BUY decisions analyzed
-- Winner vs loser feature findings
-- Top suspicious loser signals
+- Phase 1E Filter Validation Summary
+- Sample split used
 - Filters tested
-- Best filter by median ending value
-- Best filter by worst-sample ending value
-- Best filter by drawdown reduction
-- Filter excluded decision audit summary
-- Phase 1D status
+- Calibration results
+- Holdout results
+- Best calibration filter
+- Best holdout filter
+- Whether `volatility_plus_smoke_score` survived holdout
+- Excluded winner vs loser summary
+- Top remaining failure samples
+- Top remaining failure tickers/themes
+- Phase 1E status
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
 
 ## Stop Condition
 
-Commit, push, and stop. Do not start Phase 2, Phase 3, paper trading, or live trading.
+Commit, push, and stop. Do not start Phase 2, Phase 3, paper execution, or real-money execution.
