@@ -2,297 +2,367 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1F — Failure Attribution, Taxonomy, and Data Quality Audit
+## Current Task: Phoenix Nano Phase 1G — Candidate 35 Redesign Sandbox
 
 This task is historical research only.
 
 Do not start Phase 2.
 Do not start Phase 3.
+Do not enable paper execution.
+Do not enable real-money execution.
 Do not change daily scan production behavior.
 Do not loosen Candidate 34 thresholds.
-Do not adopt any new filter as active policy.
+Do not adopt any new filter or redesigned rule as active policy.
 Do not produce financial advice or an operational recommendation.
 
 ## Why This Task
 
-Phase 1E completed cross-validated conservative filter validation. The result was not strong enough for advancement:
+Phase 1F completed the failure attribution, taxonomy, and data quality audit.
 
-- 20 deterministic samples were run.
-- 100 replay rounds per sample were used.
-- Samples 0-9 were used for calibration.
-- Samples 10-19 were used for holdout.
-- No calibration filter passed all gates.
-- No holdout filter passed all gates.
-- The best holdout reference improved drawdown but failed minimum sample activity, simulated win-rate, and concentration checks.
-- The Phase 1D fixed volatility/smoke filter did not survive holdout.
-- Remaining losses were concentrated around repeated failure samples and themes, but the largest losing theme bucket was still `UNMAPPED`.
+The result was:
 
-Highest-priority question:
+- `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN`
+- data quality blockers: 0
+- data quality warnings remain, but they did not invalidate the Phase 1E/1F conclusion
+- failures were broad across themes, tickers, and regimes
+- top theme loss share was only about 27.10%
+- top ticker loss share was only about 10.49%
+- prior `UNMAPPED` loss contribution was eliminated for accepted candidate losses
+- Candidate 34 did not survive cross-validated conservative filtering
 
-Are the remaining failures caused by identifiable historical regimes, themes, tickers, or data-quality problems, or is the current Candidate 34 family too unstable to continue without redesign?
+Therefore the highest-priority improvement is **not another threshold sweep** on Candidate 34.
 
-This task must answer that question before any additional tuning.
+The next research step is to build a **Candidate 35 redesign sandbox**: a small set of simple, auditable, interpretable entry-rule families, tested against Candidate 34 with strict calibration / validation / holdout separation.
+
+This task must remain research-only even if a redesigned candidate family looks promising.
 
 ## Goal
 
-Create a Phase 1F audit layer that explains the Phase 1E failures without changing the trading logic.
+Create Phase 1G research code that:
 
-The task must:
-
-1. Build a complete historical failure ledger for all accepted historical candidates across the 20 deterministic samples.
-2. Clean up ticker/theme taxonomy so `UNMAPPED` losses are explainable.
-3. Attribute losses and drawdowns by ticker, theme, time period, market regime, and pre-entry features.
-4. Identify data-quality issues that may distort the replay results.
-5. Decide whether the next research step should be redesign, pause, or one narrow hypothesis test.
-
-This task is diagnostic only. It must not activate any policy in daily scan.
+1. Keeps Candidate 34 as a frozen baseline.
+2. Performs a small data/regime preflight cleanup before redesign testing.
+3. Builds several simple Candidate 35 entry-rule families from first principles.
+4. Uses only pre-entry data for all decision-side features.
+5. Tests the redesigns across deterministic historical replay samples.
+6. Uses calibration / validation / holdout separation to reduce overfitting.
+7. Reports whether any redesign is promising enough for GPT review.
+8. Does **not** activate any redesigned rule in daily scan.
 
 ## CLI
 
 Add or update:
 
 ```bash
---phase1f-failure-audit
+--phase1g-redesign-sandbox
 --replay-rounds 100
---replay-sample-count 20
+--replay-sample-count 30
 ```
 
 Preferred command:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1f-failure-audit --replay-rounds 100 --replay-sample-count 20
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1g-redesign-sandbox --replay-rounds 100 --replay-sample-count 30
 ```
 
-If runtime is too high, support 10 samples as a fallback and clearly mark it as insufficient for approval.
+If runtime is too high, support a clearly marked fallback:
+
+```bash
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1g-redesign-sandbox --replay-rounds 100 --replay-sample-count 20
+```
+
+A fallback run cannot approve anything beyond `PHASE_1G_INSUFFICIENT_SAMPLE_WARNING` or `PHASE_1G_REDESIGN_PROMISING_REQUIRES_FULL_SAMPLE`.
 
 ## Required Outputs
 
 Create or update:
 
-- `data/reports/phase1f_failure_trade_ledger.csv`
-- `data/reports/phase1f_theme_taxonomy.csv`
-- `data/reports/phase1f_drawdown_attribution.csv`
-- `data/reports/phase1f_regime_attribution.csv`
-- `data/reports/phase1f_data_quality_audit.csv`
-- `data/reports/phase1f_viability_summary.md`
+- `data/reports/phase1g_data_regime_preflight.csv`
+- `data/reports/phase1g_candidate_family_definitions.md`
+- `data/reports/phase1g_redesign_calibration_matrix.csv`
+- `data/reports/phase1g_redesign_validation_matrix.csv`
+- `data/reports/phase1g_redesign_holdout_results.csv`
+- `data/reports/phase1g_candidate34_vs_35_comparison.csv`
+- `data/reports/phase1g_rejected_decision_audit.csv`
+- `data/reports/phase1g_redesign_summary.md`
 - `REPORT_TO_GPT.md`
 
 Keep earlier Phase 1 reports intact unless regeneration is required.
 
 ## Inputs
 
-Reuse existing Phase 1 research code and outputs where possible:
+Reuse existing Phase 1 research code and outputs where useful:
 
 - Phase 1A historical replay mechanics
 - Phase 1B execution diagnostics
-- Phase 1C robustness samples
+- Phase 1C robustness sampling
 - Phase 1D pre-entry feature snapshots
-- Phase 1E calibration/holdout reports
+- Phase 1E calibration/holdout structure
+- Phase 1F taxonomy, failure attribution, and data-quality audit
 
-Do not use future data for decision-side diagnostics.
+Do not use future data for candidate selection, feature generation, regime labels, or ranking.
+Future data may be used only after a decision is recorded, for verification.
 
-## Part 1: Historical Failure Trade Ledger
+## Part 1: Data and Regime Preflight Cleanup
 
-Build a ledger of all accepted historical candidates across the 20 deterministic Phase 1E-style samples.
-
-Required columns:
-
-- `sample_id`
-- `replay_date`
-- `ticker`
-- `theme`
-- `subtheme`
-- `reference_price`
-- `entry_price`
-- `entry_gap_pct`
-- `shares_with_100`
-- `estimated_total_cost`
-- `decision_strength`
-- `smoke_score`
-- `volatility_20d`
-- `atr_pct`
-- `distance_from_52w_high`
-- `relative_volume_prev20`
-- `pre_entry_return_5d`
-- `pre_entry_return_10d`
-- `market_regime_label`
-- `spy_trend_label`
-- `qqq_trend_label`
-- `market_volatility_label`
-- `simulated_exit_reason`
-- `simulated_pnl_dollars`
-- `simulated_return_pct`
-- `forward_return_20d`
-- `stopped_out_but_20d_positive`
-- `running_equity_before_trade`
-- `running_equity_after_trade`
-- `drawdown_after_trade`
-- `drawdown_contribution_dollars`
-- `is_worst_drawdown_trade_for_sample`
-
-Focus especially on failure samples:
-
-- sample 3
-- sample 4
-- sample 10
-- sample 16
-
-But still generate the ledger for every sample.
-
-## Part 2: Theme Taxonomy Cleanup
-
-Create `phase1f_theme_taxonomy.csv`.
+Before redesign testing, improve the auditability of the replay environment.
 
 Requirements:
 
-1. Build a deterministic mapping for every ticker that appears in Phase 1E accepted historical candidates or excluded audit rows.
-2. Include:
-   - `ticker`
-   - `company_name_if_available`
-   - `theme`
-   - `subtheme`
-   - `mapping_source`
-   - `mapping_confidence`
-   - `notes`
-3. Use available project metadata, watchlist names, existing code mappings, or conservative static mappings.
-4. If a ticker cannot be confidently mapped, label it `UNMAPPED_LOW_CONFIDENCE` and explain why.
-5. Report how much loss contribution remains unmapped after cleanup.
+1. Include SPY and QQQ market data in the Phase 1G data download / replay context, even if they are not tradable candidates.
+2. Use actual available trading sessions from the downloaded market index data, or a market-calendar-aware mechanism, instead of naive business-day gap counting where possible.
+3. Keep yfinance as the current retail research data source, but label it explicitly as non-institutional.
+4. Create `phase1g_data_regime_preflight.csv` with:
+   - `symbol`
+   - `role` (`candidate`, `market_regime_index`, or `benchmark`)
+   - `first_data_date`
+   - `last_data_date`
+   - `bar_count`
+   - `missing_session_count`
+   - `zero_volume_count`
+   - `abnormal_volume_count`
+   - `split_or_adjustment_anomaly_count`
+   - `metadata_status`
+   - `warnings`
+5. If SPY or QQQ is unavailable, mark regime-based families as unavailable and report the blocker. Do not silently run them with `UNKNOWN_QQQ_DATA`.
+6. If candidate OHLCV data has material blockers, mark the run as data-preflight blocked rather than claiming a redesign result.
 
-## Part 3: Drawdown Attribution
+This preflight is for research quality only. Do not change production daily scan behavior.
 
-Create `phase1f_drawdown_attribution.csv`.
+## Part 2: Candidate 35 Family Definitions
 
-Group historical losses and drawdown contribution by:
+Create `phase1g_candidate_family_definitions.md`.
+
+Define a small number of simple, auditable candidate families. Do not create dozens of variants.
+
+Required baseline:
+
+- `candidate34_frozen_baseline`
+
+Required redesigned families:
+
+1. `candidate35_trend_quality`
+   - prioritizes stable uptrend quality
+   - requires price above simple moving average trend checks when available
+   - avoids entries too far below prior highs
+   - avoids extreme volatility tails
+
+2. `candidate35_pullback_continuation`
+   - looks for a controlled pullback inside a broader uptrend
+   - avoids very sharp 5d/10d pre-entry spikes
+   - requires volatility and ATR to remain within conservative ranges
+
+3. `candidate35_breakout_confirmation`
+   - looks for breakout / momentum confirmation
+   - requires relative volume or recent strength confirmation
+   - blocks extremely extended names after a large short-term run
+
+4. `candidate35_regime_gated_momentum`
+   - uses SPY and QQQ regime labels available on or before replay_date
+   - becomes more selective in mixed or risk-off regimes
+   - may output more `HISTORICAL_NO_TRADE` decisions when regime is weak
+
+5. `candidate35_low_volatility_compounder`
+   - favors lower-volatility names that still pass growth/momentum-style checks
+   - intentionally trades less if the watchlist is dominated by speculative high-beta names
+
+For every family, document:
+
+- intent
+- required pre-entry features
+- exact rule conditions
+- ranking formula
+- NO_TRADE behavior
+- why it is different from Candidate 34
+- expected failure mode
+
+All ranking formulas must be deterministic and interpretable.
+No black-box ML model.
+No future data leakage.
+
+## Part 3: Calibration / Validation / Holdout Design
+
+Use deterministic replay samples.
+
+Preferred 30-sample split:
+
+- calibration: samples 0-9
+- validation: samples 10-19
+- holdout: samples 20-29
+
+Fallback 20-sample split:
+
+- calibration: samples 0-6
+- validation: samples 7-13
+- holdout: samples 14-19
+
+Rules:
+
+1. Candidate families may be adjusted only using calibration results.
+2. At most 2 redesigned families may be promoted from calibration to validation.
+3. At most 1 redesigned family may be promoted from validation to holdout.
+4. Once a family reaches holdout, do not adjust thresholds, ranking formula, stop/target rules, or theme/ticker exclusions.
+5. Compare all promoted families against the frozen Candidate 34 baseline.
+6. Do not allow a family to pass by trading too rarely. Each evaluated sample must include enough BUY decisions to be meaningful.
+
+## Part 4: Evaluation Metrics
+
+For each family and sample, report:
+
+- replay sample id
+- replay rounds
+- BUY count
+- NO_TRADE count
+- BUY rate
+- simulated win rate
+- 1d / 3d / 5d / 10d / 20d direction accuracy
+- average and median forward returns by window
+- average win dollars
+- average loss dollars
+- profit factor
+- ending account value from $100
+- max drawdown
+- worst trade loss percent
+- stopped-out-but-20d-positive rate
+- best trade
+- worst trade
+- top profit ticker contribution share
+- top loss ticker contribution share
+- top profit theme contribution share
+- top loss theme contribution share
+- number of rejected decisions
+- primary reject reasons
+
+## Part 5: Rejected Decision Audit
+
+Create `phase1g_rejected_decision_audit.csv`.
+
+For each redesigned family, record at least the top rejected near-misses per replay date where useful.
+
+Columns should include:
 
 - sample_id
+- replay_date
+- family_name
 - ticker
-- theme
-- subtheme
-- calendar month / quarter
-- entry_gap_pct bucket
-- volatility_20d bucket
-- atr_pct bucket
-- smoke_score bucket
-- decision_strength bucket
-- exit reason
+- reference_price
+- action_if_candidate34
+- action_if_candidate35
+- reject_reason
+- pre_entry_features used by the rule
+- forward_return_20d
+- simulated_pnl_if_taken_with_baseline_exit
+- whether rejection avoided a loss
+- whether rejection missed a win
 
-Metrics required:
+The summary must explicitly discuss whether the redesigned family improves by avoiding losers or by accidentally removing too many trades.
 
-- candidate count
-- win count
-- loss count
-- simulated win rate
-- total pnl dollars
-- average pnl dollars
-- median pnl dollars
-- average 20d forward return
-- median 20d forward return
-- max single-candidate loss dollars
-- max drawdown contribution dollars
+## Part 6: Candidate 34 vs Candidate 35 Comparison
 
-The report must say whether failures are concentrated or broad.
+Create `phase1g_candidate34_vs_35_comparison.csv`.
 
-## Part 4: Market Regime Attribution
+Compare Candidate 34 baseline against each redesigned family on the same sample split.
 
-Create `phase1f_regime_attribution.csv`.
+Must include:
 
-Use only market data available on or before each replay date.
+- family_name
+- split_name (`calibration`, `validation`, `holdout`)
+- sample_count
+- total_buy_count
+- median_buy_count_per_sample
+- worst_sample_ending_value
+- median_ending_value
+- best_sample_ending_value
+- worst_max_drawdown
+- median_max_drawdown
+- median_simulated_win_rate
+- median_20d_accuracy
+- median_profit_factor
+- worst_top_ticker_loss_share
+- worst_top_theme_loss_share
+- pass_fail_status
+- failed_gates
 
-Compute simple, auditable labels:
+## Part 7: Research Gates
 
-- SPY above/below 20-day moving average
-- SPY above/below 50-day moving average
-- QQQ above/below 20-day moving average
-- QQQ above/below 50-day moving average
-- SPY 20-day realized volatility bucket
-- SPY drawdown-from-50-day-high bucket
-- broad risk-on / risk-off / mixed label derived only from the above
+Do not advance to Phase 2, paper execution, or live execution from this task.
 
-Do not introduce complex black-box regime models.
+A redesigned family may only be marked `PHASE_1G_REDESIGN_PROMISING_FOR_GPT_REVIEW` if all holdout gates pass:
 
-## Part 5: Data Quality Audit
+1. Full preferred 30-sample run completed.
+2. Every holdout sample has at least 15 BUY decisions per 100 replay rounds.
+3. Worst holdout sample ending account value > $105.
+4. Median holdout ending account value > $120.
+5. Worst holdout max drawdown better than -35%.
+6. Median holdout simulated win rate >= 52%.
+7. Median holdout 20d direction accuracy >= 55%.
+8. Median holdout profit factor >= 1.25.
+9. Worst trade loss better than -15%.
+10. No single ticker contributes more than 40% of holdout total losses.
+11. No single theme contributes more than 50% of holdout total losses.
+12. Removing the single best holdout trade still leaves median holdout ending account value > $110.
+13. Data/regime preflight has no material blocker.
 
-Create `phase1f_data_quality_audit.csv`.
+If any gate fails, mark the result as research-only and not approved.
 
-Audit for:
+Final status must be exactly one of:
 
-- missing OHLCV bars
-- stale symbol metadata
-- delisted or renamed symbols
-- split or adjustment anomalies
-- zero-volume or abnormal-volume days
-- incomplete 20-trading-day forward windows
-- symbols rejected by metadata lookup
-- repeated yfinance warnings or 404s
+- `PHASE_1G_DATA_PREFLIGHT_BLOCKED`
+- `PHASE_1G_NO_REDESIGN_SURVIVED_VALIDATION`
+- `PHASE_1G_HOLDOUT_FAILED`
+- `PHASE_1G_INSUFFICIENT_SAMPLE_WARNING`
+- `PHASE_1G_REDESIGN_PROMISING_REQUIRES_FULL_SAMPLE`
+- `PHASE_1G_REDESIGN_PROMISING_FOR_GPT_REVIEW`
 
-The summary must explain whether data issues materially affect Phase 1E conclusions.
+Even the strongest status does not approve paper/live trading. GPT review is required.
 
-## Part 6: Viability Decision
+## Part 8: Report Requirements
 
-Mark exactly one final Phase 1F status:
-
-- `PHASE_1F_DATA_QUALITY_BLOCKER`
-- `PHASE_1F_FAILURES_CONCENTRATED_RESEARCH_ONLY`
-- `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN`
-
-Use these rules:
-
-### Data Quality Blocker
-
-Use `PHASE_1F_DATA_QUALITY_BLOCKER` if replay conclusions are materially unreliable because of missing data, symbol issues, adjustment anomalies, or stale metadata.
-
-### Failures Concentrated Research Only
-
-Use `PHASE_1F_FAILURES_CONCENTRATED_RESEARCH_ONLY` if failures are clearly concentrated by explainable theme, ticker, or market regime, but no operational change is approved.
-
-### Failures Broad Recommend Redesign
-
-Use `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN` if failures are broad across themes, tickers, and regimes, or if the evidence suggests Candidate 34 entry logic needs redesign rather than more threshold filtering.
-
-## Part 7: Report Requirements
-
-`phase1f_viability_summary.md` must start with:
+`phase1g_redesign_summary.md` must start with:
 
 ```text
-PHOENIX NANO PHASE 1F — FAILURE ATTRIBUTION, TAXONOMY, AND DATA QUALITY AUDIT
+PHOENIX NANO PHASE 1G — CANDIDATE 35 REDESIGN SANDBOX
 ```
 
 It must include:
 
 - research-only statement
-- Phase 1E recap
-- failure sample summary
-- theme taxonomy cleanup results
-- remaining unmapped loss contribution
-- drawdown attribution summary
-- market regime attribution summary
-- data quality audit summary
-- whether failures are concentrated or broad
-- final Phase 1F status
+- Phase 1F recap
+- data/regime preflight summary
+- Candidate 35 family definitions summary
+- calibration results
+- validation results
+- holdout results
+- Candidate 34 vs Candidate 35 comparison
+- rejected decision audit summary
+- whether improvement came from better selection, fewer trades, or over-filtering
+- final Phase 1G status
 - explicit statement: `Do not start paper execution or real-money execution.`
 - concrete recommendation for the next research task
 
-CSV files must contain enough columns to audit every sample, historical candidate, attribution group, and data-quality issue.
-
-## Part 8: Tests
+## Part 9: Tests
 
 Add or update tests for:
 
-1. failure ledger contains all accepted historical candidates across requested samples
-2. failure ledger uses only pre-entry features for decision-side diagnostics
-3. theme taxonomy eliminates avoidable `UNMAPPED` values or explains low-confidence mappings
-4. market regime labels use only data available on or before replay_date
-5. data quality audit catches missing and abnormal data cases
-6. no active scan behavior is changed
-7. Phase 1F status never approves Phase 2 or deployment
-8. reports are written
-9. full pytest suite passes
+1. Phase 1G preflight includes SPY and QQQ as regime inputs.
+2. Candidate family definitions are written and include all required families.
+3. Candidate 34 baseline remains frozen and unchanged.
+4. Candidate 35 decision logic uses only pre-entry data.
+5. Calibration / validation / holdout split is deterministic and non-overlapping.
+6. Holdout evaluation does not mutate family thresholds or ranking formulas.
+7. Minimum BUY-count gate prevents a family from passing by over-filtering.
+8. Concentration gates are computed correctly.
+9. Best-trade removal gate is computed correctly.
+10. No active daily scan behavior is changed.
+11. Phase 1G status never approves Phase 2, paper execution, or live execution.
+12. Reports are written.
+13. Full pytest suite passes.
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1f-failure-audit --replay-rounds 100 --replay-sample-count 20
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1g-redesign-sandbox --replay-rounds 100 --replay-sample-count 30
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -303,13 +373,15 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1F Viability Summary
-- Failure sample summary
-- Theme taxonomy cleanup results
-- Drawdown attribution summary
-- Market regime attribution summary
-- Data quality audit summary
-- Phase 1F status
+- Phase 1G Redesign Summary
+- Data/regime preflight summary
+- Candidate family definitions
+- Calibration results
+- Validation results
+- Holdout results
+- Candidate 34 vs Candidate 35 comparison
+- Rejected decision audit summary
+- Phase 1G status
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
