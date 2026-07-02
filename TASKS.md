@@ -2,7 +2,7 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1M — Credentialed Independent Vendor Integration and Data Readiness Gate
+## Current Task: Phoenix Nano Phase 1N — Credential Activation, Adapter Verification, and Retest Authorization Gate
 
 This task is **historical research and data-readiness remediation only**.
 
@@ -17,100 +17,142 @@ Do not create Candidate 36 entry rules.
 Do not run a strategy threshold sweep.
 Do not run a Candidate 34 vs Candidate 35 retest in this task.
 Do not produce financial advice or an operational recommendation.
+Do not commit, print, cache, or expose any API secret, token, key, prefix, suffix, or length.
 
 ## Why This Task
 
-Phase 1L completed implementation but ended as:
+Phase 1M completed implementation but ended as:
 
-`PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
+`PHASE_1M_CREDENTIAL_MISSING`
 
-Latest Phase 1L evidence:
+Latest Phase 1M evidence:
 
-- tests passed: `182 passed, 1 warning`
-- Stooq raw diagnostics: `HTML_BLOCK`: 12, `PARSE_ERROR`: 0
-- Stooq smoke test v2: AAPL, MSFT, SPY, and QQQ all failed with `HTML_OR_BLOCKED`
-- secondary source capability matrix: `stooq_daily_csv` = `GLOBAL_UNAVAILABLE`; `yahoo_chart_api` = `TRANSPORT_FALLBACK_ONLY`
-- independent secondary OHLCV validation coverage: `0.0%`
-- Yahoo Chart transport fallback matched 23 sampled rows, but it is Yahoo-family and cannot count as independent validation
-- alias / clean watchlist v3 audit passed: 99 active trade candidates, 2 proxy symbols, 0 blank date-gate comments, 0 unresolved aliases, 0 unresolved low taxonomy rows
-- clean watchlist v3 is still research-only and not approved for daily scan, paper execution, or live execution
+- tests passed: `192 passed, 1 warning`
+- credential status: `MISSING`: 4, `PRESENT_REDACTED`: 0
+- missing credential env vars:
+  - `TIINGO_API_TOKEN`
+  - `POLYGON_API_KEY`
+  - `MASSIVE_API_KEY`
+  - `ALPHAVANTAGE_API_KEY`
+- authenticated vendor network calls were skipped because credentials were missing
+- vendor capability summary:
+  - `tiingo_eod`: `CREDENTIAL_MISSING`
+  - `polygon_aggs`: `CREDENTIAL_MISSING`
+  - `alpha_vantage_daily_adjusted`: `CREDENTIAL_MISSING`
+  - `stooq_daily_csv`: `GLOBAL_UNAVAILABLE`
+  - `yahoo_chart_api`: `TRANSPORT_FALLBACK_ONLY`
+- independent secondary validation coverage: `0.0%`
+- active trade candidate coverage: `0.0%`
+- proxy coverage: `0.0%`
+- research-only clean watchlist v4 candidate count: `0`
+- strategy research remains paused
 
-This means the next optimized step is **not strategy testing**. The highest-priority issue is to add a real independent secondary OHLCV vendor path that can work with credentials supplied through environment variables, while still completing cleanly when credentials are absent.
+This means the highest-priority issue is **not** strategy testing. The next bottleneck is operational data readiness: Phoenix needs a safe, reproducible way for a human operator to add exactly one independent vendor credential locally, verify adapter behavior, and rerun the vendor gate without leaking secrets or accidentally starting strategy research.
 
-The research system must answer:
+The next optimized task is to harden the credential activation path and adapter verification harness so that the project can move from `CREDENTIAL_MISSING` to either:
 
-1. Is at least one credentialed independent vendor configured and reachable?
-2. Does the configured vendor return adjusted daily OHLCV with enough overlap for the Phase 1 research window?
-3. Does the vendor validate yfinance primary data closely enough on price and volume?
-4. Does the vendor cover enough of the Phase 1L clean watchlist v3 to support a future frozen Candidate 34 vs Candidate 35 retest?
-5. If no credentials are present, can the repo clearly report `CREDENTIAL_MISSING` without failing tests or pretending validation passed?
+1. a clean, reproducible rerun of Phase 1M after a credential is supplied, or
+2. a precise vendor/adapter failure report if a supplied credential does not work.
 
 Do not use realized future returns, realized PnL, holdout performance, prior winning/losing status, or strategy outcomes to make vendor, alias, or watchlist inclusion decisions.
 
-## Goal
+## Vendor Preference Decision
 
-Build Phase 1M credentialed vendor integration scaffolding and a formal independent vendor readiness gate.
+Prefer adding **Tiingo first** if only one credential will be configured, because Phase 1M already selected it as the first-choice candidate and it exposes explicit adjusted OHLCV fields plus split/dividend-related fields.
 
-The goal is to produce one of these statuses:
+Keep Polygon/Massive as the second-choice path and Alpha Vantage as a backup path. Do not remove support for any of them.
 
-- `PHASE_1M_CREDENTIAL_MISSING`
-- `PHASE_1M_VENDOR_CONFIG_ERROR`
-- `PHASE_1M_VENDOR_REACHABLE_COVERAGE_INSUFFICIENT`
-- `PHASE_1M_VENDOR_REACHABLE_VALIDATION_FAILED`
-- `PHASE_1M_READY_FOR_FROZEN_RETEST_GPT_REVIEW`
-
-Even if Phase 1M passes, do **not** run the frozen Candidate 34 vs Candidate 35 retest in this task. Passing Phase 1M may only recommend that GPT review and separately authorize a frozen retest.
-
-## Candidate Vendors
-
-Implement a pluggable vendor layer. Do not hardcode credentials. Do not commit secrets. Redact secrets in logs and reports.
-
-At minimum support these providers as capability entries:
+Vendor preference order for this task:
 
 1. `tiingo_eod`
-   - independent of Yahoo/yfinance
-   - requires `TIINGO_API_TOKEN`
-   - supports daily EOD prices and adjusted fields
-   - preferred first credentialed vendor because it exposes explicit adjusted OHLCV fields and ticker metadata
 2. `polygon_aggs`
-   - independent of Yahoo/yfinance
-   - requires `POLYGON_API_KEY` or `MASSIVE_API_KEY`
-   - supports stock aggregate OHLCV bars with an adjusted parameter
-   - note that available history may depend on account plan
 3. `alpha_vantage_daily_adjusted`
-   - independent of Yahoo/yfinance
-   - requires `ALPHAVANTAGE_API_KEY`
-   - supports adjusted daily time series, but may be premium / rate limited
-   - use only if configured and reachable; never let rate limits masquerade as data failure
-4. `stooq_daily_csv`
-   - no secret, independent, but currently blocked in this environment
-   - carry forward Phase 1L status as `GLOBAL_UNAVAILABLE_PREVIOUSLY_CONFIRMED`
-5. `yahoo_chart_api`
-   - same vendor family as yfinance / Yahoo-derived primary data
-   - transport fallback only
-   - must **not** count as independent secondary vendor validation
 
-If additional vendors are added, they must be explicit in the capability matrix with `requires_secret`, `is_independent_of_primary_vendor`, licensing / rate-limit notes, and whether they are allowed for execution-grade validation.
+Important caveats:
+
+- The repo must support any configured independent vendor from the list above.
+- The repo must not assume the user has paid access.
+- If credentials are absent, the command must finish with an explicit waiting-for-credential status, not a crash.
+- If credentials are present but invalid, the command must finish with an explicit auth/config status, not a strategy failure.
+- Yahoo Chart remains same-vendor transport fallback only and must not count as independent validation.
+- Stooq remains globally unavailable unless real CSV rows are obtained in a later environment.
+
+## Goal
+
+Create a safe credential activation and adapter verification layer that answers:
+
+1. Which vendor credential should the operator add first?
+2. How exactly should the operator add it locally without committing secrets?
+3. Are the parser/normalizer contracts for Tiingo, Polygon/Massive, and Alpha Vantage testable without live credentials?
+4. If a live credential is present, does the selected vendor pass a minimal smoke test on AAPL, MSFT, SPY, QQQ, SQ, GEV, and RDDT?
+5. Is Phoenix ready to rerun Phase 1M, or still blocked waiting for credentials / auth / adapter fixes?
+
+Possible final statuses:
+
+- `PHASE_1N_WAITING_FOR_CREDENTIAL`
+- `PHASE_1N_SECRET_SAFETY_BLOCKER`
+- `PHASE_1N_ADAPTER_CONTRACT_FAILED`
+- `PHASE_1N_VENDOR_AUTH_FAILED`
+- `PHASE_1N_VENDOR_RATE_LIMITED`
+- `PHASE_1N_READY_TO_RERUN_PHASE_1M_WITH_CREDENTIAL`
+- `PHASE_1N_VENDOR_GATE_PASSED_NEEDS_GPT_REVIEW`
+
+Even if Phase 1N passes, do **not** run any strategy retest in this task. A passing Phase 1N may only recommend a Phase 1M rerun or GPT review.
 
 ## CLI
 
 Add or update:
 
 ```bash
---phase1m-credentialed-vendor-gate
+--phase1n-credential-activation-gate
 ```
 
 Preferred command:
 
 ```bash
-.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1m-credentialed-vendor-gate
+.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate
 ```
 
-The command must complete when credentials are missing. Missing credentials should produce explicit `CREDENTIAL_MISSING` rows and a non-ready final status, not a crash.
+The command must complete when credentials are missing. Missing credentials should produce explicit `PHASE_1N_WAITING_FOR_CREDENTIAL`, not a crash.
+
+If one or more credentials are present, the command may run live smoke tests for configured vendors, but must still avoid any strategy retest.
 
 ## Required Outputs
 
 Create or update:
+
+- `docs/VENDOR_CREDENTIAL_SETUP.md`
+- `.env.example`
+- `data/reports/phase1n_vendor_selection_decision.md`
+- `data/reports/phase1n_credentials_preflight.csv`
+- `data/reports/phase1n_adapter_contract_tests.csv`
+- `data/reports/phase1n_live_smoke_tests.csv`
+- `data/reports/phase1n_phase1m_rerun_readiness.csv`
+- `data/reports/phase1n_no_secret_audit.csv`
+- `data/reports/phase1n_data_readiness_summary.md`
+- `REPORT_TO_GPT.md`
+
+Optional but useful:
+
+- `scripts/check_vendor_credentials.py`
+- `scripts/run_phase1m_vendor_gate.sh`
+- `src/research/phase1n_credential_activation.py`
+- `tests/test_phase1n_credential_activation.py`
+- `tests/fixtures/vendor_payloads/tiingo_eod_aapl.json`
+- `tests/fixtures/vendor_payloads/polygon_aggs_aapl.json`
+- `tests/fixtures/vendor_payloads/alpha_vantage_daily_adjusted_ibm.json`
+
+Keep earlier Phase 1 reports intact unless regeneration is required.
+
+The summary must start with:
+
+```text
+PHOENIX NANO PHASE 1N — CREDENTIAL ACTIVATION, ADAPTER VERIFICATION, AND RETEST AUTHORIZATION GATE
+```
+
+## Inputs
+
+Reuse Phase 1M outputs:
 
 - `data/reports/phase1m_vendor_capability_matrix.csv`
 - `data/reports/phase1m_credentials_status.csv`
@@ -122,97 +164,167 @@ Create or update:
 - `data/reports/phase1m_clean_watchlist_v4_candidate.txt`
 - `data/reports/phase1m_data_readiness_scorecard.csv`
 - `data/reports/phase1m_data_readiness_summary.md`
-- `REPORT_TO_GPT.md`
 
-Optional but preferred if useful:
+Also reuse Phase 1L / 1K outputs where helpful:
 
-- `data/cache/secondary_ohlcv/tiingo_eod/raw/`
-- `data/cache/secondary_ohlcv/polygon_aggs/raw/`
-- `data/cache/secondary_ohlcv/alpha_vantage/raw/`
-- `data/cache/secondary_ohlcv/vendor_gate/`
-
-Keep earlier Phase 1 reports intact unless regeneration is required.
-
-The summary must start with:
-
-```text
-PHOENIX NANO PHASE 1M — CREDENTIALED INDEPENDENT VENDOR INTEGRATION AND DATA READINESS GATE
-```
-
-## Inputs
-
-Reuse Phase 1L outputs:
-
-- `data/reports/phase1l_secondary_source_capability_matrix.csv`
-- `data/reports/phase1l_raw_response_diagnostics.csv`
-- `data/reports/phase1l_secondary_vendor_smoke_test_v2.csv`
-- `data/reports/phase1l_secondary_ohlcv_validation_v3.csv`
-- `data/reports/phase1l_yahoo_chart_transport_fallback_audit.csv`
-- `data/reports/phase1l_alias_clean_watchlist_audit.csv`
 - `data/reports/phase1l_clean_watchlist_v3_candidate.txt`
-- `data/reports/phase1l_data_readiness_scorecard.csv`
-- `data/reports/phase1l_data_readiness_summary.md`
-
-Also reuse Phase 1J / Phase 1K outputs where helpful:
-
-- `data/reports/phase1j_symbol_master.csv`
-- `data/reports/phase1j_quarantine_list.csv`
+- `data/reports/phase1l_alias_clean_watchlist_audit.csv`
 - `data/reports/phase1k_symbol_lifecycle_alias_map.csv`
 - `data/reports/phase1k_taxonomy_resolution_v2.csv`
-- `data/reports/phase1k_quarantine_remediation_audit.csv`
 
-## Part 1: Vendor Capability Matrix
+## Part 1: Operator Credential Setup Guide
 
-Create `phase1m_vendor_capability_matrix.csv`.
+Create `docs/VENDOR_CREDENTIAL_SETUP.md`.
 
-For each candidate vendor/adapter, report:
+The guide must explain:
 
-- `source_name`
-- `source_family`
-- `adapter_name`
-- `requires_secret`
-- `required_env_vars`
-- `credential_present`
-- `is_independent_of_primary_vendor`
-- `allowed_for_execution_grade_secondary_validation`
-- `allowed_for_transport_fallback_only`
-- `supports_adjusted_ohlcv`
-- `supports_split_or_dividend_metadata`
-- `network_fetch_attempted`
-- `cache_supported`
-- `expected_format`
-- `known_limitations`
-- `capability_status`: `CREDENTIAL_MISSING`, `CANDIDATE`, `SMOKE_PASS`, `SMOKE_FAIL`, `GLOBAL_UNAVAILABLE`, `RATE_LIMITED`, `TRANSPORT_FALLBACK_ONLY`, `NOT_ALLOWED_REQUIRES_SECRET`, `CONFIG_ERROR`
-- `decision_reason`
+- Phoenix is blocked until at least one independent OHLCV vendor credential is supplied locally.
+- Preferred vendor order:
+  1. Tiingo via `TIINGO_API_TOKEN`
+  2. Polygon/Massive via `POLYGON_API_KEY` or `MASSIVE_API_KEY`
+  3. Alpha Vantage via `ALPHAVANTAGE_API_KEY`
+- Credentials must be provided through environment variables only.
+- Do not paste credentials into `TASKS.md`, `REPORT_TO_GPT.md`, code, reports, tests, markdown, or screenshots.
+- How to export a credential for the current terminal session.
+- How to store credentials locally in an untracked `.env` file if the repo supports it.
+- How to verify `.env` is ignored by git.
+- How to run the Phase 1N preflight command.
+- How to rerun Phase 1M only after Phase 1N says it is ready.
+- That passing vendor data readiness still does not authorize paper or live trading.
 
-Rules:
+Do not include any real credential value or fake value that resembles a real token. Use placeholders such as `<YOUR_TIINGO_API_TOKEN>`.
 
-- If credentials are missing, do not attempt authenticated network calls for that vendor.
-- If credentials are present, smoke-test the vendor.
-- Do not print or store the actual credential value.
-- Do not count Yahoo Chart as independent validation.
-- Keep Stooq as blocked unless the implementation explicitly rechecks it and obtains real CSV rows.
+## Part 2: Safe `.env.example` and Git Ignore Audit
 
-## Part 2: Credentials Status
+Create or update `.env.example` with placeholders only:
 
-Create `phase1m_credentials_status.csv`.
+```bash
+# Phoenix independent vendor credentials — placeholders only.
+# Copy this file to .env locally and fill exactly one credential first.
+TIINGO_API_TOKEN=<YOUR_TIINGO_API_TOKEN>
+POLYGON_API_KEY=<YOUR_POLYGON_API_KEY>
+MASSIVE_API_KEY=<YOUR_MASSIVE_API_KEY>
+ALPHAVANTAGE_API_KEY=<YOUR_ALPHAVANTAGE_API_KEY>
+```
 
-For each env var, report:
+Audit `.gitignore` and any project ignore rules.
+
+Ensure local secret files are ignored, including at minimum:
+
+- `.env`
+- `.env.*`
+- `*.env`
+- any local credential override file if added
+
+Do not ignore `.env.example`.
+
+Create `phase1n_no_secret_audit.csv` with at least:
+
+- `checked_path_or_pattern`
+- `check_type`: `gitignore`, `report_content`, `example_file`, `code_redaction`, `cache_path`
+- `status`: `PASS`, `WARN`, `FAIL`
+- `secret_exposure_detected`: True / False
+- `reason`
+
+The audit should scan generated reports and docs for obvious accidental credential exposure patterns. Do not print any suspected secret; only report redacted findings.
+
+## Part 3: Credential Preflight
+
+Create `phase1n_credentials_preflight.csv`.
+
+For each credential env var, report:
 
 - `env_var_name`
 - `vendor`
 - `present`: True / False
 - `value_redacted`: always True if present
-- `format_hint_status`: `PRESENT_REDACTED`, `MISSING`, `SUSPICIOUS_EMPTY`, `SUSPICIOUS_PLACEHOLDER`
-- `used_in_network_call`: True / False
+- `format_hint_status`: `MISSING`, `PRESENT_REDACTED`, `SUSPICIOUS_EMPTY`, `SUSPICIOUS_PLACEHOLDER`, `SUSPICIOUS_WHITESPACE`, `SUSPICIOUS_TOO_SHORT`, `UNKNOWN_FORMAT_PRESENT_REDACTED`
+- `selected_for_live_smoke`: True / False
+- `selection_reason`
 
-Do not store credential lengths if that might leak useful information. Do not store prefixes or suffixes.
+Credential selection rules:
 
-## Part 3: Vendor Smoke Tests
+- Prefer Tiingo if `TIINGO_API_TOKEN` is present and not suspicious.
+- Otherwise prefer Polygon/Massive if `POLYGON_API_KEY` or `MASSIVE_API_KEY` is present and not suspicious.
+- Otherwise prefer Alpha Vantage if `ALPHAVANTAGE_API_KEY` is present and not suspicious.
+- If multiple credentials are present, smoke-test all non-suspicious configured vendors, but clearly report which is preferred first.
+- Never print, hash, store, prefix, suffix, or length-report credential values.
 
-Create `phase1m_vendor_smoke_tests.csv`.
+## Part 4: Adapter Contract Tests Without Credentials
 
-Smoke-test these symbols for every configured independent vendor:
+Create `phase1n_adapter_contract_tests.csv`.
+
+Add fixture-based parser/normalizer tests that do not require network calls or credentials.
+
+At minimum, cover:
+
+### Tiingo EOD
+
+Expected normalized fields:
+
+- `date`
+- `open`
+- `high`
+- `low`
+- `close`
+- `volume`
+- `adj_open`
+- `adj_high`
+- `adj_low`
+- `adj_close`
+- `adj_volume`
+- `split_factor`
+- `div_cash`
+
+### Polygon/Massive Aggregates
+
+Expected normalized fields:
+
+- `date`
+- `open`
+- `high`
+- `low`
+- `close`
+- `volume`
+- `vwap` if available
+- `transaction_count` if available
+- `adjusted_response_flag`
+
+### Alpha Vantage Daily Adjusted
+
+Expected normalized fields:
+
+- `date`
+- `open`
+- `high`
+- `low`
+- `close`
+- `adjusted_close`
+- `volume`
+- `dividend_amount`
+- `split_coefficient`
+
+For each adapter, report:
+
+- `source_name`
+- `fixture_name`
+- `parse_status`: `PASS`, `WARN`, `FAIL`
+- `normalized_rows`
+- `required_fields_present`: True / False
+- `adjusted_fields_present`: True / False
+- `date_order_valid`: True / False
+- `positive_price_volume_check`: True / False
+- `reason`
+
+These tests must be deterministic and run without credentials.
+
+## Part 5: Live Smoke Tests When Credentials Are Present
+
+Create `phase1n_live_smoke_tests.csv`.
+
+If no non-suspicious credential is present, create rows with `CREDENTIAL_MISSING` and do not attempt network calls.
+
+If credentials are present, smoke-test these symbols for each configured independent vendor:
 
 - `AAPL`
 - `MSFT`
@@ -228,9 +340,7 @@ For each row, report:
 - `ticker`
 - `lookup_symbol`
 - `attempted_network_fetch`
-- `used_cache_fallback`
 - `http_status_if_available`
-- `response_bytes`
 - `parsed_rows`
 - `first_date`
 - `last_date`
@@ -240,210 +350,119 @@ For each row, report:
 - `has_adjusted_close`
 - `has_adjusted_ohlc`
 - `has_volume`
-- `smoke_status`: `PASS`, `CACHE_ONLY_PASS`, `CREDENTIAL_MISSING`, `NO_DATA_FOR_SYMBOL`, `RATE_LIMITED`, `AUTH_FAILED`, `PARSE_ERROR`, `HTML_OR_BLOCKED`, `FAIL`
-- `smoke_reason`
+- `smoke_status`: `PASS`, `CREDENTIAL_MISSING`, `SUSPICIOUS_CREDENTIAL_SKIPPED`, `AUTH_FAILED`, `RATE_LIMITED`, `NO_DATA_FOR_SYMBOL`, `PARSE_ERROR`, `FAIL`
+- `safe_to_retry_later`
+- `reason`
 
-Vendor-level smoke pass:
+Vendor-level live smoke pass:
 
-- `SMOKE_PASS` if at least 5 of 7 smoke tickers parse with positive rows and positive overlap, including at least AAPL, MSFT, SPY, and QQQ.
-- `RATE_LIMITED` if the vendor is reachable but rejects due to quota/rate constraints.
-- `AUTH_FAILED` if credentials are present but rejected.
-- `CREDENTIAL_MISSING` if no credential is present.
+- `PASS` only if at least 5 of 7 smoke tickers parse with positive rows and positive overlap, including AAPL, MSFT, SPY, and QQQ.
+- `RATE_LIMITED` if the vendor is reachable but quota prevents a meaningful smoke result.
+- `AUTH_FAILED` if the credential is present but rejected.
+- `CREDENTIAL_MISSING` if no non-suspicious credential is present.
 
-## Part 4: Full Secondary OHLCV Validation
+## Part 6: Phase 1M Rerun Readiness
 
-Create `phase1m_secondary_ohlcv_validation.csv`.
-
-Only run this for vendors whose smoke status is `SMOKE_PASS`.
-
-Validate all Phase 1L clean watchlist v3 active trade candidates plus SPY/QQQ proxies where the vendor has data.
-
-For each ticker/vendor, report:
-
-- `ticker`
-- `canonical_current_ticker`
-- `historical_ticker`
-- `is_proxy_only`
-- `primary_vendor`
-- `secondary_vendor`
-- `secondary_source_family`
-- `is_independent_secondary`
-- `lookup_symbol`
-- `primary_start_date`
-- `primary_end_date`
-- `secondary_start_date`
-- `secondary_end_date`
-- `overlap_trading_days`
-- `overlap_pct_of_required_window`
-- `close_price_median_abs_diff_pct`
-- `close_price_p95_abs_diff_pct`
-- `close_price_max_abs_diff_pct`
-- `volume_median_abs_diff_pct`
-- `volume_p95_abs_diff_pct`
-- `volume_max_abs_diff_pct`
-- `adjusted_close_available_primary`
-- `adjusted_close_available_secondary`
-- `adjusted_ohlc_available_secondary`
-- `adjusted_price_mismatch_flag`
-- `split_or_corporate_action_mismatch_flag`
-- `validation_status`: `MATCH`, `WARN`, `FAIL`, `NO_SECONDARY_DATA`, `RATE_LIMITED`, `AUTH_FAILED`, `CREDENTIAL_MISSING`, `NOT_RUN_SMOKE_FAILED`
-- `validation_reason`
-
-Validation thresholds:
-
-- `MATCH` if overlap is sufficient and adjusted close median absolute difference is <= 0.50% and p95 absolute difference is <= 2.00%, unless a split/corporate-action mismatch is detected.
-- `WARN` if median difference is <= 1.00% and p95 difference is <= 5.00%, or if volume differs materially but price validates.
-- `FAIL` if price differences exceed warning thresholds, overlap is too small, or corporate-action mismatch is suspected.
-
-Do not force exact volume matches across vendors; volume methodology may differ. Treat volume as diagnostic, not the primary pass/fail criterion.
-
-## Part 5: Coverage by Symbol
-
-Create `phase1m_coverage_by_symbol.csv`.
-
-For every Phase 1L clean watchlist v3 symbol and proxy, report:
-
-- `ticker`
-- `canonical_current_ticker`
-- `is_trade_candidate`
-- `is_proxy_only`
-- `covered_by_any_independent_vendor`
-- `best_independent_vendor`
-- `best_validation_status`
-- `has_required_window_coverage`
-- `coverage_start_date`
-- `coverage_end_date`
-- `coverage_reason`
-
-Generate `phase1m_clean_watchlist_v4_candidate.txt` only from symbols that are alias-safe and data-validated or explicitly data-warn but acceptable for future GPT review. This is still research-only and must not replace production watchlists.
-
-## Part 6: Adjustment Consistency Audit
-
-Create `phase1m_adjustment_consistency_audit.csv`.
-
-Focus on split / corporate-action prone tickers and recent IPO/spinoff/date-gated names:
-
-- `NVDA`
-- `AVGO`
-- `GEV`
-- `RDDT`
-- `SQ`
-- `XYZ` if the vendor requires current ticker alias testing
-- `CORZ`
-- `SMCI`
-- any ticker flagged by validation as adjustment mismatch
+Create `phase1n_phase1m_rerun_readiness.csv`.
 
 Report:
 
-- `ticker`
-- `event_or_reason_checked`
-- `primary_adjusted_close_behavior`
-- `secondary_adjusted_close_behavior`
-- `detected_mismatch`
-- `recommended_replay_handling`: `OK`, `DATE_GATE`, `EXCLUDE`, `MANUAL_REVIEW`
+- `preferred_vendor`
+- `credential_ready`: True / False
+- `adapter_contract_ready`: True / False
+- `live_smoke_ready`: True / False
+- `secret_safety_ready`: True / False
+- `phase1m_rerun_allowed`: True / False
+- `recommended_next_command`
 - `reason`
 
-## Part 7: Rate Limit and Error Audit
+Only set `phase1m_rerun_allowed=True` if:
 
-Create `phase1m_rate_limit_and_error_audit.csv`.
+- at least one independent credential is present and not suspicious;
+- adapter contract tests pass for that vendor;
+- live smoke passes for that vendor;
+- no secret safety failure is detected.
 
-For every failed or skipped vendor request, report:
+Recommended next command, if allowed:
 
-- `source_name`
-- `ticker`
-- `error_type`: `CREDENTIAL_MISSING`, `AUTH_FAILED`, `RATE_LIMITED`, `HTTP_ERROR`, `NETWORK_ERROR`, `PARSE_ERROR`, `NO_DATA`, `CACHE_ONLY`, `UNKNOWN`
-- `http_status_if_available`
-- `retry_after_if_available`
-- `safe_to_retry_later`
-- `counts_against_vendor_readiness`
-- `reason`
+```bash
+.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1m-credentialed-vendor-gate
+```
 
-## Part 8: Data Readiness Scorecard
+If Phase 1M rerun is not allowed, explain the most specific blocker.
 
-Create `phase1m_data_readiness_scorecard.csv` with at least:
+## Part 7: Vendor Selection Decision
 
-- `total_symbols`
-- `active_trade_candidate_count`
-- `proxy_count`
-- `configured_independent_vendor_count`
-- `credential_missing_vendor_count`
-- `auth_failed_vendor_count`
-- `smoke_pass_vendor_count`
-- `independent_secondary_match_count`
-- `independent_secondary_warn_count`
-- `independent_secondary_fail_count`
-- `independent_secondary_coverage_pct`
-- `active_trade_candidate_coverage_pct`
-- `proxy_coverage_pct`
-- `adjustment_mismatch_count`
-- `rate_limited_request_count`
-- `alias_audit_fail_count`
-- `blank_date_gate_comment_count`
-- `unresolved_alias_count`
-- `clean_watchlist_v4_candidate_count`
-- `data_readiness_status`
+Create `phase1n_vendor_selection_decision.md`.
 
-Readiness gates:
+Include:
 
-- At least one independent credentialed vendor must have `SMOKE_PASS`.
-- AAPL, MSFT, SPY, and QQQ must all pass smoke.
-- Independent secondary coverage must be >= 90% of active trade candidates.
-- SPY and QQQ proxy coverage must be 100%.
-- Independent secondary `FAIL` rows must be <= 5% of validated active trade candidates.
-- `adjustment_mismatch_count` must be 0 for symbols included in clean watchlist v4.
-- `alias_audit_fail_count` must be 0.
-- `blank_date_gate_comment_count` must be 0.
-- `unresolved_alias_count` must be 0.
-- Rate limiting must not prevent coverage scoring.
+- latest Phase 1M blocker summary;
+- why strategy research remains paused;
+- vendor preference order;
+- what local credential the operator should add first;
+- exact commands for the operator to run locally;
+- what status would allow the next GPT review;
+- explicit statement that no paper or live execution is authorized.
 
-If all gates pass, final status may be:
+## Part 8: Summary and REPORT_TO_GPT.md
 
-`PHASE_1M_READY_FOR_FROZEN_RETEST_GPT_REVIEW`
+Create `phase1n_data_readiness_summary.md`.
 
-Otherwise choose the most specific non-ready status.
+Include:
 
-## REPORT_TO_GPT.md Requirements
+- credential preflight summary;
+- adapter contract test summary;
+- live smoke summary;
+- no-secret audit summary;
+- Phase 1M rerun readiness summary;
+- final Phase 1N status;
+- whether strategy research remains paused;
+- exact next action for GPT / operator.
 
 Update `REPORT_TO_GPT.md` with:
 
-- files changed
-- commands run
-- test results
-- whether credentials were present, without exposing secrets
-- vendor capability summary
-- smoke-test summary
-- independent secondary coverage summary
-- adjustment consistency summary
-- clean watchlist v4 candidate count
-- final Phase 1M status
-- explicit statement that no Phase 2, paper execution, or live execution was started
-- clear recommendation for GPT:
-  - add credentials and rerun Phase 1M,
-  - fix vendor adapter bugs,
-  - or authorize a separate frozen Candidate 34 vs Candidate 35 retest only if gates pass
+- files changed;
+- commands run;
+- test results;
+- credential status without exposing secrets;
+- whether adapter contract tests passed;
+- whether live smoke ran or was skipped;
+- whether Phase 1M rerun is allowed;
+- final Phase 1N status;
+- explicit statement that no Phase 2, Phase 3, strategy retest, paper execution, or live execution was started;
+- clear recommendation:
+  - add a Tiingo credential and rerun Phase 1N, or
+  - if a credential is already present and Phase 1N passes, rerun Phase 1M, or
+  - if Phase 1M later passes data-readiness gates, return to GPT for a separate frozen Candidate 34 vs Candidate 35 retest decision.
 
 ## Acceptance Criteria
 
 - All tests pass.
-- The Phase 1M CLI completes with and without credentials.
-- Missing credentials are reported cleanly.
+- Phase 1N CLI completes with and without credentials.
+- Missing credentials are reported cleanly as `PHASE_1N_WAITING_FOR_CREDENTIAL`.
+- Suspicious placeholder credentials are detected and skipped.
 - No secrets are printed, cached, committed, or exposed in reports.
+- `.env.example` contains placeholders only.
+- `.env` and local secret files are ignored.
+- Fixture-based adapter contract tests pass without network access.
+- Live smoke tests run only when non-suspicious credentials are present.
 - Yahoo Chart remains transport fallback only.
 - Stooq remains blocked unless real CSV rows are obtained.
 - No strategy retest is run.
 - No production daily scan behavior changes are made.
 - No paper or live trading path is enabled.
-- `REPORT_TO_GPT.md` gives GPT a concrete next decision.
+- `REPORT_TO_GPT.md` gives GPT and the operator a concrete next action.
 
 ## Stop Conditions
 
 Stop and report blockers if:
 
-- credential handling would risk leaking secrets,
-- a vendor's license/rate-limit behavior cannot be represented safely,
-- no vendor credentials are present,
-- all configured vendors fail auth or smoke tests,
-- rate limits prevent meaningful coverage scoring,
-- adjusted price semantics cannot be normalized.
+- credential handling would risk leaking secrets;
+- a generated report would expose a token, key, prefix, suffix, hash, or length;
+- fixture-based adapter tests fail;
+- vendor rate limits prevent meaningful live smoke tests;
+- a vendor's adjusted price semantics cannot be represented safely;
+- the repo cannot guarantee local credential files are ignored.
 
 These stop conditions should not fail the test suite; they should produce explicit non-ready statuses.
