@@ -1,0 +1,24 @@
+ticker,source_name,source_family,is_independent_of_primary_vendor,network_fetch_attempted,used_cache_fallback,parsed_rows,first_date,last_date,overlap_days_with_primary,close_price_median_abs_diff_pct_vs_primary,volume_median_abs_diff_pct_vs_primary,transport_status,reason
+AAPL,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+ABNB,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+ACHR,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+ADBE,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+AFRM,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+AI,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+AMAT,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+AMD,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+ANET,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+APP,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+ARM,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+ASML,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+AVAV,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+AVGO,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+BA,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+BBAI,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+BEAM,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+BWXT,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+CAVA,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+CCJ,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+MSFT,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+QQQ,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.
+SPY,yahoo_chart_api,yahoo,False,True,False,625,2024-01-02,2026-06-30,624,0.0,0.0,TRANSPORT_MATCH,Same-vendor transport fallback only; not independent validation.

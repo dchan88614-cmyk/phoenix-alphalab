@@ -1,0 +1,3 @@
+source_name,source_family,adapter_name,requires_secret,is_independent_of_primary_vendor,allowed_for_execution_grade_secondary_validation,allowed_for_transport_fallback_only,network_fetch_attempted,cache_supported,expected_format,known_limitations,capability_status,decision_reason
+stooq_daily_csv,stooq,stooq_daily_csv_v2,False,True,False,False,True,True,CSV OHLCV,May return HTML/browser-verification payloads.,GLOBAL_UNAVAILABLE,Stooq source-level smoke status: GLOBAL_SOURCE_UNAVAILABLE.
+yahoo_chart_api,yahoo,yahoo_chart_transport_audit,False,False,False,True,True,True,JSON chart OHLCV,Same vendor family as yfinance primary data; transport fallback only.,TRANSPORT_FALLBACK_ONLY,Same-vendor transport sanity check; cannot count as independent secondary validation.

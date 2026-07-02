@@ -9,28 +9,42 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1K - Data Remediation, Ticker Lifecycle, and Secondary Vendor Smoke Tests.
-- Added historical research-only Phase 1K data remediation code.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1L - Secondary Data Adapter Hardening and Vendor Decision Gate.
+- Added historical research-only Phase 1L secondary data adapter diagnostics.
 - Added CLI flag:
-  - `--phase1k-data-remediation-gate`
-- Added Stooq secondary vendor smoke test with explicit global-source-unavailable status.
-- Added secondary OHLCV validation v2 with cache-aware labels.
-- Added ticker lifecycle / alias map.
-- Added SQ -> XYZ lifecycle handling with date-gated replay notes.
-- Added Phase 1J quarantine remediation audit.
-- Added deterministic taxonomy static overrides and taxonomy v2 output.
-- Added research-only clean watchlist v2 candidate.
-- Added Phase 1K data readiness scorecard.
+  - `--phase1l-secondary-data-adapter-gate`
+- Added Stooq raw response diagnostics with payload classification.
+- Added hardened Stooq OHLCV parser:
+  - BOM-prefixed CSV support
+  - comma / semicolon delimiter support
+  - case-insensitive OHLCV column support
+  - explicit HTML / browser-block detection
+  - explicit no-data detection
+- Added Stooq smoke test v2 with lookup matrix:
+  - `{ticker_lower}.us`
+  - `{ticker_upper}.US`
+  - `{ticker_lower}`
+- Added secondary source capability matrix.
+- Added Yahoo Chart same-vendor transport fallback audit.
+- Added secondary OHLCV validation v3.
+- Added alias / clean watchlist v3 audit.
+- Fixed the blank `SQ # earliest_safe_replay_date=` issue in the v3 clean watchlist candidate.
+- Preserved SQ / XYZ lifecycle handling:
+  - historical ticker `SQ`
+  - canonical current ticker `XYZ`
+  - current ticker effective date `2025-01-21`
+  - no pre-change replay eligibility leakage
+- Preserved SPY/QQQ as proxy-only and excluded them from trade candidates.
 - Created required outputs:
-  - `data/reports/phase1k_secondary_vendor_smoke_test.csv`
-  - `data/reports/phase1k_secondary_ohlcv_validation.csv`
-  - `data/reports/phase1k_symbol_lifecycle_alias_map.csv`
-  - `data/reports/phase1k_quarantine_remediation_audit.csv`
-  - `data/reports/phase1k_taxonomy_static_overrides.csv`
-  - `data/reports/phase1k_taxonomy_resolution_v2.csv`
-  - `data/reports/phase1k_clean_watchlist_v2_candidate.txt`
-  - `data/reports/phase1k_data_readiness_scorecard.csv`
-  - `data/reports/phase1k_data_readiness_summary.md`
+  - `data/reports/phase1l_secondary_source_capability_matrix.csv`
+  - `data/reports/phase1l_raw_response_diagnostics.csv`
+  - `data/reports/phase1l_secondary_vendor_smoke_test_v2.csv`
+  - `data/reports/phase1l_secondary_ohlcv_validation_v3.csv`
+  - `data/reports/phase1l_yahoo_chart_transport_fallback_audit.csv`
+  - `data/reports/phase1l_alias_clean_watchlist_audit.csv`
+  - `data/reports/phase1l_clean_watchlist_v3_candidate.txt`
+  - `data/reports/phase1l_data_readiness_scorecard.csv`
+  - `data/reports/phase1l_data_readiness_summary.md`
 - Did not start Phase 2.
 - Did not start Phase 3.
 - Did not enable paper execution.
@@ -46,36 +60,36 @@
 ## Files Changed
 
 - `src/main.py`
-- `src/research/phase1k_data_remediation.py`
-- `tests/test_phase1k_data_remediation.py`
-- `data/reports/phase1k_secondary_vendor_smoke_test.csv`
-- `data/reports/phase1k_secondary_ohlcv_validation.csv`
-- `data/reports/phase1k_symbol_lifecycle_alias_map.csv`
-- `data/reports/phase1k_quarantine_remediation_audit.csv`
-- `data/reports/phase1k_taxonomy_static_overrides.csv`
-- `data/reports/phase1k_taxonomy_resolution_v2.csv`
-- `data/reports/phase1k_clean_watchlist_v2_candidate.txt`
-- `data/reports/phase1k_data_readiness_scorecard.csv`
-- `data/reports/phase1k_data_readiness_summary.md`
+- `src/research/phase1l_secondary_adapter.py`
+- `tests/test_phase1l_secondary_adapter.py`
+- `data/reports/phase1l_secondary_source_capability_matrix.csv`
+- `data/reports/phase1l_raw_response_diagnostics.csv`
+- `data/reports/phase1l_secondary_vendor_smoke_test_v2.csv`
+- `data/reports/phase1l_secondary_ohlcv_validation_v3.csv`
+- `data/reports/phase1l_yahoo_chart_transport_fallback_audit.csv`
+- `data/reports/phase1l_alias_clean_watchlist_audit.csv`
+- `data/reports/phase1l_clean_watchlist_v3_candidate.txt`
+- `data/reports/phase1l_data_readiness_scorecard.csv`
+- `data/reports/phase1l_data_readiness_summary.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1k-data-remediation-gate
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1l-secondary-data-adapter-gate
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1k_data_remediation.py -q
-# 10 passed in 0.20s
+.venv/bin/python -m pytest tests/test_phase1l_secondary_adapter.py -q
+# 12 passed in 0.38s
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 170 passed, 1 warning in 28.42s
+# 182 passed, 1 warning in 28.25s
 ```
 
 Remaining warning:
@@ -85,125 +99,129 @@ Remaining warning:
 End-to-end command completed successfully:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1k-data-remediation-gate
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1l-secondary-data-adapter-gate
 ```
 
-## Phase 1K Data Remediation Summary
+## Phase 1L Summary
 
 - Summary file starts with the required heading:
-  - `PHOENIX NANO PHASE 1K — DATA REMEDIATION, TICKER LIFECYCLE, AND SECONDARY VENDOR SMOKE TESTS`
-- Final status: `PHASE_1K_DATA_BLOCKED`
-- Phase 1K did not approve any strategy, universe, data source, daily scan change, paper execution, or real-money execution.
-- Strategy research should remain paused.
+  - `PHOENIX NANO PHASE 1L — SECONDARY DATA ADAPTER HARDENING AND VENDOR DECISION GATE`
+- Final status: `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
+- Phase 1L did not approve any strategy, universe, data source, daily scan change, paper execution, or real-money execution.
+- Strategy research should remain paused until GPT reviews the result and explicitly requests a future frozen retest.
 
-## Secondary Vendor Smoke Test Result
+## Stooq Raw Response Diagnostics
 
-- `GLOBAL_SOURCE_UNAVAILABLE`: 4
-- `PASS`: 0
-- `CACHE_ONLY_PASS`: 0
+- `HTML_BLOCK`: 12
+- `HTML_OR_BLOCKED` parser status: 12
+- `PARSE_ERROR`: 0
 
 Interpretation:
 
-- AAPL, MSFT, SPY, and QQQ could not be validated against Stooq in this run.
-- The system now distinguishes this as a global secondary-source availability problem instead of treating every ticker as an individual no-data case.
+- Phase 1K's suspicious HTTP 200 / 796-byte responses are now classified as HTML / browser-verification blocks.
+- This is not an OHLCV CSV parser bug.
+- Stooq is unavailable from the current environment as an independent no-secret secondary OHLCV source.
 
-## Secondary OHLCV Validation Coverage
+## Secondary Source Capability Matrix Summary
+
+- `stooq_daily_csv`: `GLOBAL_UNAVAILABLE`
+- `yahoo_chart_api`: `TRANSPORT_FALLBACK_ONLY`
+
+Interpretation:
+
+- Stooq remains the only independent no-secret candidate in this task, but it is blocked.
+- Yahoo Chart is same-vendor / Yahoo-family and cannot count as independent secondary validation.
+
+## Secondary Vendor Smoke Test V2 Result
+
+- `HTML_OR_BLOCKED`: 4 selected ticker rows
+- Stooq smoke pass count: 0
+- Stooq cache-only pass count: 0
+
+Lookup matrix attempted:
+
+- `{ticker_lower}.us`
+- `{ticker_upper}.US`
+- `{ticker_lower}`
+
+Result:
+
+- AAPL, MSFT, SPY, and QQQ all failed Stooq smoke due to HTML/block payloads.
+
+## Independent Secondary OHLCV Validation Coverage
 
 - `GLOBAL_SOURCE_UNAVAILABLE`: 119
-- `MATCH`: 0
-- `WARN`: 0
-- `CACHE_ONLY_MATCH`: 0
-- `CACHE_ONLY_WARN`: 0
-- `FAIL`: 0
+- Independent secondary `MATCH`: 0
+- Independent secondary `WARN`: 0
+- Independent secondary `FAIL`: 0
+- Independent secondary coverage: 0.0%
+
+Interpretation:
+
+- Full independent validation was skipped because Stooq smoke did not pass.
+- Phoenix still lacks independent secondary OHLCV validation.
+
+## Yahoo Chart Transport Fallback Audit Summary
+
+- `TRANSPORT_MATCH`: 23
+- `TRANSPORT_WARN`: 0
+- `GLOBAL_SOURCE_UNAVAILABLE`: 0
 - `NO_DATA_FOR_SYMBOL`: 0
 
 Interpretation:
 
-- No active symbol has execution-grade secondary OHLCV validation.
-- The secondary validation blocker remains unresolved.
+- Yahoo Chart transport works as a same-vendor sanity check for the sampled tickers.
+- This improves extraction diagnostics only.
+- It must not be counted as independent secondary vendor validation.
 
-## Ticker Lifecycle / Alias Findings
+## Alias / Clean Watchlist V3 Audit Result
 
-- `UNCHANGED`: 115
-- `ETF_OR_INDEX_PROXY`: 2
-- `RENAMED`: 1
-- `UNKNOWN`: 1
+- Alias audit `PASS`: 99
+- Alias audit `WARN`: 0
+- Alias audit `FAIL`: 0
+- Blank date-gate comments: 0
+- Unresolved alias count: 0
+- Clean watchlist v3 candidate count: 99
 
-## SQ / XYZ Handling Decision
+Fixes:
 
-- `SQ` is treated as a renamed ticker for Block.
-- `canonical_current_ticker`: `XYZ`
-- `historical_ticker`: `SQ`
-- `effective_end_date`: `2025-01-20`
-- `replay_handling`: `USE_HISTORICAL_THEN_CURRENT_ALIAS`
-- Anti-leak rule: replay must not use `XYZ` eligibility before the 2025-01-21 ticker-change effective date.
+- `SQ # earliest_safe_replay_date=` is normalized to:
+  - `SQ # canonical_current_ticker=XYZ;historical_ticker=SQ;earliest_safe_replay_date=2025-01-21`
+- GEV and RDDT retain explicit earliest safe replay dates.
+- SPY/QQQ remain proxy-only and are excluded from trade candidates.
 
-## BITF Handling Decision
-
-- `BITF` taxonomy is now resolved as crypto-adjacent / bitcoin mining.
-- `BITF` still has yfinance 404 / metadata incomplete behavior.
-- Phase 1K remediation class: `DATA_DOWNLOAD_RETRY_NEEDED`
-- Phase 1K research action: `MANUAL_REVIEW`
-- `BITF` is excluded from clean watchlist v2.
-
-## SPY/QQQ Proxy Handling
-
-- SPY taxonomy v2: ETF / index proxy; broad U.S. equity proxy.
-- QQQ taxonomy v2: ETF / index proxy; Nasdaq-100 / growth equity proxy.
-- Both are retained only as regime/index proxies.
-- Both are excluded from trade candidates.
-
-## Phase 1J Quarantine Remediation Results
-
-- `PERMANENT_DROP`: 17
-- `DYNAMIC_ALLOW_AFTER_DATE`: 2
-- `ALIASED_OR_RENAMED`: 1
-- `DATA_DOWNLOAD_RETRY_NEEDED`: 1
-
-Recommended research actions:
-
-- `DROP`: 17
-- `ALLOW_DYNAMIC_DATE_GATED`: 3
-- `MANUAL_REVIEW`: 1
-
-## Taxonomy V2 Confidence Counts
-
-- `HIGH`: 120
-- `MEDIUM`: 0
-- `LOW`: 0
-
-Interpretation:
-
-- The required targeted LOW and wrong MEDIUM taxonomy rows were resolved with static overrides.
-- Any remaining blocker is now data availability / lifecycle readiness, not taxonomy confidence.
-
-## Clean Watchlist V2 Candidate Count
-
-- Research-only clean watchlist v2 candidate count: 99
-- The file excludes SPY/QQQ as trade candidates.
-- The file excludes permanent drops and manual-review symbols such as BITF.
-- Dynamic-date-gated symbols include inline earliest-safe-replay-date comments.
-- This file is not approved for daily scan, paper execution, or real-money execution.
-
-## Phase 1K Data Readiness Status
+## Data Readiness Scorecard
 
 - `total_symbols`: 119
-- `phase1j_quarantined_count`: 19
-- `phase1k_permanent_drop_count`: 17
-- `phase1k_dynamic_allow_after_date_count`: 3
-- `phase1k_allow_with_warning_count`: 0
-- `unresolved_alias_count`: 0
-- `unresolved_low_taxonomy_count`: 0
 - `active_trade_candidate_count`: 99
 - `proxy_count`: 2
-- `secondary_smoke_pass_count`: 0
-- `secondary_global_unavailable_count`: 4
-- `secondary_ohlcv_match_count`: 0
-- `secondary_ohlcv_warn_count`: 0
-- `secondary_ohlcv_fail_count`: 0
-- `secondary_no_data_for_symbol_count`: 0
-- `secondary_global_source_unavailable_count`: 119
-- Final status: `PHASE_1K_DATA_BLOCKED`
+- `stooq_smoke_pass_count`: 0
+- `stooq_smoke_cache_only_pass_count`: 0
+- `stooq_payload_parse_error_count`: 0
+- `stooq_html_or_blocked_count`: 12
+- `independent_secondary_match_count`: 0
+- `independent_secondary_warn_count`: 0
+- `independent_secondary_fail_count`: 0
+- `independent_secondary_coverage_pct`: 0.0
+- `transport_fallback_match_count`: 23
+- `transport_fallback_warn_count`: 0
+- `alias_audit_fail_count`: 0
+- `blank_date_gate_comment_count`: 0
+- `unresolved_alias_count`: 0
+- `unresolved_low_taxonomy_count`: 0
+- `clean_watchlist_v3_candidate_count`: 99
+- Final status: `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
+
+## Final Phase 1L Status
+
+- Status: `PHASE_1L_DATA_ADAPTER_READY_VENDOR_MISSING`
+
+Meaning:
+
+- Adapter diagnostics are now clear.
+- Alias/watchlist v3 audit passes.
+- Yahoo Chart transport fallback works as same-vendor sanity check.
+- Independent secondary vendor validation is still missing.
 
 ## Whether Strategy Research Should Remain Paused
 
@@ -211,27 +229,25 @@ Yes. Strategy research should remain paused.
 
 Reasons:
 
-- 17 symbols are still permanent drops from the Phase 1K remediation audit.
-- 119 of 119 secondary OHLCV rows are `GLOBAL_SOURCE_UNAVAILABLE`.
-- Secondary vendor smoke test did not pass for AAPL, MSFT, SPY, or QQQ.
-- The data readiness gate did not pass.
-- Phase 1K status is `PHASE_1K_DATA_BLOCKED`.
+- Independent secondary OHLCV coverage is 0.0%.
+- Stooq is blocked by HTML/browser-verification payloads in this environment.
+- Yahoo Chart is same-vendor transport fallback only.
+- Phase 1L does not authorize a frozen Candidate 34 vs Candidate 35 retest.
 
 ## Problems
 
-- Stooq validation is globally unavailable in this run.
-- No secondary OHLCV comparison produced MATCH, WARN, CACHE_ONLY_MATCH, or CACHE_ONLY_WARN.
-- `BITF` remains unresolved at the data-download level and requires manual review or vendor retry.
-- 17 Phase 1J quarantined symbols remain permanent drops because usable OHLCV was not present in the requested research dataset.
-- The clean watchlist v2 candidate is research-only and should not be treated as an active universe policy.
+- No independent no-secret secondary OHLCV vendor is available from this environment.
+- Stooq returns HTML/browser-verification responses for all smoke lookup variants.
+- Independent secondary validation remains at 0% coverage.
+- Yahoo Chart can sanity-check transport but cannot validate yfinance independently.
 
 ## Questions For GPT
 
-- Should Phoenix Nano integrate a different no-secret secondary OHLCV source before any retest?
-- Should the 17 permanent-drop symbols be removed from the source watchlist, or preserved with explicit exclusion records?
-- Should `SQ` be replaced by `XYZ` in the watchlist with lifecycle metadata retained for historical replay?
-- Should `BITF` be retried through another vendor or removed from the research universe?
-- Should GPT request a frozen Candidate 34 vs Candidate 35 retest only after secondary OHLCV validation is working?
+- Should Phoenix Nano add a credentialed secondary OHLCV vendor next?
+- Should GPT accept Yahoo Chart only as a transport fallback while keeping research blocked for independent validation?
+- Should Stooq be abandoned in this environment, or retried from a different network/runtime?
+- Should the Phase 1L v3 clean watchlist become the research-only input for a future frozen retest after GPT review?
+- Should the next task be vendor integration rather than strategy testing?
 
 ## Next Suggested Tasks
 
@@ -241,6 +257,5 @@ Reasons:
 - Do not enable real-money execution.
 - Do not run Candidate 34 vs Candidate 35 retest yet.
 - Keep Phoenix Nano historical research-only.
-- Fix secondary OHLCV vendor availability or add an alternate no-secret source.
-- Decide how to handle the 17 permanent-drop symbols.
-- Decide whether to replace `SQ` with `XYZ` in the watchlist while preserving alias lifecycle rules.
+- Add or configure a true independent secondary OHLCV vendor.
+- Preserve Phase 1L clean watchlist v3 and alias/date-gate audit for future GPT review.
