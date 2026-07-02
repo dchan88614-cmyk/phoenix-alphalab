@@ -9,59 +9,59 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1E - Cross-Validated Conservative Filter Validation.
-- Added Phase 1E historical filter validation as research-only analysis.
-- Reused Phase 1D pre-entry diagnostics and baseline-current replay mechanics.
-- Generated 20 deterministic samples with 100 replay rounds each.
-- Split samples into calibration IDs 0-9 and holdout IDs 10-19.
-- Tested the required baseline, Phase 1D fixed filter, and volatility/smoke threshold grid.
-- Selected top diagnostic calibration filters without using holdout data.
-- Validated frozen filters and selected overlays on holdout samples.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1F - Failure Attribution, Taxonomy, and Data Quality Audit.
+- Added Phase 1F historical failure audit as diagnostic research only.
+- Built a complete accepted-candidate failure ledger across 20 deterministic samples.
+- Added deterministic ticker/theme/subtheme taxonomy cleanup.
+- Added drawdown attribution by ticker, theme, time bucket, feature bucket, and exit reason.
+- Added simple auditable market-regime attribution using only data available on or before replay dates.
+- Added data-quality audit for missing bars, volume anomalies, forward-window gaps, rejected metadata symbols, and missing QQQ regime data.
 - Added CLI flag:
-  - `--phase1e-filter-validation`
+  - `--phase1f-failure-audit`
 - Created required outputs:
-  - `data/reports/phase1e_threshold_sweep.csv`
-  - `data/reports/phase1e_filter_validation_matrix.csv`
-  - `data/reports/phase1e_holdout_results.csv`
-  - `data/reports/phase1e_excluded_decision_audit.csv`
-  - `data/reports/phase1e_filter_summary.md`
-- Did not loosen Candidate 34 thresholds.
-- Did not change daily scan production behavior.
-- Did not adopt close-based stops.
+  - `data/reports/phase1f_failure_trade_ledger.csv`
+  - `data/reports/phase1f_theme_taxonomy.csv`
+  - `data/reports/phase1f_drawdown_attribution.csv`
+  - `data/reports/phase1f_regime_attribution.csv`
+  - `data/reports/phase1f_data_quality_audit.csv`
+  - `data/reports/phase1f_viability_summary.md`
 - Did not start Phase 2.
 - Did not start Phase 3.
-- Did not enable paper execution.
-- Did not enable real-money execution.
+- Did not change daily scan production behavior.
+- Did not loosen Candidate 34 thresholds.
+- Did not adopt any new filter as active policy.
+- Did not produce financial advice or an operational recommendation.
 
 ## Files Changed
 
-- `src/research/phase1e_filter_validation.py`
+- `src/research/phase1f_failure_audit.py`
 - `src/main.py`
-- `tests/test_phase1e_filter_validation.py`
-- `data/reports/phase1e_threshold_sweep.csv`
-- `data/reports/phase1e_filter_validation_matrix.csv`
-- `data/reports/phase1e_holdout_results.csv`
-- `data/reports/phase1e_excluded_decision_audit.csv`
-- `data/reports/phase1e_filter_summary.md`
+- `tests/test_phase1f_failure_audit.py`
+- `data/reports/phase1f_failure_trade_ledger.csv`
+- `data/reports/phase1f_theme_taxonomy.csv`
+- `data/reports/phase1f_drawdown_attribution.csv`
+- `data/reports/phase1f_regime_attribution.csv`
+- `data/reports/phase1f_data_quality_audit.csv`
+- `data/reports/phase1f_viability_summary.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1e-filter-validation --replay-rounds 100 --replay-sample-count 20
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1f-failure-audit --replay-rounds 100 --replay-sample-count 20
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1e_filter_validation.py -q
-# 9 passed
+.venv/bin/python -m pytest tests/test_phase1f_failure_audit.py -q
+# 8 passed
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 114 passed, 1 warning in 7.97s
+# 122 passed, 1 warning in 7.82s
 ```
 
 Remaining warning:
@@ -71,157 +71,127 @@ Remaining warning:
 End-to-end command completed successfully:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1e-filter-validation --replay-rounds 100 --replay-sample-count 20
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1f-failure-audit --replay-rounds 100 --replay-sample-count 20
 ```
 
-## Phase 1E Filter Validation Summary
+## Phase 1F Viability Summary
 
-- Phase 1E status: `PHASE_1E_FILTER_NEEDS_MORE_WORK`
-- Threshold sweep rows: 440
-- Threshold-sweep filters: 22
-- Threshold-sweep samples: 20
-- Holdout validation rows: 90
-- Holdout result rows: 9
-- Excluded decision audit rows: 10289
-- Calibration filters passing all gates: 0
-- Holdout filters passing all gates: 0
+- Phase 1F status: `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN`
+- Samples audited: 20
+- Failure ledger rows: 667
+- Losing simulated candidates: 384
+- Theme taxonomy rows: 53
+- Low-confidence mappings: 19
+- Drawdown attribution rows: 667
+- Regime attribution rows: 156
+- Data quality audit rows: 515
+- Data quality blockers: 0
+- Data quality warnings: 230
 
-## Sample Split Used
+## Failure Sample Summary
 
-- Calibration samples: 0-9
-- Holdout samples: 10-19
-- Fallback split used: false
-- Holdout data was not used for threshold selection.
+- The ledger covers all accepted historical candidates across the requested 20 deterministic samples.
+- Remaining losses are not dominated by one ticker or one theme.
+- Top theme loss share: 27.10%.
+- Top ticker loss share: 10.49%.
+- This supports the conclusion that failures are broad rather than cleanly isolated.
 
-## Filters Tested
+## Theme Taxonomy Cleanup Results
 
-- `no_filter_baseline_current`
-- `phase1d_volatility_plus_smoke_score`
-- 20 grid filters:
-  - `volatility_20d_max`: 0.055, 0.060, 0.065, 0.070, 0.075
-  - `smoke_score_min`: 0.880, 0.900, 0.920, 0.940
-- Overlays for selected diagnostic filters:
-  - `theme_cap_3_overlay`
-  - `repeated_loser_ticker_cooldown_overlay`
+- The prior `UNMAPPED` loss bucket was eliminated for accepted candidate losses using deterministic static taxonomy.
+- Remaining unmapped loss dollars: $0.00.
+- Remaining unmapped loss share: 0.00%.
+- Low-confidence taxonomy rows remain for rejected or untraded symbols where no confident project mapping exists.
 
-## Calibration Results
+Top theme losses:
 
-No filter passed all calibration gates.
+| theme | loss dollars |
+|:--|--:|
+| EV / mobility | $1231.31 |
+| AI / software | $928.16 |
+| space / defense / nuclear | $786.84 |
+| crypto-adjacent / high beta | $554.65 |
+| biotech | $283.78 |
+| semiconductor / hardware | $277.83 |
+| fintech | $251.61 |
+| AI infrastructure | $177.12 |
 
-Top diagnostic calibration filters by worst-sample ending value:
+Top ticker losses:
 
-| filter | worst ending | median ending | median drawdown | median win rate | min BUY count | excluded losers | excluded winners | median profit factor |
-|:--|--:|--:|--:|--:|--:|--:|--:|--:|
-| `vol_0.055_smoke_0.900` | $114.72 | $143.85 | -21.84% | 54.20% | 10 | 139 | 82 | 2.0414 |
-| `vol_0.055_smoke_0.940` | $114.04 | $136.92 | -14.95% | 57.14% | 4 | 169 | 112 | 2.4961 |
-| `phase1d_volatility_plus_smoke_score` | $113.87 | $146.68 | -26.69% | 48.91% | 16 | 100 | 57 | 1.4566 |
+| ticker | loss dollars |
+|:--|--:|
+| RKLB | $476.65 |
+| BBAI | $475.06 |
+| RIVN | $474.92 |
+| XPEV | $323.09 |
+| CORZ | $286.88 |
+| INTC | $277.83 |
+| PATH | $270.17 |
+| IREN | $211.79 |
 
-Primary calibration failures:
+## Drawdown Attribution Summary
 
-- Strict filters improved drawdown but reduced minimum BUY count below 15.
-- Phase 1D fixed filter kept minimum BUY count at 16 but median simulated win rate was below 50%.
-- No calibration filter met every gate at once.
+- Losses are spread across EV/mobility, AI/software, space/defense/nuclear, crypto-adjacent/high beta, biotech, semiconductor/hardware, fintech, and AI infrastructure.
+- No single theme reaches a concentration level strong enough to justify a simple research-only exclusion by itself.
+- No single ticker dominates enough to explain the Candidate 34 instability by itself.
+- Samples 3, 4, 10, and 16 remain important failure samples, but the issue is broader than those samples alone.
 
-## Holdout Results
+## Market Regime Attribution Summary
 
-No selected holdout filter passed all Phase 1E holdout gates.
+Aggregate regime PnL:
 
-Best holdout filters by worst-sample ending value:
+- MIXED: -$278.95
+- RISK_OFF: -$272.48
+- UNKNOWN_MARKET_DATA: $91.20
+- RISK_ON: $1986.97
 
-| filter | worst ending | median ending | median drawdown | median win rate | min BUY count | median profit factor | holdout pass |
-|:--|--:|--:|--:|--:|--:|--:|:--|
-| `vol_0.055_smoke_0.900_theme_cap_3_overlay` | $100.80 | $127.38 | -18.79% | 44.95% | 9 | 1.6040 | false |
-| `vol_0.055_smoke_0.900` | $99.36 | $133.64 | -20.56% | 46.15% | 9 | 1.7408 | false |
-| `vol_0.055_smoke_0.900_repeated_loser_ticker_cooldown_overlay` | $99.36 | $132.27 | -21.87% | 43.06% | 9 | 1.7526 | false |
+Interpretation:
 
-## Best Calibration Filter
+- Losses are not only a simple risk-off problem.
+- Positive aggregate PnL in RISK_ON does not offset broad failure behavior across samples and candidate groups.
+- QQQ labels are marked unknown because QQQ is not currently downloaded in the main pipeline for this command.
 
-- `vol_0.055_smoke_0.900`
-- Best by calibration worst-sample ending account value.
-- Failed calibration because minimum BUY count was 10, below the required 15.
+## Data Quality Audit Summary
 
-## Best Holdout Filter
+- Data quality blockers: 0
+- Data quality warnings: 230
+- Major warning counts:
+  - missing OHLCV bars: 2574
+  - incomplete 20d forward windows: 1980
+  - metadata rejected symbols: 19
+  - abnormal volume days: 7
+  - split/adjustment anomaly flags: 7
+  - missing QQQ regime data: 1
 
-- `vol_0.055_smoke_0.900_theme_cap_3_overlay`
-- Worst-sample ending value: $100.80
-- Median ending value: $127.38
-- Median max drawdown: -18.79%
-- Failed holdout because median simulated win rate was 44.95%, minimum BUY count was 9, and top ticker profit share exceeded 50%.
+Conclusion:
 
-## Whether `volatility_plus_smoke_score` Survived Holdout
+- Data issues should be cleaned up before institutional-grade research.
+- Current audit did not find a blocker strong enough to invalidate the Phase 1E conclusion.
+- The missing QQQ data affects QQQ regime labels, not accepted-candidate replay mechanics.
 
-- It did not survive holdout.
-- Phase 1D fixed filter holdout metrics:
-  - Median ending account value: $131.21
-  - Worst-sample ending account value: $94.44
-  - Median max drawdown: -27.99%
-  - Worst-sample max drawdown: -34.54%
-  - Median simulated win rate: 46.25%
-  - Minimum BUY count: 15
-  - Median profit factor: 1.3257
-  - Holdout gate pass: false
+## Phase 1F Status
 
-## Excluded Winner vs Loser Summary
-
-- Excluded losers: 6323
-- Excluded winners: 3966
-- The filters exclude more losers than winners overall, but the remaining holdout trades still do not meet robustness requirements.
-
-## Top Remaining Failure Samples
-
-Worst remaining failure rows in the threshold sweep included:
-
-- sample 4 / `no_filter_baseline_current`: ending value $43.16, max drawdown -64.14%.
-- sample 16 / `no_filter_baseline_current`: ending value $56.70, max drawdown -57.20%.
-- sample 10 / `no_filter_baseline_current`: ending value $57.53, max drawdown -67.57%.
-- sample 3 / `no_filter_baseline_current`: ending value $60.49, max drawdown -61.50%.
-- sample 3 / `vol_0.075_smoke_0.940`: ending value $66.22, max drawdown -45.81%.
-
-## Top Remaining Failure Tickers/Themes
-
-Top losing themes:
-
-- UNMAPPED: 124
-- EV / mobility: 65
-- AI / software: 57
-- semiconductor / hardware: 52
-- space / defense / nuclear: 47
-- crypto-adjacent / high beta: 40
-
-Top losing tickers:
-
-- RIVN: 29
-- RKLB: 27
-- F: 24
-- INTC: 24
-- BBAI: 23
-- XPEV: 23
-- HPE: 19
-- CORZ: 19
-
-## Phase 1E Status
-
-- Status: `PHASE_1E_FILTER_NEEDS_MORE_WORK`
-- Never mark Phase 2 ready from this task.
-- Do not start paper execution or real-money execution.
-- Reason: the narrow volatility/smoke family improves some risk metrics but fails calibration and holdout robustness gates.
+- Status: `PHASE_1F_FAILURES_BROAD_RECOMMEND_REDESIGN`
+- Do not start Phase 2.
+- Do not start Phase 3.
+- Do not start paper execution.
+- Do not start real-money execution.
+- Reason: failures are broad across themes, tickers, and regimes; data quality warnings exist but are not the primary blocker.
 
 ## Problems
 
-- No calibration filter passed all required gates.
-- No holdout filter passed all required gates.
-- The best holdout overlay had worst-sample ending above $100 but failed minimum BUY count, win-rate, and top-profit-concentration gates.
-- The Phase 1D fixed filter failed holdout with worst-sample ending below $100 and median win rate below 50%.
-- Strict thresholds reduce trade count too much for Nano approval.
+- Candidate 34 failure behavior appears broad rather than a single clean theme/ticker/regime issue.
+- QQQ regime labeling is incomplete because QQQ is not downloaded by the main command.
+- The data-quality audit uses business-day gap approximation, so market holidays may inflate missing-bar warnings.
 - yfinance metadata rejected several watchlist tickers; `BITF` emitted a yfinance 404 and was rejected as metadata incomplete.
 - yfinance data remains non-institutional retail data and should not be treated as an execution feed.
 
 ## Questions For GPT
 
-- Should Phoenix Nano stop tuning this volatility/smoke entry-filter family?
-- Should the next task focus on the repeated failure samples 3, 4, 10, and 16 rather than broad threshold sweeps?
-- Should GPT require a minimum BUY count of 15 per sample, or is that gate intentionally forcing broader robustness?
-- Should unmapped and EV/mobility names be separately diagnosed before any further filter work?
+- Should Candidate 34 now be redesigned instead of applying more threshold filters?
+- Should the next research task first improve data/regime inputs, especially QQQ regime data, before redesign?
+- Should GPT retire the current Nano entry-rule family if broad failure persists after one redesign attempt?
+- Should theme taxonomy become a maintained config file instead of static code?
 
 ## Next Suggested Tasks
 
@@ -229,5 +199,5 @@ Top losing tickers:
 - Do not start Phase 3.
 - Do not enable paper execution.
 - Do not enable real-money execution.
-- Ask GPT whether to stop Nano entry-filter tuning or run one narrow failure-regime analysis.
-- If GPT approves another research task, focus on failure samples and themes rather than adding new factor families.
+- Ask GPT whether to redesign Candidate 34 or pause Nano tuning.
+- If GPT approves more research, make it a redesign task rather than another threshold sweep.

@@ -1,0 +1,516 @@
+ticker,issue_type,issue_count,severity,notes
+AAPL,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AAPL,zero_volume_days,0,OK,
+AAPL,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+AAPL,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AAPL,incomplete_20d_forward_windows,20,WARN,
+ABNB,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ABNB,zero_volume_days,0,OK,
+ABNB,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ABNB,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ABNB,incomplete_20d_forward_windows,20,WARN,
+ACHR,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ACHR,zero_volume_days,0,OK,
+ACHR,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ACHR,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ACHR,incomplete_20d_forward_windows,20,WARN,
+ADBE,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ADBE,zero_volume_days,0,OK,
+ADBE,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ADBE,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ADBE,incomplete_20d_forward_windows,20,WARN,
+AFRM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AFRM,zero_volume_days,0,OK,
+AFRM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+AFRM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AFRM,incomplete_20d_forward_windows,20,WARN,
+AI,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AI,zero_volume_days,0,OK,
+AI,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+AI,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AI,incomplete_20d_forward_windows,20,WARN,
+AMAT,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AMAT,zero_volume_days,0,OK,
+AMAT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+AMAT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AMAT,incomplete_20d_forward_windows,20,WARN,
+AMD,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AMD,zero_volume_days,0,OK,
+AMD,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+AMD,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AMD,incomplete_20d_forward_windows,20,WARN,
+ANET,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ANET,zero_volume_days,0,OK,
+ANET,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ANET,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ANET,incomplete_20d_forward_windows,20,WARN,
+APP,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+APP,zero_volume_days,0,OK,
+APP,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+APP,split_or_adjustment_anomaly,1,WARN,Absolute daily close move above 45%.
+APP,incomplete_20d_forward_windows,20,WARN,
+ARM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ARM,zero_volume_days,0,OK,
+ARM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ARM,split_or_adjustment_anomaly,1,WARN,Absolute daily close move above 45%.
+ARM,incomplete_20d_forward_windows,20,WARN,
+ASML,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ASML,zero_volume_days,0,OK,
+ASML,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ASML,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ASML,incomplete_20d_forward_windows,20,WARN,
+AVAV,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AVAV,zero_volume_days,0,OK,
+AVAV,abnormal_volume_days,1,WARN,Volume above 20x ticker median.
+AVAV,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AVAV,incomplete_20d_forward_windows,20,WARN,
+AVGO,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+AVGO,zero_volume_days,0,OK,
+AVGO,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+AVGO,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+AVGO,incomplete_20d_forward_windows,20,WARN,
+BA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+BA,zero_volume_days,0,OK,
+BA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+BA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+BA,incomplete_20d_forward_windows,20,WARN,
+BBAI,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+BBAI,zero_volume_days,0,OK,
+BBAI,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+BBAI,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+BBAI,incomplete_20d_forward_windows,20,WARN,
+BEAM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+BEAM,zero_volume_days,0,OK,
+BEAM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+BEAM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+BEAM,incomplete_20d_forward_windows,20,WARN,
+BWXT,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+BWXT,zero_volume_days,0,OK,
+BWXT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+BWXT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+BWXT,incomplete_20d_forward_windows,20,WARN,
+CAVA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+CAVA,zero_volume_days,0,OK,
+CAVA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+CAVA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+CAVA,incomplete_20d_forward_windows,20,WARN,
+CCJ,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+CCJ,zero_volume_days,0,OK,
+CCJ,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+CCJ,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+CCJ,incomplete_20d_forward_windows,20,WARN,
+CEG,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+CEG,zero_volume_days,0,OK,
+CEG,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+CEG,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+CEG,incomplete_20d_forward_windows,20,WARN,
+COIN,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+COIN,zero_volume_days,0,OK,
+COIN,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+COIN,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+COIN,incomplete_20d_forward_windows,20,WARN,
+CORZ,missing_ohlcv_bars,24,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+CORZ,zero_volume_days,0,OK,
+CORZ,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+CORZ,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+CORZ,incomplete_20d_forward_windows,20,WARN,
+CRM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+CRM,zero_volume_days,0,OK,
+CRM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+CRM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+CRM,incomplete_20d_forward_windows,20,WARN,
+CRWD,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+CRWD,zero_volume_days,0,OK,
+CRWD,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+CRWD,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+CRWD,incomplete_20d_forward_windows,20,WARN,
+DASH,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+DASH,zero_volume_days,0,OK,
+DASH,abnormal_volume_days,1,WARN,Volume above 20x ticker median.
+DASH,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+DASH,incomplete_20d_forward_windows,20,WARN,
+DDOG,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+DDOG,zero_volume_days,0,OK,
+DDOG,abnormal_volume_days,1,WARN,Volume above 20x ticker median.
+DDOG,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+DDOG,incomplete_20d_forward_windows,20,WARN,
+DELL,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+DELL,zero_volume_days,0,OK,
+DELL,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+DELL,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+DELL,incomplete_20d_forward_windows,20,WARN,
+DNA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+DNA,zero_volume_days,0,OK,
+DNA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+DNA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+DNA,incomplete_20d_forward_windows,20,WARN,
+DUOL,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+DUOL,zero_volume_days,0,OK,
+DUOL,abnormal_volume_days,1,WARN,Volume above 20x ticker median.
+DUOL,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+DUOL,incomplete_20d_forward_windows,20,WARN,
+EDIT,missing_ohlcv_bars,27,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+EDIT,zero_volume_days,0,OK,
+EDIT,abnormal_volume_days,1,WARN,Volume above 20x ticker median.
+EDIT,split_or_adjustment_anomaly,1,WARN,Absolute daily close move above 45%.
+EDIT,incomplete_20d_forward_windows,20,WARN,
+ELF,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ELF,zero_volume_days,0,OK,
+ELF,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ELF,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ELF,incomplete_20d_forward_windows,20,WARN,
+ESTC,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ESTC,zero_volume_days,0,OK,
+ESTC,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ESTC,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ESTC,incomplete_20d_forward_windows,20,WARN,
+ETN,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ETN,zero_volume_days,0,OK,
+ETN,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ETN,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ETN,incomplete_20d_forward_windows,20,WARN,
+F,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+F,zero_volume_days,0,OK,
+F,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+F,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+F,incomplete_20d_forward_windows,20,WARN,
+GD,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+GD,zero_volume_days,0,OK,
+GD,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+GD,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+GD,incomplete_20d_forward_windows,20,WARN,
+GEV,missing_ohlcv_bars,23,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+GEV,zero_volume_days,0,OK,
+GEV,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+GEV,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+GEV,incomplete_20d_forward_windows,20,WARN,
+GM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+GM,zero_volume_days,0,OK,
+GM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+GM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+GM,incomplete_20d_forward_windows,20,WARN,
+HOOD,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+HOOD,zero_volume_days,0,OK,
+HOOD,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+HOOD,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+HOOD,incomplete_20d_forward_windows,20,WARN,
+HPE,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+HPE,zero_volume_days,0,OK,
+HPE,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+HPE,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+HPE,incomplete_20d_forward_windows,20,WARN,
+HUT,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+HUT,zero_volume_days,0,OK,
+HUT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+HUT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+HUT,incomplete_20d_forward_windows,20,WARN,
+INTC,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+INTC,zero_volume_days,0,OK,
+INTC,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+INTC,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+INTC,incomplete_20d_forward_windows,20,WARN,
+IREN,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+IREN,zero_volume_days,0,OK,
+IREN,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+IREN,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+IREN,incomplete_20d_forward_windows,20,WARN,
+ISRG,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ISRG,zero_volume_days,0,OK,
+ISRG,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ISRG,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ISRG,incomplete_20d_forward_windows,20,WARN,
+JOBY,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+JOBY,zero_volume_days,0,OK,
+JOBY,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+JOBY,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+JOBY,incomplete_20d_forward_windows,20,WARN,
+KLAC,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+KLAC,zero_volume_days,0,OK,
+KLAC,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+KLAC,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+KLAC,incomplete_20d_forward_windows,20,WARN,
+KTOS,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+KTOS,zero_volume_days,0,OK,
+KTOS,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+KTOS,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+KTOS,incomplete_20d_forward_windows,20,WARN,
+LCID,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+LCID,zero_volume_days,0,OK,
+LCID,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+LCID,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+LCID,incomplete_20d_forward_windows,20,WARN,
+LEU,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+LEU,zero_volume_days,0,OK,
+LEU,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+LEU,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+LEU,incomplete_20d_forward_windows,20,WARN,
+LI,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+LI,zero_volume_days,0,OK,
+LI,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+LI,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+LI,incomplete_20d_forward_windows,20,WARN,
+LMT,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+LMT,zero_volume_days,0,OK,
+LMT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+LMT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+LMT,incomplete_20d_forward_windows,20,WARN,
+LRCX,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+LRCX,zero_volume_days,0,OK,
+LRCX,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+LRCX,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+LRCX,incomplete_20d_forward_windows,20,WARN,
+MRNA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+MRNA,zero_volume_days,0,OK,
+MRNA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+MRNA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+MRNA,incomplete_20d_forward_windows,20,WARN,
+MRVL,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+MRVL,zero_volume_days,0,OK,
+MRVL,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+MRVL,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+MRVL,incomplete_20d_forward_windows,20,WARN,
+MSFT,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+MSFT,zero_volume_days,0,OK,
+MSFT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+MSFT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+MSFT,incomplete_20d_forward_windows,20,WARN,
+MSTR,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+MSTR,zero_volume_days,0,OK,
+MSTR,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+MSTR,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+MSTR,incomplete_20d_forward_windows,20,WARN,
+MU,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+MU,zero_volume_days,0,OK,
+MU,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+MU,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+MU,incomplete_20d_forward_windows,20,WARN,
+NEE,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NEE,zero_volume_days,0,OK,
+NEE,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+NEE,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+NEE,incomplete_20d_forward_windows,20,WARN,
+NET,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NET,zero_volume_days,0,OK,
+NET,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+NET,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+NET,incomplete_20d_forward_windows,20,WARN,
+NIO,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NIO,zero_volume_days,0,OK,
+NIO,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+NIO,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+NIO,incomplete_20d_forward_windows,20,WARN,
+NOC,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NOC,zero_volume_days,0,OK,
+NOC,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+NOC,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+NOC,incomplete_20d_forward_windows,20,WARN,
+NOW,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NOW,zero_volume_days,0,OK,
+NOW,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+NOW,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+NOW,incomplete_20d_forward_windows,20,WARN,
+NVAX,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NVAX,zero_volume_days,0,OK,
+NVAX,abnormal_volume_days,2,WARN,Volume above 20x ticker median.
+NVAX,split_or_adjustment_anomaly,2,WARN,Absolute daily close move above 45%.
+NVAX,incomplete_20d_forward_windows,20,WARN,
+NVDA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+NVDA,zero_volume_days,0,OK,
+NVDA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+NVDA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+NVDA,incomplete_20d_forward_windows,20,WARN,
+OKLO,missing_ohlcv_bars,33,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+OKLO,zero_volume_days,0,OK,
+OKLO,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+OKLO,split_or_adjustment_anomaly,1,WARN,Absolute daily close move above 45%.
+OKLO,incomplete_20d_forward_windows,20,WARN,
+OKTA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+OKTA,zero_volume_days,0,OK,
+OKTA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+OKTA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+OKTA,incomplete_20d_forward_windows,20,WARN,
+PANW,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+PANW,zero_volume_days,0,OK,
+PANW,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+PANW,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+PANW,incomplete_20d_forward_windows,20,WARN,
+PATH,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+PATH,zero_volume_days,0,OK,
+PATH,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+PATH,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+PATH,incomplete_20d_forward_windows,20,WARN,
+PLTR,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+PLTR,zero_volume_days,0,OK,
+PLTR,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+PLTR,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+PLTR,incomplete_20d_forward_windows,20,WARN,
+PWR,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+PWR,zero_volume_days,0,OK,
+PWR,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+PWR,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+PWR,incomplete_20d_forward_windows,20,WARN,
+PYPL,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+PYPL,zero_volume_days,0,OK,
+PYPL,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+PYPL,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+PYPL,incomplete_20d_forward_windows,20,WARN,
+QCOM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+QCOM,zero_volume_days,0,OK,
+QCOM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+QCOM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+QCOM,incomplete_20d_forward_windows,20,WARN,
+RBLX,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+RBLX,zero_volume_days,0,OK,
+RBLX,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+RBLX,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+RBLX,incomplete_20d_forward_windows,20,WARN,
+RDDT,missing_ohlcv_bars,23,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+RDDT,zero_volume_days,0,OK,
+RDDT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+RDDT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+RDDT,incomplete_20d_forward_windows,20,WARN,
+RIVN,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+RIVN,zero_volume_days,0,OK,
+RIVN,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+RIVN,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+RIVN,incomplete_20d_forward_windows,20,WARN,
+RKLB,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+RKLB,zero_volume_days,0,OK,
+RKLB,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+RKLB,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+RKLB,incomplete_20d_forward_windows,20,WARN,
+ROKU,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ROKU,zero_volume_days,0,OK,
+ROKU,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ROKU,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ROKU,incomplete_20d_forward_windows,20,WARN,
+RTX,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+RTX,zero_volume_days,0,OK,
+RTX,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+RTX,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+RTX,incomplete_20d_forward_windows,20,WARN,
+RXRX,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+RXRX,zero_volume_days,0,OK,
+RXRX,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+RXRX,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+RXRX,incomplete_20d_forward_windows,20,WARN,
+S,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+S,zero_volume_days,0,OK,
+S,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+S,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+S,incomplete_20d_forward_windows,20,WARN,
+SDGR,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SDGR,zero_volume_days,0,OK,
+SDGR,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SDGR,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SDGR,incomplete_20d_forward_windows,20,WARN,
+SHOP,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SHOP,zero_volume_days,0,OK,
+SHOP,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SHOP,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SHOP,incomplete_20d_forward_windows,20,WARN,
+SMCI,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SMCI,zero_volume_days,0,OK,
+SMCI,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SMCI,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SMCI,incomplete_20d_forward_windows,20,WARN,
+SMR,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SMR,zero_volume_days,0,OK,
+SMR,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SMR,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SMR,incomplete_20d_forward_windows,20,WARN,
+SNOW,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SNOW,zero_volume_days,0,OK,
+SNOW,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SNOW,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SNOW,incomplete_20d_forward_windows,20,WARN,
+SO,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SO,zero_volume_days,0,OK,
+SO,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SO,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SO,incomplete_20d_forward_windows,20,WARN,
+SOFI,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SOFI,zero_volume_days,0,OK,
+SOFI,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SOFI,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SOFI,incomplete_20d_forward_windows,20,WARN,
+SPOT,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SPOT,zero_volume_days,0,OK,
+SPOT,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SPOT,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SPOT,incomplete_20d_forward_windows,20,WARN,
+SPY,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+SPY,zero_volume_days,0,OK,
+SPY,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+SPY,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+SPY,incomplete_20d_forward_windows,20,WARN,
+TEAM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+TEAM,zero_volume_days,0,OK,
+TEAM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+TEAM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+TEAM,incomplete_20d_forward_windows,20,WARN,
+TER,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+TER,zero_volume_days,0,OK,
+TER,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+TER,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+TER,incomplete_20d_forward_windows,20,WARN,
+TLN,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+TLN,zero_volume_days,0,OK,
+TLN,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+TLN,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+TLN,incomplete_20d_forward_windows,20,WARN,
+TSLA,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+TSLA,zero_volume_days,0,OK,
+TSLA,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+TSLA,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+TSLA,incomplete_20d_forward_windows,20,WARN,
+TSM,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+TSM,zero_volume_days,0,OK,
+TSM,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+TSM,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+TSM,incomplete_20d_forward_windows,20,WARN,
+UBER,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+UBER,zero_volume_days,0,OK,
+UBER,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+UBER,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+UBER,incomplete_20d_forward_windows,20,WARN,
+UPST,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+UPST,zero_volume_days,0,OK,
+UPST,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+UPST,split_or_adjustment_anomaly,1,WARN,Absolute daily close move above 45%.
+UPST,incomplete_20d_forward_windows,20,WARN,
+VST,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+VST,zero_volume_days,0,OK,
+VST,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+VST,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+VST,incomplete_20d_forward_windows,20,WARN,
+XPEV,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+XPEV,zero_volume_days,0,OK,
+XPEV,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+XPEV,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+XPEV,incomplete_20d_forward_windows,20,WARN,
+ZS,missing_ohlcv_bars,26,WARN,Business-day gap approximation; market holidays may be counted conservatively.
+ZS,zero_volume_days,0,OK,
+ZS,abnormal_volume_days,0,OK,Volume above 20x ticker median.
+ZS,split_or_adjustment_anomaly,0,OK,Absolute daily close move above 45%.
+ZS,incomplete_20d_forward_windows,20,WARN,
+ASTS,metadata_rejected_symbol,1,WARN,keyword_excluded:SPAC
+BITF,metadata_rejected_symbol,1,WARN,metadata_incomplete
+CELH,metadata_rejected_symbol,1,WARN,exchange_excluded
+CLSK,metadata_rejected_symbol,1,WARN,exchange_excluded
+CRSP,metadata_rejected_symbol,1,WARN,exchange_excluded
+IOVA,metadata_rejected_symbol,1,WARN,exchange_excluded
+MARA,metadata_rejected_symbol,1,WARN,exchange_excluded
+MDB,metadata_rejected_symbol,1,WARN,exchange_excluded
+MIRM,metadata_rejected_symbol,1,WARN,exchange_excluded
+NNE,metadata_rejected_symbol,1,WARN,exchange_excluded
+NTLA,metadata_rejected_symbol,1,WARN,exchange_excluded
+RIOT,metadata_rejected_symbol,1,WARN,exchange_excluded
+SOUN,metadata_rejected_symbol,1,WARN,exchange_excluded
+SQ,metadata_rejected_symbol,1,WARN,metadata_incomplete
+SYM,metadata_rejected_symbol,1,WARN,exchange_excluded
+TGTX,metadata_rejected_symbol,1,WARN,exchange_excluded
+TTD,metadata_rejected_symbol,1,WARN,exchange_excluded
+U,metadata_rejected_symbol,1,WARN,keyword_excluded:UNIT
+VKTX,metadata_rejected_symbol,1,WARN,exchange_excluded
+QQQ,missing_qqq_regime_data,1,WARN,QQQ was not downloaded; QQQ trend labels are UNKNOWN_QQQ_DATA.

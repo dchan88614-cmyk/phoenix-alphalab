@@ -1,0 +1,54 @@
+ticker,company_name_if_available,theme,subtheme,mapping_source,mapping_confidence,notes
+ACHR,,EV / mobility,eVTOL,static_phase1f_taxonomy,HIGH,
+AFRM,,fintech,consumer credit,static_phase1f_taxonomy,HIGH,
+AI,,AI / software,enterprise AI,static_phase1f_taxonomy,HIGH,
+ASTS,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+BBAI,,AI / software,defense AI,static_phase1f_taxonomy,HIGH,
+BEAM,,biotech,gene editing,static_phase1f_taxonomy,HIGH,
+BITF,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+CCJ,,space / defense / nuclear,uranium,static_phase1f_taxonomy,HIGH,
+CELH,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+CLSK,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+CORZ,,crypto-adjacent / high beta,bitcoin mining / AI compute,static_phase1f_taxonomy,HIGH,
+CRSP,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+F,,EV / mobility,auto OEM,static_phase1f_taxonomy,HIGH,
+GM,,EV / mobility,auto OEM,static_phase1f_taxonomy,HIGH,
+HOOD,,fintech,brokerage,static_phase1f_taxonomy,HIGH,
+HPE,,AI infrastructure,servers / networking,static_phase1f_taxonomy,HIGH,
+HUT,,crypto-adjacent / high beta,bitcoin mining,static_phase1f_taxonomy,HIGH,
+INTC,,semiconductor / hardware,CPU / foundry,static_phase1f_taxonomy,HIGH,
+IOVA,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+IREN,,crypto-adjacent / high beta,bitcoin mining / AI compute,static_phase1f_taxonomy,HIGH,
+JOBY,,EV / mobility,eVTOL,static_phase1f_taxonomy,HIGH,
+KTOS,,space / defense / nuclear,defense systems,static_phase1f_taxonomy,HIGH,
+LI,,EV / mobility,China EV,static_phase1f_taxonomy,HIGH,
+MARA,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+MDB,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+MIRM,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+MRNA,,biotech,mRNA therapeutics,static_phase1f_taxonomy,HIGH,
+NIO,,EV / mobility,China EV,static_phase1f_taxonomy,HIGH,
+NNE,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+NTLA,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+NVAX,,biotech,vaccines,static_phase1f_taxonomy,HIGH,
+OKLO,,space / defense / nuclear,advanced nuclear,static_phase1f_taxonomy,HIGH,
+PATH,,AI / software,automation software,static_phase1f_taxonomy,HIGH,
+PLTR,,AI / software,analytics / defense AI,static_phase1f_taxonomy,HIGH,
+RBLX,,consumer internet,gaming platform,static_phase1f_taxonomy,HIGH,
+RIOT,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+RIVN,,EV / mobility,EV OEM,static_phase1f_taxonomy,HIGH,
+RKLB,,space / defense / nuclear,space launch,static_phase1f_taxonomy,HIGH,
+RXRX,,biotech,AI drug discovery,static_phase1f_taxonomy,HIGH,
+S,,software,cybersecurity,static_phase1f_taxonomy,HIGH,
+SDGR,,biotech,computational drug discovery,static_phase1f_taxonomy,HIGH,
+SMCI,,AI infrastructure,servers,static_phase1f_taxonomy,HIGH,
+SMR,,space / defense / nuclear,small modular nuclear,static_phase1f_taxonomy,HIGH,
+SOFI,,fintech,consumer finance,static_phase1f_taxonomy,HIGH,
+SOUN,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+SQ,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+SYM,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+TGTX,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+TTD,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+U,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+VKTX,,UNMAPPED_LOW_CONFIDENCE,unknown,low_confidence_fallback,LOW,UNMAPPED_LOW_CONFIDENCE: no static project mapping available.
+VST,,power / electrification,power producer,static_phase1f_taxonomy,HIGH,
+XPEV,,EV / mobility,China EV,static_phase1f_taxonomy,HIGH,

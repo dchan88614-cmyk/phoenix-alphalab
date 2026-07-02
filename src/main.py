@@ -50,6 +50,7 @@ from src.research.execution_diagnostics import build_phase1b_execution_diagnosti
 from src.research.phase1c_robustness import build_phase1c_robustness_analysis, write_phase1c_reports
 from src.research.phase1d_entry_rules import build_phase1d_entry_rule_analysis, write_phase1d_reports
 from src.research.phase1e_filter_validation import build_phase1e_filter_validation, write_phase1e_reports
+from src.research.phase1f_failure_audit import build_phase1f_failure_audit, write_phase1f_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -413,6 +414,51 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1E excluded decision audit CSV: %s", phase1e_excluded_path)
         logger.info("Wrote Phase 1E filter summary Markdown: %s", phase1e_summary_path)
 
+    if args.phase1f_failure_audit:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        phase1f_ledger, phase1f_taxonomy, phase1f_drawdown, phase1f_regime, phase1f_quality, phase1f_summary = (
+            build_phase1f_failure_audit(
+                research_dataset,
+                account_settings=account_settings,
+                rule=candidate_rule,
+                replay_rounds=int(args.replay_rounds),
+                replay_sample_count=int(args.replay_sample_count),
+                replay_sample_offset=int(args.replay_sample_offset),
+                benchmark_ticker=benchmark,
+                rejected_metadata=rejected,
+            )
+        )
+        phase1f_ledger_path = reports_dir / "phase1f_failure_trade_ledger.csv"
+        phase1f_taxonomy_path = reports_dir / "phase1f_theme_taxonomy.csv"
+        phase1f_drawdown_path = reports_dir / "phase1f_drawdown_attribution.csv"
+        phase1f_regime_path = reports_dir / "phase1f_regime_attribution.csv"
+        phase1f_quality_path = reports_dir / "phase1f_data_quality_audit.csv"
+        phase1f_summary_path = reports_dir / "phase1f_viability_summary.md"
+        write_phase1f_reports(
+            phase1f_ledger,
+            phase1f_taxonomy,
+            phase1f_drawdown,
+            phase1f_regime,
+            phase1f_quality,
+            phase1f_summary,
+            phase1f_ledger_path,
+            phase1f_taxonomy_path,
+            phase1f_drawdown_path,
+            phase1f_regime_path,
+            phase1f_quality_path,
+            phase1f_summary_path,
+        )
+        logger.info("Wrote Phase 1F failure trade ledger CSV: %s", phase1f_ledger_path)
+        logger.info("Wrote Phase 1F theme taxonomy CSV: %s", phase1f_taxonomy_path)
+        logger.info("Wrote Phase 1F drawdown attribution CSV: %s", phase1f_drawdown_path)
+        logger.info("Wrote Phase 1F regime attribution CSV: %s", phase1f_regime_path)
+        logger.info("Wrote Phase 1F data quality audit CSV: %s", phase1f_quality_path)
+        logger.info("Wrote Phase 1F viability summary Markdown: %s", phase1f_summary_path)
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -576,6 +622,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1e-filter-validation",
         action="store_true",
         help="Run Phoenix Nano Phase 1E cross-validated conservative filter validation",
+    )
+    parser.add_argument(
+        "--phase1f-failure-audit",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1F failure attribution, taxonomy, and data quality audit",
     )
     return parser
 
