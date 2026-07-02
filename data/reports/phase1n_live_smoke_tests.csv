@@ -1,0 +1,22 @@
+source_name,ticker,lookup_symbol,attempted_network_fetch,http_status_if_available,parsed_rows,first_date,last_date,required_start_date,required_end_date,overlap_trading_days,has_adjusted_close,has_adjusted_ohlc,has_volume,smoke_status,safe_to_retry_later,reason
+tiingo_eod,AAPL,AAPL,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+tiingo_eod,MSFT,MSFT,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+tiingo_eod,SPY,SPY,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+tiingo_eod,QQQ,QQQ,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+tiingo_eod,SQ,SQ,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+tiingo_eod,GEV,GEV,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+tiingo_eod,RDDT,RDDT,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,AAPL,AAPL,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,MSFT,MSFT,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,SPY,SPY,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,QQQ,QQQ,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,SQ,SQ,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,GEV,GEV,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+polygon_aggs,RDDT,RDDT,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,AAPL,AAPL,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,MSFT,MSFT,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,SPY,SPY,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,QQQ,QQQ,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,SQ,SQ,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,GEV,GEV,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.
+alpha_vantage_daily_adjusted,RDDT,RDDT,False,,0,,,2024-01-01,2026-06-30,0,False,False,False,CREDENTIAL_MISSING,True,No non-suspicious credential selected; network call skipped.

@@ -1,0 +1,4 @@
+source_name,fixture_name,parse_status,normalized_rows,required_fields_present,adjusted_fields_present,date_order_valid,positive_price_volume_check,reason
+tiingo_eod,tiingo_eod_aapl.json,PASS,1,True,True,True,True,contract passed
+polygon_aggs,polygon_aggs_aapl.json,PASS,1,True,True,True,True,contract passed
+alpha_vantage_daily_adjusted,alpha_vantage_daily_adjusted_ibm.json,PASS,1,True,True,True,True,contract passed

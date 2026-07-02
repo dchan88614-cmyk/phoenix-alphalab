@@ -58,6 +58,7 @@ from src.research.phase1j_data_readiness import build_phase1j_data_readiness_gat
 from src.research.phase1k_data_remediation import build_phase1k_data_remediation_gate, write_phase1k_reports
 from src.research.phase1l_secondary_adapter import build_phase1l_secondary_data_adapter_gate, write_phase1l_reports
 from src.research.phase1m_credentialed_vendor import build_phase1m_credentialed_vendor_gate, write_phase1m_reports
+from src.research.phase1n_credential_activation import build_phase1n_credential_activation_gate, write_phase1n_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -114,7 +115,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate or args.phase1l_secondary_data_adapter_gate or args.phase1m_credentialed_vendor_gate:
+    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate or args.phase1l_secondary_data_adapter_gate or args.phase1m_credentialed_vendor_gate or args.phase1n_credential_activation_gate:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -875,6 +876,50 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1M data readiness scorecard CSV: %s", phase1m_paths["scorecard"])
         logger.info("Wrote Phase 1M data readiness summary Markdown: %s", phase1m_paths["summary"])
 
+    if args.phase1n_credential_activation_gate:
+        (
+            phase1n_preflight,
+            phase1n_contracts,
+            phase1n_live_smoke,
+            phase1n_readiness,
+            phase1n_no_secret,
+            phase1n_selection_md,
+            phase1n_summary_md,
+            _,
+            _,
+            _,
+        ) = build_phase1n_credential_activation_gate(
+            requested_start_date=research_start,
+            requested_end_date=research_end,
+            reports_dir=reports_dir,
+        )
+        phase1n_paths = {
+            "selection": reports_dir / "phase1n_vendor_selection_decision.md",
+            "preflight": reports_dir / "phase1n_credentials_preflight.csv",
+            "contracts": reports_dir / "phase1n_adapter_contract_tests.csv",
+            "live_smoke": reports_dir / "phase1n_live_smoke_tests.csv",
+            "readiness": reports_dir / "phase1n_phase1m_rerun_readiness.csv",
+            "no_secret": reports_dir / "phase1n_no_secret_audit.csv",
+            "summary": reports_dir / "phase1n_data_readiness_summary.md",
+        }
+        write_phase1n_reports(
+            phase1n_preflight,
+            phase1n_contracts,
+            phase1n_live_smoke,
+            phase1n_readiness,
+            phase1n_no_secret,
+            phase1n_selection_md,
+            phase1n_summary_md,
+            phase1n_paths,
+        )
+        logger.info("Wrote Phase 1N vendor selection decision Markdown: %s", phase1n_paths["selection"])
+        logger.info("Wrote Phase 1N credentials preflight CSV: %s", phase1n_paths["preflight"])
+        logger.info("Wrote Phase 1N adapter contract tests CSV: %s", phase1n_paths["contracts"])
+        logger.info("Wrote Phase 1N live smoke tests CSV: %s", phase1n_paths["live_smoke"])
+        logger.info("Wrote Phase 1N Phase 1M rerun readiness CSV: %s", phase1n_paths["readiness"])
+        logger.info("Wrote Phase 1N no-secret audit CSV: %s", phase1n_paths["no_secret"])
+        logger.info("Wrote Phase 1N data readiness summary Markdown: %s", phase1n_paths["summary"])
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -1078,6 +1123,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1m-credentialed-vendor-gate",
         action="store_true",
         help="Run Phoenix Nano Phase 1M credentialed independent vendor integration gate",
+    )
+    parser.add_argument(
+        "--phase1n-credential-activation-gate",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1N credential activation and adapter verification gate",
     )
     return parser
 

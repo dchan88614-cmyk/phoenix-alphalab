@@ -1,0 +1,2 @@
+preferred_vendor,credential_ready,adapter_contract_ready,live_smoke_ready,secret_safety_ready,phase1m_rerun_allowed,recommended_next_command,reason,reason_status
+,False,True,False,True,False,,no non-suspicious vendor credential present,PHASE_1N_WAITING_FOR_CREDENTIAL
