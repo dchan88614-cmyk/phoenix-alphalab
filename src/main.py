@@ -54,6 +54,7 @@ from src.research.phase1f_failure_audit import build_phase1f_failure_audit, writ
 from src.research.phase1g_redesign_sandbox import build_phase1g_redesign_sandbox, write_phase1g_reports
 from src.research.phase1h_risk_overlay import build_phase1h_risk_overlay_sandbox, write_phase1h_reports
 from src.research.phase1i_data_universe_audit import build_phase1i_data_universe_audit, write_phase1i_reports
+from src.research.phase1j_data_readiness import build_phase1j_data_readiness_gate, write_phase1j_reports
 from src.utils.dates import parse_date
 from src.utils.logging import configure_logging
 
@@ -110,7 +111,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit:
+    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -657,6 +658,57 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1I strategy-vs-universe attribution CSV: %s", phase1i_paths["attribution"])
         logger.info("Wrote Phase 1I data universe summary Markdown: %s", phase1i_paths["summary"])
 
+    if args.phase1j_data_readiness_gate:
+        (
+            phase1j_symbol_master,
+            phase1j_listing,
+            phase1j_secondary,
+            phase1j_scorecard,
+            phase1j_quarantine,
+            phase1j_taxonomy,
+            phase1j_clean_watchlist,
+            phase1j_summary_md,
+            _,
+        ) = build_phase1j_data_readiness_gate(
+            research_dataset,
+            watchlist_path=args.watchlist,
+            watchlist_tickers=tickers,
+            universe=universe,
+            rejected_metadata=rejected,
+            requested_start_date=research_start,
+            requested_end_date=research_end,
+            benchmark_ticker=benchmark,
+        )
+        phase1j_paths = {
+            "symbol_master": reports_dir / "phase1j_symbol_master.csv",
+            "listing": reports_dir / "phase1j_listing_validation_matrix.csv",
+            "secondary": reports_dir / "phase1j_secondary_ohlcv_validation.csv",
+            "scorecard": reports_dir / "phase1j_data_readiness_scorecard.csv",
+            "quarantine": reports_dir / "phase1j_quarantine_list.csv",
+            "taxonomy": reports_dir / "phase1j_taxonomy_resolution.csv",
+            "clean_watchlist": reports_dir / "phase1j_clean_watchlist_candidate.txt",
+            "summary": reports_dir / "phase1j_data_readiness_summary.md",
+        }
+        write_phase1j_reports(
+            phase1j_symbol_master,
+            phase1j_listing,
+            phase1j_secondary,
+            phase1j_scorecard,
+            phase1j_quarantine,
+            phase1j_taxonomy,
+            phase1j_clean_watchlist,
+            phase1j_summary_md,
+            phase1j_paths,
+        )
+        logger.info("Wrote Phase 1J symbol master CSV: %s", phase1j_paths["symbol_master"])
+        logger.info("Wrote Phase 1J listing validation matrix CSV: %s", phase1j_paths["listing"])
+        logger.info("Wrote Phase 1J secondary OHLCV validation CSV: %s", phase1j_paths["secondary"])
+        logger.info("Wrote Phase 1J data readiness scorecard CSV: %s", phase1j_paths["scorecard"])
+        logger.info("Wrote Phase 1J quarantine list CSV: %s", phase1j_paths["quarantine"])
+        logger.info("Wrote Phase 1J taxonomy resolution CSV: %s", phase1j_paths["taxonomy"])
+        logger.info("Wrote Phase 1J clean watchlist candidate TXT: %s", phase1j_paths["clean_watchlist"])
+        logger.info("Wrote Phase 1J data readiness summary Markdown: %s", phase1j_paths["summary"])
+
     smoke_results = None
     if args.smoke_test or args.decision_simulation:
         smoke_results = build_smoke_test(
@@ -840,6 +892,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1i-data-universe-audit",
         action="store_true",
         help="Run Phoenix Nano Phase 1I data quality and universe design audit",
+    )
+    parser.add_argument(
+        "--phase1j-data-readiness-gate",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1J symbol master and data readiness gate",
     )
     return parser
 

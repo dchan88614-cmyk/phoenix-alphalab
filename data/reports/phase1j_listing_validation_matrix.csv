@@ -1,0 +1,120 @@
+ticker,source_name,source_available,source_lookup_symbol,source_security_name,source_exchange,source_asset_type,source_active_flag,source_delisted_flag,source_listing_date_if_available,validation_status,validation_reason
+AAPL,nasdaq_trader_symbol_directory,True,AAPL,Apple Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ABNB,nasdaq_trader_symbol_directory,True,ABNB,"Airbnb, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ACHR,nasdaq_trader_symbol_directory,True,ACHR,Archer Aviation Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ADBE,nasdaq_trader_symbol_directory,True,ADBE,Adobe Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+AFRM,nasdaq_trader_symbol_directory,True,AFRM,"Affirm Holdings, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+AI,nasdaq_trader_symbol_directory,True,AI,"C3.ai, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+AMAT,nasdaq_trader_symbol_directory,True,AMAT,"Applied Materials, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+AMD,nasdaq_trader_symbol_directory,True,AMD,"Advanced Micro Devices, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ANET,nasdaq_trader_symbol_directory,True,ANET,"Arista Networks, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+APP,nasdaq_trader_symbol_directory,True,APP,Applovin Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ARM,nasdaq_trader_symbol_directory,True,ARM,Arm Holdings plc,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ASML,nasdaq_trader_symbol_directory,True,ASML,ASML Holding N.V. - New York Re,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ASTS,nasdaq_trader_symbol_directory,True,ASTS,"AST SpaceMobile, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: keyword_excluded:SPAC
+AVAV,nasdaq_trader_symbol_directory,True,AVAV,"AeroVironment, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+AVGO,nasdaq_trader_symbol_directory,True,AVGO,Broadcom Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+BA,nasdaq_trader_symbol_directory,True,BA,Boeing Company (The),N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+BBAI,nasdaq_trader_symbol_directory,True,BBAI,"BigBear.ai, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+BEAM,nasdaq_trader_symbol_directory,True,BEAM,Beam Therapeutics Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+BITF,nasdaq_trader_symbol_directory,False,BITF,,,,False,False,,WARN,Public listing source unavailable or did not confirm symbol.
+BWXT,nasdaq_trader_symbol_directory,True,BWXT,"BWX Technologies, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CAVA,nasdaq_trader_symbol_directory,True,CAVA,"CAVA Group, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CCJ,nasdaq_trader_symbol_directory,True,CCJ,Cameco Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CEG,nasdaq_trader_symbol_directory,True,CEG,Constellation Energy Corporatio,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CELH,nasdaq_trader_symbol_directory,True,CELH,"Celsius Holdings, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+CLSK,nasdaq_trader_symbol_directory,True,CLSK,"CleanSpark, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+COIN,nasdaq_trader_symbol_directory,True,COIN,"Coinbase Global, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CORZ,nasdaq_trader_symbol_directory,True,CORZ,"Core Scientific, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CRM,nasdaq_trader_symbol_directory,True,CRM,"Salesforce, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+CRSP,nasdaq_trader_symbol_directory,True,CRSP,CRISPR Therapeutics AG,NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+CRWD,nasdaq_trader_symbol_directory,True,CRWD,"CrowdStrike Holdings, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+DASH,nasdaq_trader_symbol_directory,True,DASH,"DoorDash, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+DDOG,nasdaq_trader_symbol_directory,True,DDOG,"Datadog, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+DELL,nasdaq_trader_symbol_directory,True,DELL,Dell Technologies Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+DNA,nasdaq_trader_symbol_directory,True,DNA,"Ginkgo Bioworks Holdings, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+DUOL,nasdaq_trader_symbol_directory,True,DUOL,"Duolingo, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+EDIT,nasdaq_trader_symbol_directory,True,EDIT,"Editas Medicine, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ELF,nasdaq_trader_symbol_directory,True,ELF,"e.l.f. Beauty, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ESTC,nasdaq_trader_symbol_directory,True,ESTC,Elastic N.V.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ETN,nasdaq_trader_symbol_directory,True,ETN,"Eaton Corporation, PLC",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+F,nasdaq_trader_symbol_directory,True,F,Ford Motor Company,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+GD,nasdaq_trader_symbol_directory,True,GD,General Dynamics Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+GEV,nasdaq_trader_symbol_directory,True,GEV,GE Vernova Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+GM,nasdaq_trader_symbol_directory,True,GM,General Motors Company,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+HOOD,nasdaq_trader_symbol_directory,True,HOOD,"Robinhood Markets, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+HPE,nasdaq_trader_symbol_directory,True,HPE,Hewlett Packard Enterprise Comp,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+HUT,nasdaq_trader_symbol_directory,True,HUT,Hut 8 Corp.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+INTC,nasdaq_trader_symbol_directory,True,INTC,Intel Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+IOVA,nasdaq_trader_symbol_directory,True,IOVA,"Iovance Biotherapeutics, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+IREN,nasdaq_trader_symbol_directory,True,IREN,IREN LIMITED,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ISRG,nasdaq_trader_symbol_directory,True,ISRG,"Intuitive Surgical, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+JOBY,nasdaq_trader_symbol_directory,True,JOBY,"Joby Aviation, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+KLAC,nasdaq_trader_symbol_directory,True,KLAC,KLA Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+KTOS,nasdaq_trader_symbol_directory,True,KTOS,Kratos Defense & Security Solut,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+LCID,nasdaq_trader_symbol_directory,True,LCID,"Lucid Group, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+LEU,nasdaq_trader_symbol_directory,True,LEU,Centrus Energy Corp.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+LI,nasdaq_trader_symbol_directory,True,LI,Li Auto Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+LMT,nasdaq_trader_symbol_directory,True,LMT,Lockheed Martin Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+LRCX,nasdaq_trader_symbol_directory,True,LRCX,Lam Research Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+MARA,nasdaq_trader_symbol_directory,True,MARA,"MARA Holdings, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+MDB,nasdaq_trader_symbol_directory,True,MDB,"MongoDB, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+MIRM,nasdaq_trader_symbol_directory,True,MIRM,"Mirum Pharmaceuticals, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+MRNA,nasdaq_trader_symbol_directory,True,MRNA,"Moderna, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+MRVL,nasdaq_trader_symbol_directory,True,MRVL,"Marvell Technology, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+MSFT,nasdaq_trader_symbol_directory,True,MSFT,Microsoft Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+MSTR,nasdaq_trader_symbol_directory,True,MSTR,Strategy Inc,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+MU,nasdaq_trader_symbol_directory,True,MU,"Micron Technology, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NEE,nasdaq_trader_symbol_directory,True,NEE,"NextEra Energy, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NET,nasdaq_trader_symbol_directory,True,NET,"Cloudflare, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NIO,nasdaq_trader_symbol_directory,True,NIO,NIO Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NNE,nasdaq_trader_symbol_directory,True,NNE,Nano Nuclear Energy Inc.,NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+NOC,nasdaq_trader_symbol_directory,True,NOC,Northrop Grumman Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NOW,nasdaq_trader_symbol_directory,True,NOW,"ServiceNow, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NTLA,nasdaq_trader_symbol_directory,True,NTLA,"Intellia Therapeutics, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+NVAX,nasdaq_trader_symbol_directory,True,NVAX,"Novavax, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+NVDA,nasdaq_trader_symbol_directory,True,NVDA,NVIDIA Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+OKLO,nasdaq_trader_symbol_directory,True,OKLO,Oklo Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+OKTA,nasdaq_trader_symbol_directory,True,OKTA,"Okta, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+PANW,nasdaq_trader_symbol_directory,True,PANW,"Palo Alto Networks, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+PATH,nasdaq_trader_symbol_directory,True,PATH,"UiPath, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+PLTR,nasdaq_trader_symbol_directory,True,PLTR,Palantir Technologies Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+PWR,nasdaq_trader_symbol_directory,True,PWR,"Quanta Services, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+PYPL,nasdaq_trader_symbol_directory,True,PYPL,"PayPal Holdings, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+QCOM,nasdaq_trader_symbol_directory,True,QCOM,QUALCOMM Incorporated,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+QQQ,nasdaq_trader_symbol_directory,True,QQQ,"Invesco QQQ Trust, Series 1",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+RBLX,nasdaq_trader_symbol_directory,True,RBLX,Roblox Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+RDDT,nasdaq_trader_symbol_directory,True,RDDT,"Reddit, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+RIOT,nasdaq_trader_symbol_directory,True,RIOT,"Riot Platforms, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+RIVN,nasdaq_trader_symbol_directory,True,RIVN,"Rivian Automotive, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+RKLB,nasdaq_trader_symbol_directory,True,RKLB,Rocket Lab Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ROKU,nasdaq_trader_symbol_directory,True,ROKU,"Roku, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+RTX,nasdaq_trader_symbol_directory,True,RTX,RTX Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+RXRX,nasdaq_trader_symbol_directory,True,RXRX,"Recursion Pharmaceuticals, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+S,nasdaq_trader_symbol_directory,True,S,"SentinelOne, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SDGR,nasdaq_trader_symbol_directory,True,SDGR,"Schrodinger, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SHOP,nasdaq_trader_symbol_directory,True,SHOP,Shopify Inc.,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SMCI,nasdaq_trader_symbol_directory,True,SMCI,"Super Micro Computer, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SMR,nasdaq_trader_symbol_directory,True,SMR,NuScale Power Corporation,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SNOW,nasdaq_trader_symbol_directory,True,SNOW,Snowflake Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SO,nasdaq_trader_symbol_directory,True,SO,Southern Company (The),N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SOFI,nasdaq_trader_symbol_directory,True,SOFI,"SoFi Technologies, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SOUN,nasdaq_trader_symbol_directory,True,SOUN,"SoundHound AI, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+SPOT,nasdaq_trader_symbol_directory,True,SPOT,Spotify Technology S.A.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SPY,nasdaq_trader_symbol_directory,True,SPY,State Street SPDR S&P 500 ETF Trust,P,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+SQ,nasdaq_trader_symbol_directory,False,SQ,,,NONE,False,False,,WARN,Public listing source unavailable or did not confirm symbol.
+SYM,nasdaq_trader_symbol_directory,True,SYM,Symbotic Inc.,NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+TEAM,nasdaq_trader_symbol_directory,True,TEAM,Atlassian Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+TER,nasdaq_trader_symbol_directory,True,TER,"Teradyne, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+TGTX,nasdaq_trader_symbol_directory,True,TGTX,"TG Therapeutics, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+TLN,nasdaq_trader_symbol_directory,True,TLN,Talen Energy Corporation,NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+TSLA,nasdaq_trader_symbol_directory,True,TSLA,"Tesla, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+TSM,nasdaq_trader_symbol_directory,True,TSM,Taiwan Semiconductor Manufactur,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+TTD,nasdaq_trader_symbol_directory,True,TTD,"The Trade Desk, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+U,nasdaq_trader_symbol_directory,True,U,Unity Software Inc.,N,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: keyword_excluded:UNIT
+UBER,nasdaq_trader_symbol_directory,True,UBER,"Uber Technologies, Inc.",N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+UPST,nasdaq_trader_symbol_directory,True,UPST,"Upstart Holdings, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+VKTX,nasdaq_trader_symbol_directory,True,VKTX,"Viking Therapeutics, Inc.",NASDAQ,EQUITY,True,False,,WARN,Public listing validates symbol but yfinance metadata rejected it: exchange_excluded
+VST,nasdaq_trader_symbol_directory,True,VST,Vistra Corp.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+XPEV,nasdaq_trader_symbol_directory,True,XPEV,XPeng Inc.,N,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.
+ZS,nasdaq_trader_symbol_directory,True,ZS,"Zscaler, Inc.",NASDAQ,EQUITY,True,False,,MATCH,Public listing source confirms active symbol.

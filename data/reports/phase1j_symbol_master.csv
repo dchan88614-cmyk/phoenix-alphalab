@@ -1,0 +1,120 @@
+ticker,normalized_ticker,source_watchlist,source_watchlist_line_number,symbol_master_status,primary_exchange,listing_exchange,asset_type,security_name,is_etf,is_adr,is_spac_or_former_spac_if_detectable,is_recent_ipo_or_recent_listing,first_trade_date_from_ohlcv,last_trade_date_from_ohlcv,has_sufficient_factor_lookback,has_sufficient_forward_window,normalized_symbol_notes,validation_sources_used
+AAPL,AAPL,True,1,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Apple Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ABNB,ABNB,True,37,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Airbnb, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ACHR,ACHR,True,86,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Archer Aviation Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+ADBE,ADBE,True,33,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Adobe Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+AFRM,AFRM,True,113,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Affirm Holdings, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+AI,AI,True,92,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"C3.ai, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+AMAT,AMAT,True,8,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Applied Materials, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+AMD,AMD,True,4,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Advanced Micro Devices, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ANET,ANET,True,19,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Arista Networks, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+APP,APP,True,41,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Applovin Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ARM,ARM,True,13,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Arm Holdings plc,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ASML,ASML,True,7,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,ASML Holding N.V. - New York Re,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ASTS,ASTS,True,117,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"AST SpaceMobile, Inc.",False,False,True,False,,,False,False,yfinance_metadata_rejected:keyword_excluded:SPAC,nasdaq_trader_nasdaq
+AVAV,AVAV,True,85,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"AeroVironment, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+AVGO,AVGO,True,5,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Broadcom Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+BA,BA,True,83,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Boeing Company (The),False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+BBAI,BBAI,True,94,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"BigBear.ai, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+BEAM,BEAM,True,99,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Beam Therapeutics Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+BITF,BITF,True,56,UNKNOWN,,,,,False,False,False,False,,,False,False,yfinance_metadata_rejected:metadata_incomplete;not_found_in_public_listing_directory,yfinance_metadata_only
+BWXT,BWXT,True,74,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"BWX Technologies, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+CAVA,CAVA,True,111,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"CAVA Group, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+CCJ,CCJ,True,73,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Cameco Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+CEG,CEG,True,67,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Constellation Energy Corporatio,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+CELH,CELH,True,108,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,"Celsius Holdings, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+CLSK,CLSK,True,52,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,"CleanSpark, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+COIN,COIN,True,48,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Coinbase Global, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+CORZ,CORZ,True,54,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Core Scientific, Inc.",False,False,False,False,2024-02-21,2026-06-29,True,True,,nasdaq_trader_nasdaq
+CRM,CRM,True,34,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Salesforce, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+CRSP,CRSP,True,97,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,CRISPR Therapeutics AG,False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+CRWD,CRWD,True,24,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"CrowdStrike Holdings, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+DASH,DASH,True,38,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"DoorDash, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+DDOG,DDOG,True,22,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Datadog, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+DELL,DELL,True,17,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Dell Technologies Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+DNA,DNA,True,101,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Ginkgo Bioworks Holdings, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+DUOL,DUOL,True,110,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Duolingo, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+EDIT,EDIT,True,98,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Editas Medicine, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ELF,ELF,True,109,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"e.l.f. Beauty, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+ESTC,ESTC,True,29,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Elastic N.V.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+ETN,ETN,True,75,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Eaton Corporation, PLC",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+F,F,True,64,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Ford Motor Company,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+GD,GD,True,82,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,General Dynamics Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+GEV,GEV,True,65,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,GE Vernova Inc.,False,False,False,True,2024-04-24,2026-06-29,False,True,,nasdaq_trader_other
+GM,GM,True,63,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,General Motors Company,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+HOOD,HOOD,True,47,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Robinhood Markets, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+HPE,HPE,True,18,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Hewlett Packard Enterprise Comp,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+HUT,HUT,True,55,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Hut 8 Corp.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+INTC,INTC,True,14,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Intel Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+IOVA,IOVA,True,105,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,"Iovance Biotherapeutics, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+IREN,IREN,True,53,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,IREN LIMITED,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ISRG,ISRG,True,90,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Intuitive Surgical, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+JOBY,JOBY,True,87,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Joby Aviation, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+KLAC,KLAC,True,10,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,KLA Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+KTOS,KTOS,True,84,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Kratos Defense & Security Solut,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+LCID,LCID,True,59,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Lucid Group, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+LEU,LEU,True,72,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Centrus Energy Corp.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+LI,LI,True,62,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Li Auto Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+LMT,LMT,True,79,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Lockheed Martin Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+LRCX,LRCX,True,9,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Lam Research Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+MARA,MARA,True,50,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,"MARA Holdings, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+MDB,MDB,True,28,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,"MongoDB, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+MIRM,MIRM,True,103,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,"Mirum Pharmaceuticals, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+MRNA,MRNA,True,106,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Moderna, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+MRVL,MRVL,True,12,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Marvell Technology, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+MSFT,MSFT,True,2,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Microsoft Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+MSTR,MSTR,True,49,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Strategy Inc,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+MU,MU,True,11,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Micron Technology, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+NEE,NEE,True,77,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"NextEra Energy, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+NET,NET,True,23,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Cloudflare, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+NIO,NIO,True,60,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,NIO Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+NNE,NNE,True,71,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,Nano Nuclear Energy Inc.,False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+NOC,NOC,True,80,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Northrop Grumman Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+NOW,NOW,True,32,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"ServiceNow, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+NTLA,NTLA,True,100,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,"Intellia Therapeutics, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+NVAX,NVAX,True,107,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Novavax, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+NVDA,NVDA,True,3,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,NVIDIA Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+OKLO,OKLO,True,69,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Oklo Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+OKTA,OKTA,True,27,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Okta, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+PANW,PANW,True,26,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Palo Alto Networks, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+PATH,PATH,True,91,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"UiPath, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+PLTR,PLTR,True,21,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Palantir Technologies Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+PWR,PWR,True,76,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Quanta Services, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+PYPL,PYPL,True,46,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"PayPal Holdings, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+QCOM,QCOM,True,15,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,QUALCOMM Incorporated,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+QQQ,QQQ,False,,ETF_OR_INDEX_PROXY,,NASDAQ,EQUITY,"Invesco QQQ Trust, Series 1",True,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+RBLX,RBLX,True,39,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Roblox Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+RDDT,RDDT,True,112,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Reddit, Inc.",False,False,False,True,2024-04-18,2026-06-29,False,True,,nasdaq_trader_other
+RIOT,RIOT,True,51,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,"Riot Platforms, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+RIVN,RIVN,True,58,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Rivian Automotive, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+RKLB,RKLB,True,116,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Rocket Lab Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+ROKU,ROKU,True,43,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Roku, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+RTX,RTX,True,81,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,RTX Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+RXRX,RXRX,True,95,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Recursion Pharmaceuticals, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+S,S,True,30,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"SentinelOne, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+SDGR,SDGR,True,96,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Schrodinger, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+SHOP,SHOP,True,35,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Shopify Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+SMCI,SMCI,True,16,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Super Micro Computer, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+SMR,SMR,True,70,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,NuScale Power Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+SNOW,SNOW,True,20,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Snowflake Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+SO,SO,True,78,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Southern Company (The),False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+SOFI,SOFI,True,115,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"SoFi Technologies, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+SOUN,SOUN,True,93,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,"SoundHound AI, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+SPOT,SPOT,True,44,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Spotify Technology S.A.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+SPY,SPY,False,,ETF_OR_INDEX_PROXY,,P,EQUITY,State Street SPDR S&P 500 ETF Trust,True,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+SQ,SQ,True,45,UNKNOWN,,,NONE,,False,False,False,False,,,False,False,yfinance_metadata_rejected:metadata_incomplete;not_found_in_public_listing_directory,yfinance_metadata_only
+SYM,SYM,True,88,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,Symbotic Inc.,False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+TEAM,TEAM,True,31,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Atlassian Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+TER,TER,True,89,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Teradyne, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+TGTX,TGTX,True,104,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,"TG Therapeutics, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+TLN,TLN,True,68,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,Talen Energy Corporation,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+TSLA,TSLA,True,57,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Tesla, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+TSM,TSM,True,6,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Taiwan Semiconductor Manufactur,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+TTD,TTD,True,42,ACTIVE_LISTED_EQUITY,NGM,NASDAQ,EQUITY,"The Trade Desk, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+U,U,True,40,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Unity Software Inc.,False,False,False,False,,,False,False,yfinance_metadata_rejected:keyword_excluded:UNIT,nasdaq_trader_other
+UBER,UBER,True,36,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,"Uber Technologies, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+UPST,UPST,True,114,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Upstart Holdings, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
+VKTX,VKTX,True,102,ACTIVE_LISTED_EQUITY,NCM,NASDAQ,EQUITY,"Viking Therapeutics, Inc.",False,False,False,False,,,False,False,yfinance_metadata_rejected:exchange_excluded,nasdaq_trader_nasdaq
+VST,VST,True,66,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,Vistra Corp.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+XPEV,XPEV,True,61,ACTIVE_LISTED_EQUITY,NYQ,N,EQUITY,XPeng Inc.,False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_other
+ZS,ZS,True,25,ACTIVE_LISTED_EQUITY,NMS,NASDAQ,EQUITY,"Zscaler, Inc.",False,False,False,False,2024-01-02,2026-06-29,True,True,,nasdaq_trader_nasdaq
