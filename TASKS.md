@@ -2,9 +2,9 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1I — Data Quality, Vendor Validation, and Universe Design Audit
+## Current Task: Phoenix Nano Phase 1J — Symbol Master, Secondary Vendor Validation, and Research Data Readiness Gate
 
-This task is historical research only.
+This task is historical research and data-hygiene work only.
 
 Do not start Phase 2.
 Do not start Phase 3.
@@ -12,458 +12,335 @@ Do not enable paper execution.
 Do not enable real-money execution.
 Do not change daily scan production behavior.
 Do not loosen Candidate 34 thresholds.
-Do not adopt Candidate 35 or any overlay as active policy.
+Do not adopt Candidate 35, Phase 1H overlays, or any universe variant as active policy.
 Do not create Candidate 36 entry rules.
-Do not perform another broad threshold sweep.
+Do not run another strategy threshold sweep.
 Do not produce financial advice or an operational recommendation.
 
 ## Why This Task
 
-Phase 1H completed the trend-quality risk overlay sandbox.
+Phase 1I completed the data quality, vendor validation, and universe design audit.
 
 The result was:
 
-- `PHASE_1H_HOLDOUT_FAILED`
-- Candidate 34 remains unstable.
-- Candidate 35 trend-quality is directionally better than Candidate 34 but still fails risk gates.
-- The best promoted overlay, `overlay_ticker_loss_cooldown_8pct_15`, still failed holdout gates.
-- Drawdown improved only modestly, from about `-49.09%` to about `-46.04%`, still far worse than the `-35%` gate.
-- Median simulated win rate remained below the `52%` gate.
-- Top-theme loss concentration remained above the allowed gate.
-- Excluded-trade counterfactuals showed missed winner dollars were greater than avoided loser dollars.
-- Recent runs also reported yfinance metadata/download warnings, including rejected metadata, `BITF` 404, and `HUT` missing price data.
+- `PHASE_1I_DATA_BLOCKER_PAUSE_RESEARCH`
+- Symbol audit rows: 119.
+- PASS: 0.
+- WARN: 98.
+- FAIL: 21.
+- Vendor validation rows: 119 of 119 were `NO_SECOND_SOURCE`.
+- `BITF` still produced yfinance 404 / metadata incomplete behavior.
+- Several symbols showed split/adjustment or abnormal-volume warnings.
+- Current taxonomy still had 19 `UNMAPPED_LOW_CONFIDENCE` symbols.
+- Candidate 34 failed every tested universe variant.
+- Candidate 35 trend-quality remained stronger than Candidate 34, but still failed every holdout universe variant because drawdown, win rate, and top-theme loss concentration remained outside gates.
+- Clean universe variants removed too many winners and did not solve drawdown.
 
-Therefore the highest-priority next step is **not** another entry-rule redesign and **not** another risk overlay sweep.
+Therefore the highest-priority next step is **not** another rule redesign, **not** another overlay, and **not** another threshold sweep.
 
-The next optimized research task is to determine whether Phoenix Nano is being blocked by:
-
-1. unreliable retail-grade data,
-2. an unstable or overly speculative watchlist universe,
-3. theme/ticker concentration created by the universe itself,
-4. survivorship / metadata / corporate-action issues,
-5. or a true strategy-design failure that persists even after data and universe hygiene.
+The next optimized research task is to build a reproducible symbol master, validate listings and OHLCV with no-secret public sources where feasible, quarantine unsafe symbols, resolve taxonomy gaps, and create an explicit data-readiness gate before any more strategy research.
 
 ## Goal
 
-Create Phase 1I research code that audits data and universe quality before any further candidate logic changes.
+Create Phase 1J research code that answers:
 
-The output should answer:
+- Which watchlist symbols are active listed U.S. equities and safe for research replay?
+- Which symbols are failing because of yfinance metadata quirks versus genuine listing/data problems?
+- Can any no-secret secondary source validate OHLCV for enough symbols to resume research confidently?
+- Which symbols must be quarantined before further strategy testing?
+- Can the 19 `UNMAPPED_LOW_CONFIDENCE` taxonomy rows be resolved deterministically?
+- Is Phoenix Nano data ready for another frozen strategy retest, or must data/vendor work continue first?
 
-- Is the current watchlist research-grade enough for replay testing?
-- Which tickers have incomplete, stale, rejected, anomalous, or unreliable data?
-- Are failures concentrated in universe construction rather than entry rules?
-- Does a pre-declared data-quality-cleaned universe materially reduce drawdown without tuning entry rules?
-- Should Phoenix Nano pause strategy iteration until a better data source or universe process exists?
+Do not use future returns, realized PnL, or holdout performance to decide symbol inclusion, taxonomy, or quarantine status.
 
 ## CLI
 
 Add or update:
 
 ```bash
---phase1i-data-universe-audit
---replay-rounds 100
---replay-sample-count 30
+--phase1j-data-readiness-gate
 ```
 
 Preferred command:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1i-data-universe-audit --replay-rounds 100 --replay-sample-count 30
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1j-data-readiness-gate
 ```
 
-If runtime is too high, support a clearly marked fallback:
-
-```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1i-data-universe-audit --replay-rounds 100 --replay-sample-count 20
-```
-
-A fallback run cannot approve anything beyond `PHASE_1I_INSUFFICIENT_SAMPLE_WARNING`.
+If network access to public symbol directories or secondary OHLCV sources is unavailable, the run must still complete with explicit `SOURCE_UNAVAILABLE` / `NO_SECOND_SOURCE` statuses. Do not fake validation.
 
 ## Required Outputs
 
 Create or update:
 
-- `data/reports/phase1i_symbol_data_quality_audit.csv`
-- `data/reports/phase1i_vendor_validation_matrix.csv`
-- `data/reports/phase1i_universe_composition_audit.csv`
-- `data/reports/phase1i_universe_variant_backtest_matrix.csv`
-- `data/reports/phase1i_universe_variant_holdout_results.csv`
-- `data/reports/phase1i_data_gap_incident_log.csv`
-- `data/reports/phase1i_rejected_symbol_audit.csv`
-- `data/reports/phase1i_strategy_vs_universe_attribution.csv`
-- `data/reports/phase1i_data_universe_summary.md`
+- `data/reports/phase1j_symbol_master.csv`
+- `data/reports/phase1j_listing_validation_matrix.csv`
+- `data/reports/phase1j_secondary_ohlcv_validation.csv`
+- `data/reports/phase1j_data_readiness_scorecard.csv`
+- `data/reports/phase1j_quarantine_list.csv`
+- `data/reports/phase1j_taxonomy_resolution.csv`
+- `data/reports/phase1j_clean_watchlist_candidate.txt`
+- `data/reports/phase1j_data_readiness_summary.md`
 - `REPORT_TO_GPT.md`
+
+Optional but preferred if useful:
+
+- `data/cache/symbol_master/` for raw public symbol-directory snapshots.
+- `data/cache/secondary_ohlcv/` for secondary-source OHLCV snapshots.
 
 Keep earlier Phase 1 reports intact unless regeneration is required.
 
 The summary must start with:
 
 ```text
-PHOENIX NANO PHASE 1I — DATA QUALITY, VENDOR VALIDATION, AND UNIVERSE DESIGN AUDIT
+PHOENIX NANO PHASE 1J — SYMBOL MASTER, SECONDARY VENDOR VALIDATION, AND DATA READINESS GATE
 ```
 
 ## Inputs
 
-Reuse existing Phase 1 research code and outputs where useful:
+Reuse existing Phase 1 research outputs where useful:
 
-- Phase 1A historical replay mechanics
-- Phase 1B execution diagnostics
-- Phase 1C robustness sampling
-- Phase 1D pre-entry feature snapshots
-- Phase 1E calibration / holdout structure
-- Phase 1F taxonomy, failure attribution, and data-quality audit
-- Phase 1G Candidate 35 trend-quality definition
-- Phase 1H risk overlay results
+- `data/reports/phase1i_symbol_data_quality_audit.csv`
+- `data/reports/phase1i_vendor_validation_matrix.csv`
+- `data/reports/phase1i_universe_composition_audit.csv`
+- `data/reports/phase1i_data_gap_incident_log.csv`
+- `data/reports/phase1i_rejected_symbol_audit.csv`
+- `data/reports/phase1i_data_universe_summary.md`
+- Phase 1F taxonomy/failure-attribution code if available.
 
-Do not use future data for candidate selection, universe membership decisions, data-quality flags, regime labels, ranking, or trade decisions.
+Do not use Phase 1 holdout PnL to decide if a symbol is kept or removed.
 
-Future data may be used only after a decision is recorded, for verification.
+## Part 1: Build a Symbol Master
 
-## Part 1: Data Quality Audit
+Create `phase1j_symbol_master.csv`.
 
-Create `phase1i_symbol_data_quality_audit.csv`.
+For every ticker in the watchlist plus SPY and QQQ, report:
 
-Audit every ticker in `config/watchlists/us_liquid_growth_100.txt` and any index/proxy data used by Phase 1H, including SPY and QQQ.
+- ticker
+- normalized_ticker
+- source_watchlist
+- source_watchlist_line_number
+- symbol_master_status: `ACTIVE_LISTED_EQUITY`, `ETF_OR_INDEX_PROXY`, `DELISTED_OR_INACTIVE`, `NON_EQUITY`, `UNKNOWN`, `SOURCE_UNAVAILABLE`
+- primary_exchange
+- listing_exchange
+- asset_type
+- security_name
+- is_etf
+- is_adr
+- is_spac_or_former_spac_if_detectable
+- is_recent_ipo_or_recent_listing
+- first_trade_date_from_ohlcv
+- last_trade_date_from_ohlcv
+- has_sufficient_factor_lookback
+- has_sufficient_forward_window
+- normalized_symbol_notes
+- validation_sources_used
+
+Use no-secret public listing/reference sources where feasible. Acceptable sources include:
+
+- NASDAQ Trader symbol directory files if accessible.
+- SEC company ticker files if accessible.
+- Stooq symbol availability if accessible.
+- Existing local/cache files if present.
+- yfinance metadata only as one input, not the sole authority when it conflicts with another public listing source.
+
+Do not add paid APIs or secrets.
+
+## Part 2: Listing Validation Matrix
+
+Create `phase1j_listing_validation_matrix.csv`.
+
+For each ticker and source, report:
+
+- ticker
+- source_name
+- source_available
+- source_lookup_symbol
+- source_security_name
+- source_exchange
+- source_asset_type
+- source_active_flag
+- source_delisted_flag
+- source_listing_date_if_available
+- validation_status: `MATCH`, `WARN`, `FAIL`, `SOURCE_UNAVAILABLE`
+- validation_reason
+
+Special focus:
+
+- Investigate symbols Phase 1I rejected as `exchange_excluded` even though they may be ordinary U.S. equities.
+- Investigate `BITF` yfinance 404 / metadata incomplete.
+- Investigate `SQ` metadata incomplete.
+- Investigate recent-listing symbols such as GEV and RDDT separately from bad data.
+- Distinguish true data failure from insufficient lookback caused by recent IPO/spinoff/listing.
+
+## Part 3: Secondary OHLCV Validation
+
+Create `phase1j_secondary_ohlcv_validation.csv`.
+
+Attempt no-secret secondary OHLCV validation for every symbol where feasible.
 
 For each symbol, report:
 
 - ticker
-- asset_type if available
-- first_available_date
-- last_available_date
-- requested_start_date
-- requested_end_date
-- has_full_lookback_coverage
-- has_full_forward_coverage
-- missing_ohlcv_count
-- missing_ohlcv_pct
-- zero_volume_count
-- zero_volume_pct
-- abnormal_volume_flag
-- stale_data_flag
-- duplicate_date_count
-- non_monotonic_date_flag
-- split_or_adjustment_anomaly_flag
-- extreme_gap_count
-- extreme_gap_examples
-- metadata_available_flag
-- metadata_rejected_flag
-- metadata_rejection_reason
-- download_error_flag
-- download_error_message
-- yfinance_404_flag
-- latest_close
-- latest_price_under_50_flag
-- avg_dollar_volume_20d
-- avg_dollar_volume_60d
-- data_quality_grade: `PASS`, `WARN`, or `FAIL`
-- data_quality_reason
-
-A symbol should be `FAIL` if:
-
-- OHLCV cannot be downloaded,
-- metadata is rejected and prevents safe use,
-- adjusted OHLCV appears structurally broken,
-- there is insufficient lookback for factors,
-- there is no usable forward window for replay verification,
-- or the symbol has severe missing/zero-volume issues.
-
-A symbol should be `WARN` if:
-
-- data is usable but has retail-grade limitations,
-- forward window is incomplete only near the final replay dates,
-- minor missing bars are calendar-related,
-- or metadata is incomplete but price data appears usable for research diagnostics.
-
-## Part 2: Vendor Validation Matrix
-
-Create `phase1i_vendor_validation_matrix.csv`.
-
-For each ticker where a second source is available through existing project dependencies or simple public download logic, compare yfinance OHLCV against the secondary source.
-
-Acceptable secondary sources may include, if already feasible without secrets:
-
-- Stooq daily prices
-- Nasdaq public historical data if simple and stable
-- exchange/Nasdaq symbol directory files for listing validation
-- cached project data if it exists
-
-Do not add paid APIs or secrets.
-Do not block the run if no second vendor is available.
-
-For each comparable symbol/date window, report:
-
-- ticker
 - primary_vendor
 - secondary_vendor
-- comparison_start_date
-- comparison_end_date
-- overlapping_trading_days
+- primary_start_date
+- primary_end_date
+- secondary_start_date
+- secondary_end_date
+- overlap_trading_days
 - close_price_median_abs_diff_pct
+- close_price_p95_abs_diff_pct
 - close_price_max_abs_diff_pct
 - volume_median_abs_diff_pct
+- volume_p95_abs_diff_pct
 - volume_max_abs_diff_pct
+- adjusted_close_available_primary
+- adjusted_close_available_secondary
 - adjusted_price_mismatch_flag
-- corporate_action_mismatch_flag
-- validation_status: `MATCH`, `WARN`, `FAIL`, or `NO_SECOND_SOURCE`
+- split_or_corporate_action_mismatch_flag
+- validation_status: `MATCH`, `WARN`, `FAIL`, `NO_SECOND_SOURCE`, `SOURCE_UNAVAILABLE`
 - validation_reason
 
-If a secondary source is not available for most symbols, the summary must explicitly say that Phoenix Nano remains dependent on a single retail-grade data source and should not treat the research as execution-grade.
+Potential no-secret secondary source:
 
-## Part 3: Data Gap Incident Log
+- Stooq daily prices, if feasible and stable.
 
-Create `phase1i_data_gap_incident_log.csv`.
+If no secondary OHLCV source is available, keep the matrix explicit and mark `NO_SECOND_SOURCE` or `SOURCE_UNAVAILABLE`. Do not infer validation from the same vendor twice.
 
-Log concrete incidents, including but not limited to:
+## Part 4: Quarantine Rules
 
-- yfinance 404s such as `BITF`
-- download failures such as `HUT`
-- missing SPY/QQQ regime windows
-- incomplete metadata for watchlist tickers
-- stale latest dates
-- suspicious split/adjustment jumps
-- abnormal volume spikes/drops
+Create `phase1j_quarantine_list.csv`.
+
+A ticker must be quarantined if any of these are true:
+
+- no usable OHLCV for the requested replay window;
+- symbol is delisted/inactive/non-equity and not an approved index/ETF proxy;
+- severe metadata conflict cannot be resolved;
+- yfinance 404 or repeat download failure persists;
+- adjusted OHLCV appears structurally broken and cannot be validated;
+- split/corporate-action anomaly cannot be validated by a secondary source;
+- missing/zero-volume issues are severe enough to distort factors;
+- insufficient factor lookback for the replay start date, unless explicitly classified as recent-listing and excluded from early replay dates only.
+
+For each quarantined ticker, report:
+
+- ticker
+- quarantine_status: `QUARANTINE`, `RESEARCH_WARN`, `ALLOW_RESEARCH`
+- quarantine_reason
+- source_evidence
+- suggested_action: `DROP_FROM_RESEARCH`, `ALLOW_AFTER_DATE`, `MANUAL_REVIEW`, `NEEDS_SECONDARY_VENDOR`, `KEEP_WITH_WARNING`
+- earliest_safe_replay_date if applicable
+
+Do not remove a symbol merely because it was a losing trade in prior research.
+
+## Part 5: Resolve Taxonomy Gaps
+
+Create `phase1j_taxonomy_resolution.csv`.
+
+For every ticker with `UNMAPPED_LOW_CONFIDENCE` or missing taxonomy, assign a deterministic research taxonomy using only static information available from listing/security name, existing manually curated mappings, sector/industry metadata if available, and conservative fallback rules.
 
 Columns:
 
-- incident_id
 - ticker
-- incident_type
-- first_seen_run_phase
-- affected_replay_dates
-- affected_samples
-- severity: `LOW`, `MEDIUM`, `HIGH`, `BLOCKER`
-- likely_effect_on_results
-- recommended_action
+- prior_theme
+- resolved_theme
+- resolved_subtheme
+- confidence: `HIGH`, `MEDIUM`, `LOW`
+- evidence_source
+- notes
 
-## Part 4: Universe Composition Audit
+If confidence remains LOW, keep the symbol in the taxonomy file but flag it for manual review.
 
-Create `phase1i_universe_composition_audit.csv`.
+## Part 6: Clean Watchlist Candidate
 
-Analyze the current watchlist before any trading logic.
+Create `phase1j_clean_watchlist_candidate.txt`.
+
+This is a research-only candidate watchlist, not an active daily-scan production list.
+
+Rules:
+
+- Include only `ALLOW_RESEARCH` tickers and approved `RESEARCH_WARN` tickers.
+- Exclude `QUARANTINE` tickers.
+- Exclude symbols with no usable OHLCV.
+- Exclude symbols with unresolved severe listing conflicts.
+- Preserve SPY/QQQ only as regime/index proxies, not trade candidates.
+- Keep one ticker per line.
+- Add a header comment explaining that this file is research-only and not approved for paper/live execution.
+
+## Part 7: Data Readiness Scorecard
+
+Create `phase1j_data_readiness_scorecard.csv`.
 
 Report:
 
-- total_tickers
-- data_quality_pass_count
-- data_quality_warn_count
-- data_quality_fail_count
-- price_under_50_count
-- price_under_20_count
-- avg_dollar_volume_pass_count
-- theme_count
-- tickers_per_theme
-- top_theme_ticker_share
-- high_beta_or_speculative_theme_share
-- crypto_adjacent_count
-- biotech_count
-- EV_mobility_count
-- AI_software_count
-- semiconductor_hardware_count
-- single_name_theme_count
-- median_atr_pct
-- median_volatility_20d
-- 90th_percentile_atr_pct
-- 90th_percentile_volatility_20d
-- universe_quality_assessment
+- total_symbols
+- active_listed_equity_count
+- etf_or_index_proxy_count
+- unknown_or_source_unavailable_count
+- quarantined_count
+- research_warn_count
+- allow_research_count
+- secondary_ohlcv_match_count
+- secondary_ohlcv_warn_count
+- secondary_ohlcv_fail_count
+- no_second_source_count
+- taxonomy_resolved_high_count
+- taxonomy_resolved_medium_count
+- taxonomy_resolved_low_count
+- unresolved_taxonomy_count
+- symbols_with_sufficient_lookback_count
+- symbols_with_earliest_safe_replay_date_count
+- data_readiness_status
 
-Use the Phase 1F taxonomy when available.
-If any ticker is unmapped, map it conservatively and document it.
+Allowed statuses:
 
-## Part 5: Pre-Declared Universe Variants
+- `PHASE_1J_DATA_BLOCKED`
+- `PHASE_1J_SYMBOL_MASTER_READY_SECONDARY_VENDOR_MISSING`
+- `PHASE_1J_RESEARCH_DATA_READY_FOR_FROZEN_RETEST`
 
-Do not create new entry rules.
-Do not tune thresholds based on holdout.
+## Phase 1J Readiness Gates
 
-Evaluate only these pre-declared universe variants:
+Mark `PHASE_1J_RESEARCH_DATA_READY_FOR_FROZEN_RETEST` only if all are true:
 
-1. `current_watchlist_full`
-   - The current watchlist as-is.
+1. Quarantined symbols are <= 5% of watchlist symbols.
+2. No `BLOCKER` or unresolved HIGH severity data incident remains.
+3. All active research candidates have usable OHLCV.
+4. All active research candidates have deterministic taxonomy with confidence HIGH or MEDIUM.
+5. SPY and QQQ, or their chosen regime proxies, are validated and usable.
+6. Recent-listing symbols have explicit `earliest_safe_replay_date` handling.
+7. At least 80% of active research candidates have secondary OHLCV `MATCH` or `WARN`, or the summary explicitly marks the project as research-only and not execution-grade due to missing secondary vendor.
 
-2. `data_quality_pass_only`
-   - Exclude `data_quality_grade = FAIL`.
-   - Keep `PASS` and `WARN` only if they are usable for research.
+If gates 1-6 pass but gate 7 fails because no no-secret secondary vendor is available, mark:
 
-3. `metadata_and_price_clean`
-   - Exclude metadata-rejected symbols.
-   - Exclude symbols that cannot be safely evaluated for $100 whole-share / max-entry logic.
-   - Exclude symbols with structurally broken adjusted OHLCV.
+`PHASE_1J_SYMBOL_MASTER_READY_SECONDARY_VENDOR_MISSING`
 
-4. `liquidity_and_price_clean`
-   - Exclude symbols that fail a pre-declared liquidity floor.
-   - Use only past data available before the replay date for liquidity checks.
-   - Preserve the Phoenix Nano $100 whole-share / max-entry logic.
+If any of gates 1-6 fail, mark:
 
-5. `theme_balanced_clean`
-   - Start from `data_quality_pass_only`.
-   - Limit overconcentrated themes using only static taxonomy and pre-entry universe membership.
-   - Do not use future PnL to choose which tickers remain.
-   - If too many tickers exist in a theme, choose deterministically using pre-entry liquidity and data-quality grade, not future returns.
+`PHASE_1J_DATA_BLOCKED`
 
-6. `conservative_research_universe`
-   - Intersection of data-quality, metadata/price, liquidity, and theme-balance rules.
-   - Must be defined before validation/holdout.
+Even if Phase 1J passes, do not start Phase 2, paper execution, or live execution. The only allowed next step after a pass is a frozen Candidate 34 vs Candidate 35 retest on the cleaned research watchlist, pending GPT review.
 
-The purpose is not to find a tradable universe. The purpose is to determine whether the current failures are partly caused by bad data or an unstable universe.
-
-## Part 6: Frozen Strategy Re-Test Across Universe Variants
-
-Create `phase1i_universe_variant_backtest_matrix.csv` and `phase1i_universe_variant_holdout_results.csv`.
-
-For each universe variant, re-run only:
-
-1. `candidate34_frozen_baseline`
-2. `candidate35_trend_quality_frozen`
-
-Do not test Phase 1H overlays except as a historical reference table if helpful.
-Do not introduce Candidate 36.
-Do not change entry scoring, stop/target, or ranking formulas.
-
-Use deterministic replay samples.
-
-Preferred 30-sample split:
-
-- calibration/reference: samples 0-9
-- validation/reference: samples 10-19
-- holdout: samples 20-29
-
-Fallback 20-sample split:
-
-- calibration/reference: samples 0-6
-- validation/reference: samples 7-13
-- holdout: samples 14-19
-
-For each sample and strategy/universe pair, report:
-
-- universe_variant
-- strategy_name
-- sample_id
-- split_name
-- replay_rounds
-- universe_size
-- data_fail_excluded_count
-- metadata_excluded_count
-- liquidity_excluded_count
-- theme_balance_excluded_count
-- BUY count
-- NO_TRADE count
-- BUY rate
-- simulated win rate
-- 1d / 3d / 5d / 10d / 20d direction accuracy
-- average and median forward returns by window
-- average win dollars
-- average loss dollars
-- profit factor
-- ending account value from $100
-- max drawdown
-- worst trade loss percent
-- stopped-out-but-20d-positive rate
-- top profit ticker contribution share
-- top loss ticker contribution share
-- top profit theme contribution share
-- top loss theme contribution share
-- median ending value excluding best trade
-
-## Part 7: Strategy-vs-Universe Attribution
-
-Create `phase1i_strategy_vs_universe_attribution.csv`.
-
-For each universe variant, compare against `current_watchlist_full`:
-
-- change_in_universe_size
-- change_in_buy_count
-- change_in_ending_account_value
-- change_in_worst_drawdown
-- change_in_win_rate
-- change_in_20d_accuracy
-- change_in_profit_factor
-- change_in_top_theme_loss_share
-- bad_data_removed_count
-- high_risk_theme_removed_count
-- winners_removed_count
-- losers_removed_count
-- winner_dollars_removed
-- loser_dollars_removed
-- net_counterfactual_effect
-- diagnosis: `DATA_BLOCKER`, `UNIVERSE_BLOCKER`, `STRATEGY_BLOCKER`, or `MIXED`
-
-A universe change should not be called an improvement unless:
-
-- it reduces losses more than it removes winners,
-- it does not trade too rarely,
-- and it is based on pre-declared data/universe criteria rather than future PnL.
-
-## Part 8: Research Gates
-
-Do not advance to Phase 2, paper execution, or live execution from this task.
-
-Phase 1I can only produce these statuses:
-
-- `PHASE_1I_DATA_BLOCKER_PAUSE_RESEARCH`
-- `PHASE_1I_UNIVERSE_BLOCKER_REBUILD_WATCHLIST`
-- `PHASE_1I_STRATEGY_BLOCKER_REDESIGN_REQUIRED`
-- `PHASE_1I_MIXED_BLOCKERS_NEED_REMEDIATION`
-- `PHASE_1I_CLEAN_UNIVERSE_PROMISING_FOR_GPT_REVIEW`
-- `PHASE_1I_INSUFFICIENT_SAMPLE_WARNING`
-
-Mark `PHASE_1I_DATA_BLOCKER_PAUSE_RESEARCH` if:
-
-- more than 10% of watchlist tickers are `data_quality_grade = FAIL`,
-- or SPY/QQQ regime data is missing for key replay windows,
-- or major ticker price histories cannot be validated against any secondary source and anomalies affect results materially,
-- or repeated vendor incidents make historical replay unreliable.
-
-Mark `PHASE_1I_UNIVERSE_BLOCKER_REBUILD_WATCHLIST` if:
-
-- current failures materially improve under pre-declared clean universe variants,
-- and the improvement comes from removing unstable/badly specified universe members rather than future-PnL cherry-picking.
-
-Mark `PHASE_1I_STRATEGY_BLOCKER_REDESIGN_REQUIRED` if:
-
-- data quality is acceptable,
-- universe variants do not materially improve holdout failures,
-- and Candidate 34 / Candidate 35 remain below gates.
-
-Mark `PHASE_1I_CLEAN_UNIVERSE_PROMISING_FOR_GPT_REVIEW` only if all holdout conditions are met for `candidate35_trend_quality_frozen` on a pre-declared clean universe:
-
-1. Full preferred 30-sample run completed.
-2. Every holdout sample has at least 30 BUY decisions per 100 replay rounds.
-3. Worst holdout sample ending account value > $110.
-4. Median holdout ending account value > $130.
-5. Worst holdout max drawdown better than -35%.
-6. Median holdout simulated win rate >= 52%.
-7. Median holdout 20d direction accuracy >= 58%.
-8. Median holdout profit factor >= 1.30.
-9. Worst trade loss better than -15%.
-10. Max top ticker loss share <= 35%.
-11. Max top theme loss share <= 45%.
-12. Median ending value excluding the single best trade > $115.
-13. Removed winners dollars must not exceed removed loser dollars.
-
-Even if all conditions pass, do not activate the policy. Mark only for GPT review.
-
-## Part 9: Tests
+## Tests
 
 Add tests for:
 
-1. `--phase1i-data-universe-audit` CLI dispatch works.
-2. Symbol data-quality grading returns `PASS`, `WARN`, or `FAIL` deterministically.
-3. Metadata-rejected and download-failed symbols are logged.
-4. Vendor validation handles missing secondary sources without crashing.
-5. Universe variants are generated using only pre-declared non-future criteria.
-6. Theme-balanced universe selection does not use future returns or PnL.
-7. Frozen Candidate 34 and Candidate 35 are re-run without changing core rules.
-8. Holdout results include all required metrics.
-9. Strategy-vs-universe attribution computes winner/loss removal correctly.
-10. Phase 1I statuses cannot approve paper or live trading.
-11. Reports are written.
-12. Full pytest suite passes.
+1. Symbol master output includes every watchlist ticker plus SPY and QQQ.
+2. Listing validation distinguishes `SOURCE_UNAVAILABLE` from `FAIL`.
+3. yfinance metadata rejection alone does not force failure if another public source validates an active listed equity.
+4. `BITF`-style no-OHLCV / 404 behavior is quarantined.
+5. Recent IPO/spinoff symbols can be classified with `earliest_safe_replay_date` instead of permanent data failure.
+6. Secondary OHLCV validation never marks `MATCH` unless overlap_trading_days > 0 and differences are computed.
+7. Taxonomy resolution eliminates or explicitly flags every low-confidence row.
+8. Quarantined symbols do not appear in `phase1j_clean_watchlist_candidate.txt`.
+9. Readiness gate statuses follow the rules above.
+10. Full pytest suite passes.
 
 Run:
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1i-data-universe-audit --replay-rounds 100 --replay-sample-count 30
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1j-data-readiness-gate
 ```
 
 ## Update REPORT_TO_GPT.md
@@ -474,19 +351,19 @@ When done, update `REPORT_TO_GPT.md` with:
 - Files Changed
 - How To Run
 - Test Results
-- Phase 1I Data / Universe Summary
-- Data quality PASS / WARN / FAIL counts
-- Vendor validation coverage
-- Data gap incidents
-- Universe composition findings
-- Universe variant holdout results
-- Candidate 34 vs Candidate 35 across universe variants
-- Strategy-vs-universe attribution
-- Final Phase 1I status
+- Phase 1J Symbol Master / Vendor Validation Summary
+- Symbol master status counts
+- Listing validation status counts
+- Secondary OHLCV validation coverage
+- Quarantine count and top quarantine reasons
+- Taxonomy resolution status
+- Clean watchlist candidate count
+- Data readiness status
+- Whether strategy research should remain paused
 - Problems
 - Questions For GPT
 - Next Suggested Tasks
 
 ## Stop Condition
 
-Commit, push, and stop. Do not start Phase 2, Phase 3, paper execution, or live trading.
+Commit, push, and stop. Do not start Phase 2, paper execution, or live trading.
