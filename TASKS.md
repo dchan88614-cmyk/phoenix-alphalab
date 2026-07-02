@@ -2,109 +2,79 @@
 
 Codex must read this file before each execution.
 
-## Current Task: Phoenix Nano Phase 1B — Last Month Daily Replay Validation
+## Current Task: Phoenix Nano Phase 1C — Continuous Account Growth Backtest
 
-Goal: review the most recent completed month day by day. For each historical trading day, pretend that day was today, select the stock that met Phoenix Nano standards, then verify the later outcome using already-known future data.
+Goal:
+Backtest whether the simple qualified-stock selector can grow a continuous $100 account over time.
 
-Use the last completed month based on available EOD data. If latest available EOD data is 2026-06-30, use 2026-06-01 through 2026-06-30.
+Backtest period:
+2024-01-01 to 2026-06-30
 
-Keep this research-only. Do not start Phase 2 or Phase 3.
+Evaluation method:
+- Start account at $100 only once.
+- Do not reset monthly.
+- Run daily historical replay across the full period.
+- Use only data available on or before each replay date.
+- Select exactly one stock or NO_TRADE each day.
+- Only one open position at a time.
+- If already holding a position, skip new entries until exit.
+- Track account equity over time.
+- Track milestone dates when account reaches $150, $200, $300, $500, and $1000.
 
-## Daily Replay Rule
+Selection hard filters:
+1. US common stock only; exclude OTC/pink sheet/delisting risk if detectable.
+2. Price between $5 and $50.
+3. Current account can buy at least 1 whole share after slippage.
+4. Dollar volume >= $20,000,000.
+5. Past 5 trading days cumulative return between +3% and +15%.
+6. At least 3 of past 5 trading days are green.
+7. No single day in past 5 trading days gained more than +10%.
+8. Relative volume prev20 >= 1.5.
+9. ATR / price <= 12%.
+10. Distance to 52-week high >= -35%.
+11. SPY and QQQ must not be in clear downtrend.
+12. If earnings/event data is unavailable, mark event filter UNKNOWN and do not use it as pass.
 
-For each trading day in the month:
+Ranking:
+Rank passed stocks by:
+- relative volume strength
+- smooth 5-day uptrend quality
+- 20-day trend
+- relative strength versus SPY/QQQ
+- distance to 52-week high
+- lower ATR risk
 
-1. Use only data available on or before that date.
-2. Apply $100 whole-share account constraints.
-3. Reject unaffordable stocks before ranking.
-4. Apply the current Phoenix Nano / Candidate 34 standards.
-5. Output exactly one result:
-   - `HISTORICAL_BUY_CANDIDATE`
-   - or `HISTORICAL_NO_TRADE`
-6. If no full candidate passed, still record up to 5 closest executable near-misses.
-7. After the decision is recorded, verify future returns using later data.
+Trade plan:
+- Buy using available account cash.
+- If shares >= 2: sell 1 share at +15%, move remaining stop to breakeven, sell rest at +30%.
+- If shares == 1: sell at +20%.
+- Stop loss: -10%.
+- Max hold: 20 trading days.
+- Only one open position at a time.
 
-## Verification Windows
-
-For each selected BUY candidate and near-miss, compute:
-
-- 1 trading day return
-- 3 trading day return
-- 5 trading day return
-- 10 trading day return
-- 20 trading day return
-- max favorable move within 20 trading days
-- max adverse move within 20 trading days
-- data_complete flag for each window
-
-If not enough future data exists, mark incomplete rather than inventing values.
-
-## Outputs
-
+Reports:
 Create:
+- `data/reports/phase1c_continuous_account_trades.csv`
+- `data/reports/phase1c_continuous_account_equity_curve.csv`
+- `data/reports/phase1c_continuous_account_summary.md`
 
-- `data/reports/phase1b_last_month_daily_replay.csv`
-- `data/reports/phase1b_last_month_daily_replay.md`
-- `data/reports/phase1b_last_month_near_misses.csv`
+Summary must include:
+- starting account value
+- ending account value
+- total return
+- milestone dates for $150, $200, $300, $500, and $1000
+- number of trades
+- win rate
+- best trade
+- worst trade
+- max drawdown
+- longest flat period
+- whether $1000 was reached
+- if not, highest account value reached
+- what rule blocked most stocks
+- what should be adjusted next
 
-The markdown summary must include:
+Run tests and update `REPORT_TO_GPT.md`.
 
-- replay date range
-- total trading days tested
-- BUY candidate count
-- NO_TRADE count
-- list of each day and selected ticker, if any
-- 1d / 3d / 5d / 10d / 20d accuracy for BUY candidates
-- average and median returns by window
-- best selected stock
-- worst selected stock
-- most repeated selected tickers
-- near-misses that later performed well
-- near-misses that failed badly
-- short conclusion: what this month taught us
-
-## Important Accuracy Rule
-
-Forward returns may only be used after the daily decision is recorded. They must never be used to pick the stock for that day.
-
-## CLI
-
-Add or update CLI flag:
-
-```bash
---phase1b-last-month-replay
-```
-
-Run:
-
-```bash
-.venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2026-06-01 --end 2026-06-30 --phase1b-last-month-replay
-```
-
-## Update REPORT_TO_GPT.md
-
-When done, update `REPORT_TO_GPT.md` with:
-
-- Completed
-- Files Changed
-- How To Run
-- Test Results
-- Last Month Replay Summary
-- Date range
-- Total trading days
-- BUY count
-- NO_TRADE count
-- Accuracy by window
-- Best pick
-- Worst pick
-- Top repeated tickers
-- Near-miss lessons
-- What should be adjusted next
-- Problems
-- Questions For GPT
-- Next Suggested Tasks
-
-## Stop Condition
-
+Do not start paper trading or live trading.
 Commit, push, and stop.

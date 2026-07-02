@@ -48,6 +48,10 @@ from src.research.concentration import (
 from src.research.historical_replay import build_phase1_historical_replay, write_phase1_historical_replay_reports
 from src.research.phase1b_last_month_replay import build_phase1b_last_month_replay, write_phase1b_last_month_reports
 from src.research.execution_diagnostics import build_phase1b_execution_diagnostics, write_phase1b_reports
+from src.research.phase1c_continuous_account import (
+    build_phase1c_continuous_account_backtest,
+    write_phase1c_continuous_account_reports,
+)
 from src.research.phase1c_robustness import build_phase1c_robustness_analysis, write_phase1c_reports
 from src.research.phase1d_entry_rules import build_phase1d_entry_rule_analysis, write_phase1d_reports
 from src.research.phase1e_filter_validation import build_phase1e_filter_validation, write_phase1e_reports
@@ -103,8 +107,8 @@ def run(args: argparse.Namespace) -> None:
     research_end = parse_date(args.end)
     data_start = (pd.Timestamp(research_start) - pd.Timedelta(days=300)).strftime("%Y-%m-%d")
     download_end = research_end
-    if args.phase1b_last_month_replay:
-        # yfinance treats end as exclusive; Phase 1B also needs post-month rows to verify forward windows.
+    if args.phase1b_last_month_replay or args.phase1c_continuous_account_backtest:
+        # yfinance treats end as exclusive; these replays also need post-period rows to verify/exit positions.
         download_end = (pd.Timestamp(research_end) + pd.Timedelta(days=45)).strftime("%Y-%m-%d")
     benchmark = args.benchmark or settings["data"].get("benchmark", "SPY")
     all_download_tickers = sorted(set(tickers + [benchmark]))
@@ -120,7 +124,7 @@ def run(args: argparse.Namespace) -> None:
         raise RuntimeError("No tickers passed the configured universe filters.")
 
     market_context_tickers = [benchmark]
-    if args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate or args.phase1l_secondary_data_adapter_gate or args.phase1m_credentialed_vendor_gate or args.phase1n_credential_activation_gate:
+    if args.phase1c_continuous_account_backtest or args.phase1g_redesign_sandbox or args.phase1h_risk_overlay_sandbox or args.phase1i_data_universe_audit or args.phase1j_data_readiness_gate or args.phase1k_data_remediation_gate or args.phase1l_secondary_data_adapter_gate or args.phase1m_credentialed_vendor_gate or args.phase1n_credential_activation_gate:
         market_context_tickers.append("QQQ")
     all_download_tickers = sorted(set(passed_tickers + market_context_tickers))
     logger.info("Downloading OHLCV data for %s", ", ".join(all_download_tickers))
@@ -369,6 +373,30 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1C close-stop realism CSV: %s", phase1c_realism_path)
         logger.info("Wrote Phase 1C regime attribution CSV: %s", phase1c_regime_path)
         logger.info("Wrote Phase 1C robustness summary Markdown: %s", phase1c_summary_path)
+
+    if args.phase1c_continuous_account_backtest:
+        account_settings = AccountSettings.from_config(settings)
+        phase1c_trades, phase1c_equity, phase1c_summary = build_phase1c_continuous_account_backtest(
+            dataset,
+            account_settings=account_settings,
+            start=research_start,
+            end=research_end,
+            benchmark_ticker=benchmark,
+        )
+        phase1c_trades_path = reports_dir / "phase1c_continuous_account_trades.csv"
+        phase1c_equity_path = reports_dir / "phase1c_continuous_account_equity_curve.csv"
+        phase1c_summary_path = reports_dir / "phase1c_continuous_account_summary.md"
+        write_phase1c_continuous_account_reports(
+            phase1c_trades,
+            phase1c_equity,
+            phase1c_summary,
+            phase1c_trades_path,
+            phase1c_equity_path,
+            phase1c_summary_path,
+        )
+        logger.info("Wrote Phase 1C continuous account trades CSV: %s", phase1c_trades_path)
+        logger.info("Wrote Phase 1C continuous account equity curve CSV: %s", phase1c_equity_path)
+        logger.info("Wrote Phase 1C continuous account summary Markdown: %s", phase1c_summary_path)
 
     if args.phase1d_entry_rule_analysis:
         account_settings = AccountSettings.from_config(settings)
@@ -1112,6 +1140,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1c-robustness-analysis",
         action="store_true",
         help="Run Phoenix Nano Phase 1C robustness failure and close-stop realism analysis",
+    )
+    parser.add_argument(
+        "--phase1c-continuous-account-backtest",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1C continuous $100 account growth backtest",
     )
     parser.add_argument(
         "--phase1d-entry-rule-analysis",

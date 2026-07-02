@@ -2,135 +2,123 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1B - Last Month Daily Replay Validation.
-- Added `--phase1b-last-month-replay` CLI flag.
-- Added a Phase 1B last-month replay module that:
-  - treats each replay date as an independent historical "today";
-  - uses only same-date and prior EOD-derived factors for selection;
-  - applies $100 whole-share affordability before ranking;
-  - applies frozen Candidate 34 standards;
-  - outputs exactly one daily decision: `HISTORICAL_BUY_CANDIDATE` or `HISTORICAL_NO_TRADE`;
-  - records up to 5 closest executable near-misses on NO_TRADE days;
-  - attaches 1d / 3d / 5d / 10d / 20d future verification only after the decision row is formed;
-  - marks incomplete verification windows instead of inventing values.
-- Adjusted Phase 1B data download behavior so the CLI replay range remains `--start` to `--end`, while post-range rows can be downloaded for verification windows.
+- Updated and executed `TASKS.md`: Phoenix Nano Phase 1C - Continuous Account Growth Backtest.
+- Added `--phase1c-continuous-account-backtest` CLI flag.
+- Added a continuous $100 account backtest module that:
+  - starts with $100 once;
+  - runs across 2024-01-01 to 2026-06-30;
+  - uses EOD information available on or before each replay date;
+  - selects one stock or NO_TRADE each eligible replay day;
+  - rejects unaffordable stocks before ranking;
+  - enforces one open position at a time;
+  - uses next-session open entry;
+  - applies the requested partial-exit / stop / max-hold plan;
+  - tracks account equity events and milestone dates.
 - Generated required reports:
-  - `data/reports/phase1b_last_month_daily_replay.csv`
-  - `data/reports/phase1b_last_month_daily_replay.md`
-  - `data/reports/phase1b_last_month_near_misses.csv`
-- Did not start Phase 2.
-- Did not start Phase 3.
-- Did not enable paper execution.
-- Did not enable real-money execution.
-- Did not change daily scan production behavior.
-- Did not produce financial advice or an operational recommendation.
+  - `data/reports/phase1c_continuous_account_trades.csv`
+  - `data/reports/phase1c_continuous_account_equity_curve.csv`
+  - `data/reports/phase1c_continuous_account_summary.md`
+- Did not start paper trading.
+- Did not start live trading.
+- Did not mark Phoenix as live-tradable.
 
 ## Files Changed
 
+- `TASKS.md`
 - `src/main.py`
-- `src/research/phase1b_last_month_replay.py`
-- `tests/test_phase1b_last_month_replay.py`
-- `data/reports/phase1b_last_month_daily_replay.csv`
-- `data/reports/phase1b_last_month_daily_replay.md`
-- `data/reports/phase1b_last_month_near_misses.csv`
+- `src/research/phase1c_continuous_account.py`
+- `tests/test_phase1c_continuous_account.py`
+- `data/reports/phase1c_continuous_account_trades.csv`
+- `data/reports/phase1c_continuous_account_equity_curve.csv`
+- `data/reports/phase1c_continuous_account_summary.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2026-06-01 --end 2026-06-30 --phase1b-last-month-replay
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1c-continuous-account-backtest
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1b_last_month_replay.py -q
+.venv/bin/python -m pytest tests/test_phase1c_continuous_account.py -q
 # 5 passed
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 205 passed, 1 warning in 31.37s
+# 210 passed, 1 warning in 30.93s
 ```
 
 Remaining warning:
 
 - macOS LibreSSL / urllib3 warning from the local Python environment.
 
-The required Phase 1B CLI completed successfully and wrote all required reports.
+The Phase 1C CLI completed successfully and wrote all required reports.
 
-## Last Month Replay Summary
+## Continuous Account Summary
 
-- Date range: 2026-06-01 to 2026-06-30
-- Total trading days: 21
-- BUY count: 3
-- NO_TRADE count: 18
-- Selected tickers:
-  - 2026-06-01: HPE
-  - 2026-06-03: RIVN
-  - 2026-06-23: BEAM
+- Starting account value: $100.00
+- Ending account value: $92.15
+- Total return: -7.85%
+- Highest account value reached: $176.25
+- $1000 reached: False
+- Trade count: 30
+- Win rate: 53.33%
+- Max drawdown: -50.46%
+- Longest flat period: 512 calendar days from 2025-02-05 to 2026-07-02
 
-## Accuracy By Window
+## Milestone Dates
 
-Accuracy is calculated only on BUY candidates with complete data for that window.
+- $150: 2024-12-04
+- $200: not reached
+- $300: not reached
+- $500: not reached
+- $1000: not reached
 
-| window | complete BUY rows | accuracy | average return | median return |
-|---|---:|---:|---:|---:|
-| 1d | 3 | 66.67% | 6.92% | 2.11% |
-| 3d | 3 | 66.67% | 3.75% | 4.85% |
-| 5d | 3 | 66.67% | -3.24% | 3.37% |
-| 10d | 2 | 50.00% | -3.35% | -3.35% |
-| 20d | 2 | 50.00% | 0.45% | 0.45% |
+## Best Trade
 
-## Best Pick
+- 2024-10-22 CORZ TARGET_30 return: 28.12%
 
-- 2026-06-03 RIVN: 20d return 4.93%
+## Worst Trade
 
-## Worst Pick
+- 2024-04-26 SOFI STOP return: -10.00%
 
-- 2026-06-01 HPE: 20d return -4.02%
+## Main Bottleneck
 
-## Top Repeated Tickers
+- Most common block rule: `price_between_5_and_50`
+- Blocked rows: 17,345
 
-- HPE: 1
-- RIVN: 1
-- BEAM: 1
+Top block counts:
 
-## Near-Miss Lessons
-
-- Near-misses that later performed well: none with complete positive 20d return.
-- Near-misses that failed badly:
-  - 2026-06-02 BBAI: -28.77%
-  - 2026-06-02 CORZ: -18.38%
-  - 2026-06-02 F: -15.54%
-  - 2026-06-02 PATH: -5.17%
-  - 2026-06-02 RIVN: -0.64%
-
-## What Should Be Adjusted Next
-
-- Do not loosen Candidate 34 from this one-month result alone.
-- Review why 18 of 21 trading days were NO_TRADE before adding any new complexity.
-- Investigate whether the June 2 near-miss cluster shows a useful rejection pattern or just broad weakness.
-- Wait for more complete 20d data for BEAM before treating June's full-month replay as final.
+| rule | count |
+|---|---:|
+| price_between_5_and_50 | 17,345 |
+| return_5d_between_3_and_15 | 4,776 |
+| relative_volume_prev20_min_1_5 | 973 |
+| dollar_volume_min | 591 |
+| green_days_5_min_3 | 455 |
 
 ## Problems
 
-- One selected BUY candidate, BEAM on 2026-06-23, does not yet have complete 10d or 20d verification data in the downloaded history.
-- Some watchlist symbols were rejected by existing universe rules or incomplete metadata, including the yfinance metadata failure for BITF.
-- This remains yfinance-based research data, not independently credentialed vendor validation.
+- The account did not sustain growth after reaching $176.25.
+- The final account value ended below starting capital.
+- Max drawdown was too large for a $100 account.
+- The last BEAM position was marked `OPEN_AT_DATA_END`, so its final value is based on available data through the downloaded post-period rows.
+- The result remains yfinance-based research data and is not independently vendor-validated.
 
 ## Questions For GPT
 
-- Should Phase 1B be rerun after BEAM has complete 20d verification?
-- Should GPT ask Codex to analyze the June 2 near-miss failures before changing Candidate 34?
-- Should the next task stay on historical validation until independent vendor credentials are available?
+- Should the next task diagnose why drawdown reached -50.46% before adjusting rules?
+- Should the price range remain $5-$50, or should GPT test a narrower price band in a separate task?
+- Should entries be delayed or skipped after large account drawdowns?
 
 ## Next Suggested Tasks
 
-- Rerun Phase 1B after all June BUY candidates have complete 20d outcomes.
-- Add a local independent vendor credential and rerun Phase 1N / Phase 1M data-readiness gates.
-- Do not start Phase 2.
-- Do not start Phase 3.
-- Do not enable paper execution.
-- Do not enable real-money execution.
+- Run a failure attribution task on the 18 STOP exits and the long flat period.
+- Analyze whether `price_between_5_and_50` is too broad or simply reflecting the universe mix.
+- Do not start paper trading.
+- Do not start live trading.
+- Do not mark Phoenix as live-tradable.
