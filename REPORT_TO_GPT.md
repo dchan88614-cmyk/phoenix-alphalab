@@ -9,22 +9,24 @@
 
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1C - Robustness Failure Analysis and Close-Stop Realism.
-- Added Phase 1C robustness analysis without changing Candidate 34 entry thresholds.
-- Kept each replay sample's selected ticker/date decisions frozen.
-- Built a 10-sample policy robustness matrix across 8 execution policies.
-- Added close-stop realism checks for intraday stop breaches, next-open stop exits, and hybrid catastrophic stops.
-- Added failing-sample losing trade extraction.
-- Added period/theme regime attribution using a deterministic local theme map.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1D - Entry-Rule Failure Diagnostics.
+- Added Phase 1D entry-rule diagnostic analysis as historical/manual-review research only.
+- Reconstructed pre-entry feature snapshots for deterministic replay BUY decisions.
+- Compared baseline simulation winners versus losers using only replay-date or entry-date features.
+- Added conservative offline entry-filter hypotheses without changing daily scan behavior.
+- Re-ran filtered historical account replay with `baseline_current` exits.
+- Added excluded-decision audit rows for skipped historical BUY decisions.
 - Added CLI flag:
-  - `--phase1c-robustness-analysis`
+  - `--phase1d-entry-rule-analysis`
 - Created required outputs:
-  - `data/reports/phase1c_policy_robustness_matrix.csv`
-  - `data/reports/phase1c_sample_failure_trades.csv`
-  - `data/reports/phase1c_close_stop_realism.csv`
-  - `data/reports/phase1c_regime_attribution.csv`
-  - `data/reports/phase1c_robustness_summary.md`
-- Did not adopt `close_based_stop_2_0x` as a real policy.
+  - `data/reports/phase1d_entry_rule_diagnostics.csv`
+  - `data/reports/phase1d_loser_feature_attribution.csv`
+  - `data/reports/phase1d_filter_backtest_matrix.csv`
+  - `data/reports/phase1d_filter_excluded_decisions.csv`
+  - `data/reports/phase1d_candidate_filter_summary.md`
+  - `data/reports/phase1d_entry_rule_summary.md`
+- Did not loosen Candidate 34 thresholds.
+- Did not adopt close-based stops.
 - Did not start Phase 2.
 - Did not start Phase 3.
 - Did not start paper trading.
@@ -32,33 +34,34 @@
 
 ## Files Changed
 
-- `src/research/phase1c_robustness.py`
+- `src/research/phase1d_entry_rules.py`
 - `src/main.py`
-- `tests/test_phase1c_robustness.py`
-- `data/reports/phase1c_policy_robustness_matrix.csv`
-- `data/reports/phase1c_sample_failure_trades.csv`
-- `data/reports/phase1c_close_stop_realism.csv`
-- `data/reports/phase1c_regime_attribution.csv`
-- `data/reports/phase1c_robustness_summary.md`
+- `tests/test_phase1d_entry_rules.py`
+- `data/reports/phase1d_entry_rule_diagnostics.csv`
+- `data/reports/phase1d_loser_feature_attribution.csv`
+- `data/reports/phase1d_filter_backtest_matrix.csv`
+- `data/reports/phase1d_filter_excluded_decisions.csv`
+- `data/reports/phase1d_candidate_filter_summary.md`
+- `data/reports/phase1d_entry_rule_summary.md`
 - `REPORT_TO_GPT.md`
 
 ## How To Run
 
 ```bash
 .venv/bin/python -m pytest -q
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1c-robustness-analysis --replay-rounds 100 --replay-sample-count 10
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1d-entry-rule-analysis --replay-rounds 100 --replay-sample-count 10
 ```
 
 ## Test Results
 
 ```bash
-.venv/bin/python -m pytest tests/test_phase1c_robustness.py -q
-# 10 passed in 1.78s
+.venv/bin/python -m pytest tests/test_phase1d_entry_rules.py -q
+# 8 passed
 ```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 97 passed, 1 warning in 3.63s
+# 105 passed, 1 warning in 4.08s
 ```
 
 Remaining warning:
@@ -68,115 +71,144 @@ Remaining warning:
 End-to-end command completed successfully:
 
 ```bash
-.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1c-robustness-analysis --replay-rounds 100 --replay-sample-count 10
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2024-01-01 --end 2026-06-30 --phase1d-entry-rule-analysis --replay-rounds 100 --replay-sample-count 10
 ```
 
-## Phase 1C Robustness Summary
+## Phase 1D Entry-Rule Summary
 
-- Samples tested: 10
-- Policies tested per sample: 8
-- Policy matrix rows: 80
-- Failing-sample losing trade rows: 165
-- Close-stop realism rows: 340
-- Regime attribution rows: 1774
-- Phase 1C status: `PHASE_1C_EXECUTION_HYPOTHESIS_NEEDS_REALISM_WORK`
+- Phase 1D status: `PHASE_1D_FILTER_HYPOTHESIS_PROMISING_NOT_APPROVED`
+- Samples analyzed: 10
+- BUY decisions analyzed: 344
+- Baseline simulation winners: 146
+- Baseline simulation losers: 198
+- Filter backtest matrix rows: 130
+- Excluded decision audit rows: 1345
 
-## Policy Robustness Matrix Summary
+## Samples Analyzed
 
-| policy | median ending value | worst ending value | median max drawdown | worst max drawdown | median trade accuracy | passing samples |
-|:--|--:|--:|--:|--:|--:|--:|
-| baseline_current | $185.82 | $43.16 | -37.27% | -64.14% | 42.65% | 2 |
-| close_based_stop_2_0x | $175.10 | $41.19 | -42.37% | -67.06% | 51.92% | 3 |
-| close_based_stop_2_0x_with_intraday_breach_flag | $175.10 | $41.19 | -42.37% | -67.06% | 51.92% | 3 |
-| hybrid_close_stop_2_0x_intraday_catastrophic_3_0x | $154.15 | $30.52 | -48.95% | -71.05% | 51.92% | 2 |
-| close_confirmed_stop_2_0x_next_open_exit | $144.08 | $35.44 | -58.18% | -71.59% | 49.00% | 1 |
-| atr_stop_2_5x | $131.42 | $34.37 | -51.81% | -68.99% | 49.91% | 2 |
-| atr_stop_2_0x | $118.77 | $34.11 | -48.58% | -70.27% | 40.74% | 1 |
-| time_exit_20d_no_intraday_stop | $101.64 | $15.16 | -66.73% | -84.84% | 47.21% | 0 |
+- Deterministic replay sample count: 10
+- Replay rounds per sample: 100
+- Candidate rule: Candidate 34, unchanged.
+- Exit policy for filter backtests: `baseline_current`.
 
-## Best Policies
+## BUY Decisions Analyzed
 
-- Best policy by median ending account value: `baseline_current`
-- Best realistic policy after intraday-breach penalties: `baseline_current`
-- `close_based_stop_2_0x` did not remain robust after 10-sample and realism checks.
+- Total historical BUY decisions: 344
+- Winner flag definitions:
+  - `winner_20d`: 20-day forward return above zero.
+  - `winner_baseline_simulation`: baseline simulated trade PnL above zero.
+- All diagnostic feature snapshots are reconstructed from data available on or before the replay date / entry date.
 
-## Passing Sample Count Per Policy
+## Winner vs Loser Feature Findings
 
-- `close_based_stop_2_0x`: 3
-- `close_based_stop_2_0x_with_intraday_breach_flag`: 3
-- `baseline_current`: 2
-- `atr_stop_2_5x`: 2
-- `hybrid_close_stop_2_0x_intraday_catastrophic_3_0x`: 2
-- `atr_stop_2_0x`: 1
-- `close_confirmed_stop_2_0x_next_open_exit`: 1
-- `time_exit_20d_no_intraday_stop`: 0
+Top all-sample loser/winner separations:
 
-## Worst Sample Per Policy
+| feature | winner mean | loser mean | separation |
+|:--|--:|--:|--:|
+| distance_from_52w_high_pct | -0.0446 | -0.0753 | 0.2395 |
+| decision_strength | 0.7076 | 0.6788 | 0.2344 |
+| near_max_entry_price_pct | 0.5271 | 0.4737 | 0.1995 |
+| smoke_score | 0.9293 | 0.9210 | 0.1930 |
+| return_10d_prior | 0.2935 | 0.3337 | 0.1387 |
 
-- `baseline_current`: sample 4, ending value $43.16, max drawdown -64.14%.
-- `close_based_stop_2_0x`: sample 3, ending value $41.19, max drawdown -60.38%.
-- `close_confirmed_stop_2_0x_next_open_exit`: sample 3, ending value $35.44, max drawdown -71.59%.
-- `hybrid_close_stop_2_0x_intraday_catastrophic_3_0x`: sample 3, ending value $30.52, max drawdown -71.05%.
-- `time_exit_20d_no_intraday_stop`: sample 4, ending value $15.16, max drawdown -84.84%.
+Interpretation:
 
-## Sample 3 And 4 Failure Explanation
+- Losers were, on average, farther below the prior 52-week high.
+- Losers had slightly weaker `decision_strength` and `smoke_score`.
+- Losers showed somewhat stronger 10-day prior run-up.
+- Separation scores are modest; no single pre-entry feature cleanly explains the failures.
 
-- Failing trades concentrated in tickers including SMR, BBAI, F, INTC, CCJ, AFRM, HPE, and HOOD.
-- Theme counts among captured failures included unmapped high-volatility names, EV/mobility, space/defense/nuclear, crypto-adjacent/high beta, and AI/software.
-- Average entry gap among captured failing trades was about 0.50%, so bad entry gaps alone do not explain the failures.
-- Evidence points to entry-rule weakness in multiple deterministic samples, not just execution-rule weakness.
+## Top Suspicious Loser Signals
 
-## Close-Stop Realism Findings
+- Weaker distance from 52-week high: losers averaged -7.53% versus winners at -4.46%.
+- Lower decision strength: losers averaged 0.6788 versus winners at 0.7076.
+- Lower smoke score: losers averaged 0.9210 versus winners at 0.9293.
+- Stronger 10-day prior run-up: losers averaged 33.37% versus winners at 29.35%.
+- Lower relative volume: losers averaged 2.9434 versus winners at 3.3410.
 
-- Close-stop realism rows: 340
-- Intraday breaches ignored by close-stop candidates: 223
-- Realism warnings: 234
-- Warning mix:
-  - `CLOSE_STOP_REQUIRES_NEXT_OPEN_SLIPPAGE`: 84
-  - `POLICY_TOO_OPTIMISTIC_FOR_RESEARCH_GATE`: 83
-  - `INTRADAY_STOP_BREACH_IGNORED_BY_CLOSE_STOP`: 56
-  - `GAP_BEYOND_STOP`: 11
-- Conclusion: `close_based_stop_2_0x` remains a hypothesis, but it is not realistic enough to use as a research gate without additional validation.
+## Filters Tested
 
-## Regime And Theme Attribution
+- `high_atr_pct`
+- `high_volatility_20d`
+- `extreme_entry_gap_pct`
+- `minimum_decision_strength`
+- `minimum_smoke_score`
+- `low_relative_volume_prev20`
+- `weak_distance_from_high`
+- `extreme_short_term_runup`
+- `theme_concentration_cap`
+- `repeated_loser_ticker_cooldown`
+- `atr_plus_decision_strength`
+- `volatility_plus_smoke_score`
+- `risk_stack_filter`
 
-- Worst period-policy rows included 2025-10, 2025-06, and other mid/late-2025 periods.
-- Worst period examples:
-  - sample 1 / 2025-10 / `time_exit_20d_no_intraday_stop` / BBAI: -$142.60
-  - sample 0 / 2025-06 / `hybrid_close_stop_2_0x_intraday_catastrophic_3_0x` / CORZ: -$122.20
-  - sample 0 / 2025-06 / `close_based_stop_2_0x` / RKLB: -$113.04
-- Local deterministic theme mapping was used; no external lookup was used.
+## Best Filter By Median Ending Value
 
-## Phase 1C Status
+- `weak_distance_from_high`
+- Median ending account value: $196.02
+- Still failed Phase 1D gates because worst-sample ending value remained below $100, worst drawdown remained worse than -45%, and median simulation accuracy remained below 50%.
 
-- Status: `PHASE_1C_EXECUTION_HYPOTHESIS_NEEDS_REALISM_WORK`
-- Reason: close-based policies can look good in some samples, but realism checks show many intraday breaches and next-open slippage risks. Multiple deterministic samples still fail badly.
-- Not approved for Phase 2.
-- Not approved for paper trading.
-- Not approved for live trading.
+## Best Filter By Worst-Sample Ending Value
+
+- `volatility_plus_smoke_score`
+- Worst-sample ending account value: $95.43
+- This is improved relative to many alternatives, but still below the required $100 worst-sample gate.
+
+## Best Filter By Drawdown Reduction
+
+- `volatility_plus_smoke_score`
+- Median max drawdown: -28.36%
+- It still failed the worst-sample ending-value gate and did not justify Phase 2.
+
+## Filter Excluded Decision Audit Summary
+
+- Excluded decision audit rows: 1345
+- No tested filter had all-sample excluded winners greater than or equal to excluded losers in the summary.
+- Some filters produced promising sample-level results, but none proved robust enough across all 10 deterministic samples.
+- Passing sample counts by filter:
+  - `low_relative_volume_prev20`: 3
+  - `minimum_decision_strength`: 3
+  - `theme_concentration_cap`: 3
+  - `volatility_plus_smoke_score`: 3
+  - `extreme_short_term_runup`: 2
+  - `atr_plus_decision_strength`: 1
+  - `high_volatility_20d`: 1
+  - `minimum_smoke_score`: 1
+  - `repeated_loser_ticker_cooldown`: 1
+  - `weak_distance_from_high`: 1
+  - `extreme_entry_gap_pct`: 0
+  - `high_atr_pct`: 0
+  - `risk_stack_filter`: 0
+
+## Phase 1D Status
+
+- Status: `PHASE_1D_FILTER_HYPOTHESIS_PROMISING_NOT_APPROVED`
+- Do not mark Phase 2 ready.
+- Do not start paper trading or live trading.
+- Reason: some filters improved median or drawdown metrics, but no filter cleared the required robustness gates across all deterministic samples.
 
 ## Problems
 
-- No policy delivered robust performance across all 10 deterministic samples.
-- Worst-sample ending values were below $100 for every policy.
-- Worst-sample max drawdowns were worse than -45% for every policy.
-- Close-based stop variants produced many intraday breach warnings.
-- Several weak samples appear to need entry-rule work, not just exit-policy tuning.
+- No filter cleared all Phase 1D diagnostic gates.
+- Worst-sample ending account value remained below $100 for the best worst-sample filter.
+- Worst-sample drawdowns remained worse than -45% for top median-ending filters.
+- Median simulation accuracy remained below 50% for several top filters.
+- Feature separation between winners and losers is real but modest.
 - yfinance metadata rejected several watchlist tickers; `BITF` emitted a yfinance 404 and was rejected as metadata incomplete.
-- Existing pandas `pct_change` future warnings appeared during the end-to-end run; they did not block execution.
 - yfinance data remains non-institutional retail data and should not be treated as an execution feed.
 
 ## Questions For GPT
 
-- Should Phase 1D focus on entry-rule robustness rather than exit-policy variants?
-- Should Candidate 34 be stress-tested by excluding unmapped/high-volatility themes that dominate failing samples?
-- Should close-based stops be removed from gate consideration until next-open slippage modeling is stronger?
-- Should GPT require worst-sample ending value above $100 before any Phase 2 discussion?
+- Should Phase 1E test only `volatility_plus_smoke_score`, since it had the best worst-sample ending value and drawdown profile?
+- Should `weak_distance_from_high` be considered too fragile because it led median ending value but failed worst-sample gates?
+- Should GPT require a filter to improve worst-sample ending value above $100 before any additional entry-rule refinement?
+- Should high-volatility theme concentration be handled by a hard cap, or only used as a diagnostic warning?
 
 ## Next Suggested Tasks
 
 - Do not start Phase 2.
 - Do not start Phase 3.
 - Do not start paper trading.
-- Build Phase 1D entry-rule failure analysis for samples 3 and 4.
-- Add a stricter filter or diagnostic for repeated high-volatility theme losses before any threshold loosening.
+- Do not start live trading.
+- Ask GPT to review Phase 1D results and approve one narrow Phase 1E entry-filter experiment.
+- If GPT approves Phase 1E, test only one or two conservative filters without loosening Candidate 34.
