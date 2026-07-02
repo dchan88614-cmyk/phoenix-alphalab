@@ -1,132 +1,136 @@
 # REPORT_TO_GPT
 
-## Repo
-
-- nameWithOwner: dchan88614-cmyk/phoenix-alphalab
-- url: https://github.com/dchan88614-cmyk/phoenix-alphalab
-- visibility: PUBLIC
-- defaultBranch: main
-
 ## Completed
 
-- Executed the latest `TASKS.md`: Phoenix Nano Phase 1O - Credential-Gated Phase 1M Rerun Authorization.
-- Pulled latest `origin/main` and fast-forwarded to the new Phase 1O task.
-- Read `README.md`, `BRAIN.md`, `TASKS.md`, `REPORT_TO_GPT.md`, and `git status`.
-- Reran Phase 1N credential activation gate.
-- Inspected Phase 1N credential preflight, live smoke, rerun readiness, no-secret audit, and summary reports.
-- Stopped before Phase 1M because Phase 1N did not allow a Phase 1M rerun.
-- Created Phase 1O gate status report.
-- Created Phase 1O rerun authorization decision report.
+- Executed the latest `TASKS.md`: Phoenix Nano Phase 1B - Last Month Daily Replay Validation.
+- Added `--phase1b-last-month-replay` CLI flag.
+- Added a Phase 1B last-month replay module that:
+  - treats each replay date as an independent historical "today";
+  - uses only same-date and prior EOD-derived factors for selection;
+  - applies $100 whole-share affordability before ranking;
+  - applies frozen Candidate 34 standards;
+  - outputs exactly one daily decision: `HISTORICAL_BUY_CANDIDATE` or `HISTORICAL_NO_TRADE`;
+  - records up to 5 closest executable near-misses on NO_TRADE days;
+  - attaches 1d / 3d / 5d / 10d / 20d future verification only after the decision row is formed;
+  - marks incomplete verification windows instead of inventing values.
+- Adjusted Phase 1B data download behavior so the CLI replay range remains `--start` to `--end`, while post-range rows can be downloaded for verification windows.
+- Generated required reports:
+  - `data/reports/phase1b_last_month_daily_replay.csv`
+  - `data/reports/phase1b_last_month_daily_replay.md`
+  - `data/reports/phase1b_last_month_near_misses.csv`
 - Did not start Phase 2.
 - Did not start Phase 3.
 - Did not enable paper execution.
 - Did not enable real-money execution.
 - Did not change daily scan production behavior.
-- Did not loosen Candidate 34 thresholds.
-- Did not adopt Candidate 35, Phase 1H overlays, or any universe variant as active policy.
-- Did not create Candidate 36.
-- Did not run a Candidate 34 vs Candidate 35 retest.
-- Did not run a strategy threshold sweep.
 - Did not produce financial advice or an operational recommendation.
-- Did not print, commit, cache, hash, prefix-log, suffix-log, length-log, or expose any API secret, token, or key.
 
 ## Files Changed
 
-- `data/reports/phase1o_gate_status.csv`
-- `data/reports/phase1o_rerun_authorization_decision.md`
+- `src/main.py`
+- `src/research/phase1b_last_month_replay.py`
+- `tests/test_phase1b_last_month_replay.py`
+- `data/reports/phase1b_last_month_daily_replay.csv`
+- `data/reports/phase1b_last_month_daily_replay.md`
+- `data/reports/phase1b_last_month_near_misses.csv`
 - `REPORT_TO_GPT.md`
 
-## Commands Run
+## How To Run
 
 ```bash
-git pull --ff-only
-git status --short --branch
-sed -n '1,220p' README.md
-sed -n '1,240p' BRAIN.md
-sed -n '1,260p' TASKS.md
-sed -n '1,260p' REPORT_TO_GPT.md
-.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate
 .venv/bin/python -m pytest -q
+.venv/bin/python -m src.main --watchlist config/watchlists/us_liquid_growth_100.txt --start 2026-06-01 --end 2026-06-30 --phase1b-last-month-replay
 ```
 
 ## Test Results
 
-No code or test logic was changed in Phase 1O.
-
-The required Phase 1N CLI completed successfully and regenerated Phase 1N gate reports.
-
-Full-suite tests were rerun after writing Phase 1O reports:
+```bash
+.venv/bin/python -m pytest tests/test_phase1b_last_month_replay.py -q
+# 5 passed
+```
 
 ```bash
 .venv/bin/python -m pytest -q
-# 200 passed, 1 warning in 28.39s
+# 205 passed, 1 warning in 31.37s
 ```
 
 Remaining warning:
 
 - macOS LibreSSL / urllib3 warning from the local Python environment.
 
-## Credential Status
+The required Phase 1B CLI completed successfully and wrote all required reports.
 
-- `TIINGO_API_TOKEN`: missing
-- `POLYGON_API_KEY`: missing
-- `MASSIVE_API_KEY`: missing
-- `ALPHAVANTAGE_API_KEY`: missing
+## Last Month Replay Summary
 
-Aggregate evidence:
+- Date range: 2026-06-01 to 2026-06-30
+- Total trading days: 21
+- BUY count: 3
+- NO_TRADE count: 18
+- Selected tickers:
+  - 2026-06-01: HPE
+  - 2026-06-03: RIVN
+  - 2026-06-23: BEAM
 
-- credential preflight: `MISSING=4`
-- credential present: False
-- no credential value, prefix, suffix, hash, or length was written to reports.
+## Accuracy By Window
 
-## Phase 1N Result
+Accuracy is calculated only on BUY candidates with complete data for that window.
 
-- Latest Phase 1N status: `PHASE_1N_WAITING_FOR_CREDENTIAL`
-- Live smoke passed: False
-- Live smoke evidence: `CREDENTIAL_MISSING=21`
-- No-secret audit: `PASS=10`
-- Phase 1M rerun allowed: False
-- Reason: no non-suspicious vendor credential present
+| window | complete BUY rows | accuracy | average return | median return |
+|---|---:|---:|---:|---:|
+| 1d | 3 | 66.67% | 6.92% | 2.11% |
+| 3d | 3 | 66.67% | 3.75% | 4.85% |
+| 5d | 3 | 66.67% | -3.24% | 3.37% |
+| 10d | 2 | 50.00% | -3.35% | -3.35% |
+| 20d | 2 | 50.00% | 0.45% | 0.45% |
 
-## Phase 1M Rerun
+## Best Pick
 
-Phase 1M was not rerun.
+- 2026-06-03 RIVN: 20d return 4.93%
 
-Reason: Phase 1N reported `phase1m_rerun_allowed=False`.
+## Worst Pick
 
-## Final Phase 1O Status
+- 2026-06-01 HPE: 20d return -4.02%
 
-`PHASE_1O_BLOCKED_WAITING_FOR_CREDENTIAL`
+## Top Repeated Tickers
 
-## Exact Next Action For GPT / Operator
+- HPE: 1
+- RIVN: 1
+- BEAM: 1
 
-Operator should add exactly one local independent vendor credential outside git, preferably `TIINGO_API_TOKEN`, then rerun Phase 1N:
+## Near-Miss Lessons
 
-```bash
-.venv/bin/python -m src.main --watchlist data/reports/phase1l_clean_watchlist_v3_candidate.txt --start 2024-01-01 --end 2026-06-30 --phase1n-credential-activation-gate
-```
+- Near-misses that later performed well: none with complete positive 20d return.
+- Near-misses that failed badly:
+  - 2026-06-02 BBAI: -28.77%
+  - 2026-06-02 CORZ: -18.38%
+  - 2026-06-02 F: -15.54%
+  - 2026-06-02 PATH: -5.17%
+  - 2026-06-02 RIVN: -0.64%
 
-Only if Phase 1N reports `phase1m_rerun_allowed=True` should Codex rerun Phase 1M.
+## What Should Be Adjusted Next
 
-## Known Issues
+- Do not loosen Candidate 34 from this one-month result alone.
+- Review why 18 of 21 trading days were NO_TRADE before adding any new complexity.
+- Investigate whether the June 2 near-miss cluster shows a useful rejection pattern or just broad weakness.
+- Wait for more complete 20d data for BEAM before treating June's full-month replay as final.
 
-- No independent vendor credential is available in the local environment.
-- Authenticated vendor live smoke cannot run.
-- Independent secondary OHLCV validation remains unavailable.
-- GPT review of a frozen Candidate 34 vs Candidate 35 retest is not justified yet.
+## Problems
+
+- One selected BUY candidate, BEAM on 2026-06-23, does not yet have complete 10d or 20d verification data in the downloaded history.
+- Some watchlist symbols were rejected by existing universe rules or incomplete metadata, including the yfinance metadata failure for BITF.
+- This remains yfinance-based research data, not independently credentialed vendor validation.
 
 ## Questions For GPT
 
-- Should the operator add `TIINGO_API_TOKEN` first as recommended?
-- After Phase 1N passes with a credential, should Codex rerun Phase 1M immediately?
+- Should Phase 1B be rerun after BEAM has complete 20d verification?
+- Should GPT ask Codex to analyze the June 2 near-miss failures before changing Candidate 34?
+- Should the next task stay on historical validation until independent vendor credentials are available?
 
 ## Next Suggested Tasks
 
-- Add one local credential outside git.
-- Rerun Phase 1N.
-- If Phase 1N allows it, rerun Phase 1M.
+- Rerun Phase 1B after all June BUY candidates have complete 20d outcomes.
+- Add a local independent vendor credential and rerun Phase 1N / Phase 1M data-readiness gates.
 - Do not start Phase 2.
 - Do not start Phase 3.
 - Do not enable paper execution.
 - Do not enable real-money execution.
-- Do not run Candidate 34 vs Candidate 35 retest yet.

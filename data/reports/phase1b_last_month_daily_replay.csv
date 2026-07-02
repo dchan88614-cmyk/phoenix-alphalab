@@ -1,0 +1,22 @@
+replay_date,decision,ticker,reason,reference_price,shares_with_cash,estimated_total_cost,estimated_cash_remaining,smoke_score,decision_strength,relative_volume_prev20,return_5d_signal,return_20d_signal,distance_to_52w_high_prev,dollar_volume,all_rule_checks_passed,failed_checks,data_complete_1d,return_1d,data_complete_3d,return_3d,data_complete_5d,return_5d,data_complete_10d,return_10d,data_complete_20d,return_20d,data_complete_mfe_mae_20d,max_favorable_move_20d,max_adverse_move_20d,executable_near_miss_count,rejected_before_ranking_count
+2026-06-01,HISTORICAL_BUY_CANDIDATE,HPE,Candidate 34 Nano rule passed with replay-date $100 whole-share affordability.,47.0,2,94.094,5.906000000000006,0.962962962962963,0.8765432098765434,5.647934482713132,0.2506651865344238,0.6450822716849587,0.054402674044971455,5433096600.0,True,,True,0.19468088352933832,True,0.14234039631295703,True,0.06106380706137804,True,0.04297873314390799,True,-0.04021275297124338,True,0.36702127659574457,-0.09723403606008973,,
+2026-06-02,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,73.0
+2026-06-03,HISTORICAL_BUY_CANDIDATE,RIVN,Candidate 34 Nano rule passed with replay-date $100 whole-share affordability.,18.270000457763672,5,91.44135229110717,8.558647708892835,0.8923076923076924,0.49290468663684095,1.6438344874238762,0.24285719012380058,0.25136986167150366,-0.1947994699100839,947431067.7383423,True,,True,-0.008210159538695194,True,-0.07827040335776869,True,-0.19211823431511155,True,-0.11001643013247464,True,0.049261061630013536,True,0.06403941143837044,-0.21455938577320488,,
+2026-06-04,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,73.0
+2026-06-05,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,70.0
+2026-06-08,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-09,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-10,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-11,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-12,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-15,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,72.0
+2026-06-16,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,72.0
+2026-06-17,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,72.0
+2026-06-18,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,73.0
+2026-06-22,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,72.0
+2026-06-23,HISTORICAL_BUY_CANDIDATE,BEAM,Candidate 34 Nano rule passed with replay-date $100 whole-share affordability.,33.20000076293945,3,99.69960229110717,0.3003977088928309,0.8538461538461538,0.5966937765205089,1.7702439886845827,0.06683804201842336,0.15921792843819582,-0.09978308564522631,119669402.75001526,True,,True,0.021084359844980805,True,0.04849399317330061,True,0.033734906811658805,False,,False,,False,0.10692768540606012,-0.01084339162887682,,
+2026-06-24,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-25,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,70.0
+2026-06-26,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,69.0
+2026-06-29,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0
+2026-06-30,HISTORICAL_NO_TRADE,,NO_CANDIDATE_PASSED_RULES,,0,0.0,100.0,,,,,,,,False,,False,,False,,False,,False,,False,,False,,,5.0,71.0

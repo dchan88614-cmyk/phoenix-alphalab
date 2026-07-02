@@ -46,6 +46,7 @@ from src.research.concentration import (
     write_regime_markdown,
 )
 from src.research.historical_replay import build_phase1_historical_replay, write_phase1_historical_replay_reports
+from src.research.phase1b_last_month_replay import build_phase1b_last_month_replay, write_phase1b_last_month_reports
 from src.research.execution_diagnostics import build_phase1b_execution_diagnostics, write_phase1b_reports
 from src.research.phase1c_robustness import build_phase1c_robustness_analysis, write_phase1c_reports
 from src.research.phase1d_entry_rules import build_phase1d_entry_rule_analysis, write_phase1d_reports
@@ -101,6 +102,10 @@ def run(args: argparse.Namespace) -> None:
     research_start = parse_date(args.start)
     research_end = parse_date(args.end)
     data_start = (pd.Timestamp(research_start) - pd.Timedelta(days=300)).strftime("%Y-%m-%d")
+    download_end = research_end
+    if args.phase1b_last_month_replay:
+        # yfinance treats end as exclusive; Phase 1B also needs post-month rows to verify forward windows.
+        download_end = (pd.Timestamp(research_end) + pd.Timedelta(days=45)).strftime("%Y-%m-%d")
     benchmark = args.benchmark or settings["data"].get("benchmark", "SPY")
     all_download_tickers = sorted(set(tickers + [benchmark]))
 
@@ -122,7 +127,7 @@ def run(args: argparse.Namespace) -> None:
     prices = download_many_prices(
         all_download_tickers,
         data_start,
-        research_end,
+        download_end,
         raw_prices_dir=settings["data"]["raw_prices_dir"],
         auto_adjust=bool(settings["data"].get("auto_adjust", False)),
     )
@@ -295,6 +300,35 @@ def run(args: argparse.Namespace) -> None:
         logger.info("Wrote Phase 1B execution summary Markdown: %s", phase1b_summary_path)
         logger.info("Wrote Phase 1B exit policy comparison CSV: %s", phase1b_comparison_path)
         logger.info("Wrote Phase 1B ticker risk attribution CSV: %s", phase1b_attribution_path)
+
+    if args.phase1b_last_month_replay:
+        account_settings = AccountSettings.from_config(settings)
+        candidate_rule, _ = extract_candidate_34_rule(
+            reports_dir / "auto_research_generations.csv",
+            candidate_id=int(args.candidate_id),
+        )
+        phase1b_replay, phase1b_near_misses, phase1b_last_month_summary = build_phase1b_last_month_replay(
+            dataset,
+            account_settings=account_settings,
+            rule=candidate_rule,
+            replay_start=research_start,
+            replay_end=research_end,
+            benchmark_ticker=benchmark,
+        )
+        phase1b_replay_path = reports_dir / "phase1b_last_month_daily_replay.csv"
+        phase1b_summary_path = reports_dir / "phase1b_last_month_daily_replay.md"
+        phase1b_near_misses_path = reports_dir / "phase1b_last_month_near_misses.csv"
+        write_phase1b_last_month_reports(
+            phase1b_replay,
+            phase1b_near_misses,
+            phase1b_last_month_summary,
+            phase1b_replay_path,
+            phase1b_summary_path,
+            phase1b_near_misses_path,
+        )
+        logger.info("Wrote Phase 1B last-month daily replay CSV: %s", phase1b_replay_path)
+        logger.info("Wrote Phase 1B last-month daily replay Markdown: %s", phase1b_summary_path)
+        logger.info("Wrote Phase 1B last-month near misses CSV: %s", phase1b_near_misses_path)
 
     if args.phase1c_robustness_analysis:
         account_settings = AccountSettings.from_config(settings)
@@ -1066,6 +1100,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--phase1b-execution-diagnostics",
         action="store_true",
         help="Run Phoenix Nano Phase 1B execution risk and drawdown diagnostics",
+    )
+    parser.add_argument(
+        "--phase1b-last-month-replay",
+        action="store_true",
+        help="Run Phoenix Nano Phase 1B last completed month daily replay validation",
     )
     parser.add_argument("--replay-sample-offset", type=int, default=0, help="Deterministic Phase 1 replay sample offset")
     parser.add_argument("--replay-sample-count", type=int, default=1, help="Number of deterministic replay samples for Phase 1B")
